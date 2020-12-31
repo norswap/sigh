@@ -1,0 +1,55 @@
+// This file showcases every single syntactic feature in the language.
+
+fun array_add (a: Int[]): Int
+{
+    fun add (a: Int, b: Int): Int {
+        return add2(a, b) // works!
+
+        fun add2 (a: Int, b: Int): Int {
+            return a + b
+        }
+    }
+
+    if (a.length == 0)
+        return 0
+
+    var i: Int = 1
+    var result: Int = a[0]
+    while i <= a.length {
+        result = add(result, a[i])
+        i = i + 1
+    }
+
+    return result
+}
+
+var total: Int = array_add([1, 2, 3])
+var float_total: Float = total + 0.0
+
+var math: Int = 1 + 3 * 4 * (1 + 3) / 12
+validate5(math)
+validate5(6) // some men just want to watch the world burn
+
+fun validate5 (value: Int)
+{
+    if (math != 5)
+        print("It's a bug! We wanted 5 but got: " + math)
+
+    if (math > 5)
+        print("It was too big.")
+    else if (math < 5)
+        print("It was too small.")
+    else
+        print("It's just right.")
+}
+
+struct Pair {
+    var a: Int
+    var b: Int
+}
+
+fun sum_pair (pair: Pair): Int {
+    return pair.a + pair.b
+}
+
+validate5(sum_pair($Pair(2, 3)))
