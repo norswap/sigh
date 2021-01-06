@@ -73,41 +73,41 @@ public final class Rules
         Rules rules = new Rules(reactor);
 
         // expressions
-        walker.register(IntLiteralNode.class,           PRE_VISIT, rules::intLiteral);
-        walker.register(FloatLiteralNode.class,         PRE_VISIT, rules::floatLiteral);
-        walker.register(StringLiteralNode.class,        PRE_VISIT, rules::stringLiteral);
-        walker.register(ReferenceNode.class,            PRE_VISIT, rules::reference);
-        walker.register(ConstructorNode.class,          PRE_VISIT, rules::constructor);
-        walker.register(ArrayLiteralNode.class,         PRE_VISIT, rules::arrayLiteral);
-        walker.register(ParenthesizedNode.class,        PRE_VISIT, rules::parenthesized);
-        walker.register(FieldAccessNode.class,          PRE_VISIT, rules::fieldAccess);
-        walker.register(ArrayAccessNode.class,          PRE_VISIT, rules::arrayAccess);
-        walker.register(FunCallNode.class,              PRE_VISIT, rules::funCall);
-        walker.register(UnaryExpressionNode.class,      PRE_VISIT, rules::unaryExpression);
-        walker.register(BinaryExpressionNode.class,     PRE_VISIT, rules::binaryExpression);
+        walker.register(IntLiteralNode.class,           PRE_VISIT,  rules::intLiteral);
+        walker.register(FloatLiteralNode.class,         PRE_VISIT,  rules::floatLiteral);
+        walker.register(StringLiteralNode.class,        PRE_VISIT,  rules::stringLiteral);
+        walker.register(ReferenceNode.class,            PRE_VISIT,  rules::reference);
+        walker.register(ConstructorNode.class,          PRE_VISIT,  rules::constructor);
+        walker.register(ArrayLiteralNode.class,         PRE_VISIT,  rules::arrayLiteral);
+        walker.register(ParenthesizedNode.class,        PRE_VISIT,  rules::parenthesized);
+        walker.register(FieldAccessNode.class,          PRE_VISIT,  rules::fieldAccess);
+        walker.register(ArrayAccessNode.class,          PRE_VISIT,  rules::arrayAccess);
+        walker.register(FunCallNode.class,              PRE_VISIT,  rules::funCall);
+        walker.register(UnaryExpressionNode.class,      PRE_VISIT,  rules::unaryExpression);
+        walker.register(BinaryExpressionNode.class,     PRE_VISIT,  rules::binaryExpression);
 
         // types
-        walker.register(SimpleTypeNode.class,           PRE_VISIT, rules::simpleType);
-        walker.register(ArrayTypeNode.class,            PRE_VISIT, rules::arrayType);
+        walker.register(SimpleTypeNode.class,           PRE_VISIT,  rules::simpleType);
+        walker.register(ArrayTypeNode.class,            PRE_VISIT,  rules::arrayType);
 
         // types, declarations & scopes
-        walker.register(RootNode.class,                 PRE_VISIT, rules::root);
-        walker.register(BlockNode.class,                PRE_VISIT, rules::block);
-        walker.register(VarDeclarationNode.class,       PRE_VISIT, rules::varDecl);
-        walker.register(FieldDeclarationNode.class,     PRE_VISIT, rules::fieldDecl);
-        walker.register(ParameterNode.class,            PRE_VISIT, rules::parameter);
-        walker.register(FunDeclarationNode.class,       PRE_VISIT, rules::funDecl);
-        walker.register(StructDeclarationNode.class,    PRE_VISIT, rules::structDecl);
+        walker.register(RootNode.class,                 PRE_VISIT,  rules::root);
+        walker.register(BlockNode.class,                PRE_VISIT,  rules::block);
+        walker.register(VarDeclarationNode.class,       PRE_VISIT,  rules::varDecl);
+        walker.register(FieldDeclarationNode.class,     PRE_VISIT,  rules::fieldDecl);
+        walker.register(ParameterNode.class,            PRE_VISIT,  rules::parameter);
+        walker.register(FunDeclarationNode.class,       PRE_VISIT,  rules::funDecl);
+        walker.register(StructDeclarationNode.class,    PRE_VISIT,  rules::structDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, rules::popScope);
         walker.register(BlockNode.class,                POST_VISIT, rules::popScope);
         walker.register(FunDeclarationNode.class,       POST_VISIT, rules::popScope);
 
         // statements
-        walker.register(ExpressionStatementNode.class,  PRE_VISIT, rules::expressionStmt);
-        walker.register(IfNode.class,                   PRE_VISIT, rules::ifStmt);
-        walker.register(WhileNode.class,                PRE_VISIT, rules::whileStmt);
-        walker.register(ReturnNode.class,               PRE_VISIT, rules::returnStmt);
+        walker.register(ExpressionStatementNode.class,  PRE_VISIT,  rules::expressionStmt);
+        walker.register(IfNode.class,                   PRE_VISIT,  rules::ifStmt);
+        walker.register(WhileNode.class,                PRE_VISIT,  rules::whileStmt);
+        walker.register(ReturnNode.class,               PRE_VISIT,  rules::returnStmt);
 
         walker.register_fallback(POST_VISIT, node -> {});
 
@@ -729,8 +729,8 @@ public final class Rules
         if (expr instanceof FunCallNode)
             return;
 
-       R.error(new SemanticError("Expression used as statement. " +
-           "Only function calls and assignment expressions are allowed.", null, node));
+        R.error(new SemanticError("Expression used as statement. " +
+            "Only function calls and assignment expressions are allowed.", null, node));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -751,14 +751,14 @@ public final class Rules
 
     private void whileStmt (WhileNode node) {
         R.rule()
-            .using(node.condition, "type")
-            .by(r -> {
-                Type type = r.get(0);
-                if (!(type instanceof BoolType)) {
-                    r.error("While statement with a non-boolean condition of type: " + type,
-                        node.condition);
-                }
-            });
+        .using(node.condition, "type")
+        .by(r -> {
+            Type type = r.get(0);
+            if (!(type instanceof BoolType)) {
+                r.error("While statement with a non-boolean condition of type: " + type,
+                    node.condition);
+            }
+        });
     }
 
     // ---------------------------------------------------------------------------------------------
