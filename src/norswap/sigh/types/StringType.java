@@ -1,6 +1,7 @@
 package norswap.sigh.types;
 
-public final class StringType extends Type {
+public final class StringType extends Type
+{
     public static final StringType INSTANCE = new StringType();
     private StringType() {}
 

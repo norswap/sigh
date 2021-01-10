@@ -342,7 +342,7 @@ public final class SemanticAnalysis
         .by(r -> {
             Type type = r.get(0);
             if (type instanceof ArrayType)
-                r.set(0, ((ArrayType) type).component_type);
+                r.set(0, ((ArrayType) type).componentType);
             else
                 r.error("Trying to index a non-array expression of type " + type, node);
         });
@@ -367,9 +367,9 @@ public final class SemanticAnalysis
             }
 
             FunType funType = cast(maybeFunType);
-            r.set(0, funType.return_type);
+            r.set(0, funType.returnType);
 
-            Type[] params = funType.param_types;
+            Type[] params = funType.paramTypes;
             List<ExpressionNode> args = node.arguments;
 
             if (params.length != args.size())
@@ -381,7 +381,7 @@ public final class SemanticAnalysis
 
             for (int i = 0; i < checkedArgs; ++i) {
                 Type argType = r.get(i + 1);
-                Type paramType = funType.param_types[i];
+                Type paramType = funType.paramTypes[i];
                 if (!isAssignableTo(argType, paramType))
                     r.errorFor(format(
                             "incompatible argument provided for argument %d: expected %s but got %s",
@@ -600,7 +600,7 @@ public final class SemanticAnalysis
 
         if (a instanceof ArrayType)
             return b instanceof ArrayType
-                && isAssignableTo(((ArrayType)a).component_type, ((ArrayType)b).component_type);
+                && isAssignableTo(((ArrayType)a).componentType, ((ArrayType)b).componentType);
 
         return a instanceof NullType && b.isReference() || a.equals(b);
     }

@@ -1,6 +1,7 @@
 package norswap.sigh.types;
 
-public final class FloatType extends Type {
+public final class FloatType extends Type
+{
     public static final FloatType INSTANCE = new FloatType();
     private FloatType () {}
 

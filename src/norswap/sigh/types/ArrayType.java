@@ -2,21 +2,21 @@ package norswap.sigh.types;
 
 public final class ArrayType extends Type
 {
-    public final Type component_type;
+    public final Type componentType;
 
-    public ArrayType (Type component_type) {
-        this.component_type = component_type;
+    public ArrayType (Type componentType) {
+        this.componentType = componentType;
     }
 
     @Override public String name() {
-        return component_type.toString() + "[]";
+        return componentType.toString() + "[]";
     }
 
     @Override public boolean equals (Object o) {
-        return this == o || o instanceof ArrayType && component_type.equals(o);
+        return this == o || o instanceof ArrayType && componentType.equals(o);
     }
 
     @Override public int hashCode () {
-        return component_type.hashCode();
+        return componentType.hashCode();
     }
 }
