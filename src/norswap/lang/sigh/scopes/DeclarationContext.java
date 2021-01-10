@@ -1,6 +1,7 @@
-package norswap.lang.sigh.analysis;
+package norswap.lang.sigh.scopes;
 
 import norswap.lang.sigh.ast.DeclarationNode;
+import norswap.lang.sigh.scopes.Scope;
 
 /**
  * A pair of a {@link Scope} and a {@link DeclarationNode} declaring an entry in that scope.

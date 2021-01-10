@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis;
+package norswap.lang.sigh.scopes;
 
 import norswap.lang.sigh.ast.DeclarationNode;
 import norswap.lang.sigh.ast.Node;

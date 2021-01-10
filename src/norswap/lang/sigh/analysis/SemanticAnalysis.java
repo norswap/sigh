@@ -1,6 +1,10 @@
 package norswap.lang.sigh.analysis;
 
 import norswap.lang.sigh.ast.*;
+import norswap.lang.sigh.scopes.DeclarationContext;
+import norswap.lang.sigh.scopes.RootScope;
+import norswap.lang.sigh.scopes.Scope;
+import norswap.lang.sigh.scopes.SyntheticDeclaration;
 import norswap.lang.sigh.types.*;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;

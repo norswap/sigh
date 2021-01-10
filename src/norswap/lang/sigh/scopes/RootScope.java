@@ -1,10 +1,10 @@
-package norswap.lang.sigh.analysis;
+package norswap.lang.sigh.scopes;
 
 import norswap.lang.sigh.ast.Node;
 import norswap.lang.sigh.types.*;
 import norswap.uranium.Reactor;
 
-import static norswap.lang.sigh.analysis.SyntheticDeclaration.Kind.*;
+import static norswap.lang.sigh.scopes.SyntheticDeclaration.Kind.*;
 
 public class RootScope extends Scope
 {
@@ -29,11 +29,11 @@ public class RootScope extends Scope
     // root scope functions
     private final SyntheticDeclaration print = decl("print", FUNCTION);
 
-    RootScope (Node node) {
+    public RootScope (Node node) {
         super(node, null);
     }
 
-    void initialize (Reactor R)
+    public void initialize (Reactor R)
     {
         R.set(Bool,   "type",   BoolType.INSTANCE);
         R.set(Int,    "type",    IntType.INSTANCE);
