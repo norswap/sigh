@@ -4,30 +4,30 @@ import norswap.lang.sigh.ast.Node;
 import norswap.lang.sigh.types.*;
 import norswap.uranium.Reactor;
 
-import static norswap.lang.sigh.scopes.SyntheticDeclaration.Kind.*;
+import static norswap.lang.sigh.scopes.SyntheticDeclarationNode.Kind.*;
 
 public class RootScope extends Scope
 {
-    private SyntheticDeclaration decl (String name, SyntheticDeclaration.Kind kind) {
-        SyntheticDeclaration decl = new SyntheticDeclaration(name, kind);
+    private SyntheticDeclarationNode decl (String name, SyntheticDeclarationNode.Kind kind) {
+        SyntheticDeclarationNode decl = new SyntheticDeclarationNode(name, kind);
         declare(name,  decl);
         return decl;
     }
 
     // root scope types
-    private final SyntheticDeclaration Bool   = decl("Bool",   TYPE);
-    private final SyntheticDeclaration Int    = decl("Int",    TYPE);
-    private final SyntheticDeclaration Float  = decl("Float",  TYPE);
-    private final SyntheticDeclaration String = decl("String", TYPE);
-    private final SyntheticDeclaration Void   = decl("Void",   TYPE);
+    private final SyntheticDeclarationNode Bool   = decl("Bool",   TYPE);
+    private final SyntheticDeclarationNode Int    = decl("Int",    TYPE);
+    private final SyntheticDeclarationNode Float  = decl("Float",  TYPE);
+    private final SyntheticDeclarationNode String = decl("String", TYPE);
+    private final SyntheticDeclarationNode Void   = decl("Void",   TYPE);
 
     // root scope variables
-    private final SyntheticDeclaration _true  = decl("true",  VARIABLE);
-    private final SyntheticDeclaration _false = decl("false", VARIABLE);
-    private final SyntheticDeclaration _null  = decl("null",  VARIABLE);
+    private final SyntheticDeclarationNode _true  = decl("true",  VARIABLE);
+    private final SyntheticDeclarationNode _false = decl("false", VARIABLE);
+    private final SyntheticDeclarationNode _null  = decl("null",  VARIABLE);
 
     // root scope functions
-    private final SyntheticDeclaration print = decl("print", FUNCTION);
+    private final SyntheticDeclarationNode print = decl("print", FUNCTION);
 
     public RootScope (Node node) {
         super(node, null);

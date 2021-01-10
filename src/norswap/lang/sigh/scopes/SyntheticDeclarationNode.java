@@ -2,8 +2,7 @@ package norswap.lang.sigh.scopes;
 
 import norswap.lang.sigh.ast.DeclarationNode;
 
-// TODO rename as SyntheticDeclarationNode
-public class SyntheticDeclaration extends DeclarationNode
+public class SyntheticDeclarationNode extends DeclarationNode
 {
     public enum Kind {
         TYPE,
@@ -14,7 +13,7 @@ public class SyntheticDeclaration extends DeclarationNode
     private final String name;
     private final Kind kind;
 
-    public SyntheticDeclaration (String name, Kind kind) {
+    public SyntheticDeclarationNode(String name, Kind kind) {
         super(null);
         this.name = name;
         this.kind = kind;

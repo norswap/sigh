@@ -4,7 +4,7 @@ import norswap.lang.sigh.ast.*;
 import norswap.lang.sigh.scopes.DeclarationContext;
 import norswap.lang.sigh.scopes.RootScope;
 import norswap.lang.sigh.scopes.Scope;
-import norswap.lang.sigh.scopes.SyntheticDeclaration;
+import norswap.lang.sigh.scopes.SyntheticDeclarationNode;
 import norswap.lang.sigh.types.*;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
@@ -581,9 +581,9 @@ public final class SemanticAnalysis
     private static boolean isTypeDecl (DeclarationNode decl)
     {
         if (decl instanceof StructDeclarationNode) return true;
-        if (!(decl instanceof SyntheticDeclaration)) return false;
-        SyntheticDeclaration synthetic = cast(decl);
-        return synthetic.kind() == SyntheticDeclaration.Kind.TYPE;
+        if (!(decl instanceof SyntheticDeclarationNode)) return false;
+        SyntheticDeclarationNode synthetic = cast(decl);
+        return synthetic.kind() == SyntheticDeclarationNode.Kind.TYPE;
     }
 
     // ---------------------------------------------------------------------------------------------
