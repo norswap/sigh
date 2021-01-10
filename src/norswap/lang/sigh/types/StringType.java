@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis.hierarchy;
+package norswap.lang.sigh.types;
 
 public final class StringType extends Type {
     public static final StringType INSTANCE = new StringType();

@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis.hierarchy;
+package norswap.lang.sigh.types;
 
 import norswap.lang.sigh.ast.StructDeclarationNode;
 

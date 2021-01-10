@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis.hierarchy;
+package norswap.lang.sigh.types;
 
 public final class IntType extends Type {
     public static final IntType INSTANCE = new IntType();

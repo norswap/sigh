@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis.hierarchy;
+package norswap.lang.sigh.types;
 
 public final class VoidType extends Type {
     public static final VoidType INSTANCE = new VoidType();

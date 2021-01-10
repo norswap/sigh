@@ -1,7 +1,7 @@
 package norswap.lang.sigh.analysis;
 
 import norswap.lang.sigh.ast.Node;
-import norswap.lang.sigh.analysis.hierarchy.*;
+import norswap.lang.sigh.types.*;
 import norswap.uranium.Reactor;
 
 import static norswap.lang.sigh.analysis.SyntheticDeclaration.Kind.*;

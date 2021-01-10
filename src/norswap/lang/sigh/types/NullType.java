@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis.hierarchy;
+package norswap.lang.sigh.types;
 
 public final class NullType extends Type {
     public static final NullType INSTANCE = new NullType();
