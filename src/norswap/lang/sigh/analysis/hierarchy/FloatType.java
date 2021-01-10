@@ -1,4 +1,4 @@
-package norswap.lang.sigh.typing.hierarchy;
+package norswap.lang.sigh.analysis.hierarchy;
 
 public final class FloatType extends Type {
     public static final FloatType INSTANCE = new FloatType();

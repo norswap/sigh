@@ -1,4 +1,4 @@
-package norswap.lang.sigh.typing;
+package norswap.lang.sigh.analysis;
 
 import norswap.lang.sigh.ast.DeclarationNode;
 import norswap.lang.sigh.ast.Node;

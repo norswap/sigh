@@ -1,7 +1,7 @@
-package norswap.lang.sigh.typing;
+package norswap.lang.sigh.analysis;
 
 import norswap.lang.sigh.ast.*;
-import norswap.lang.sigh.typing.hierarchy.*;
+import norswap.lang.sigh.analysis.hierarchy.*;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
 import norswap.uranium.Rule;

@@ -1,4 +1,4 @@
-package norswap.lang.sigh.typing.hierarchy;
+package norswap.lang.sigh.analysis.hierarchy;
 
 public final class BoolType extends Type {
     public static final BoolType INSTANCE = new BoolType();

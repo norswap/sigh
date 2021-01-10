@@ -1,7 +1,8 @@
-package norswap.lang.sigh.typing;
+package norswap. lang.sigh.analysis;
 
 import norswap.lang.sigh.ast.DeclarationNode;
 
+// TODO rename as SyntheticDeclarationNode
 public class SyntheticDeclaration extends DeclarationNode
 {
     public enum Kind {
