@@ -21,13 +21,13 @@ public class RootScope extends Scope
     private final SyntheticDeclaration String = decl("String", TYPE);
     private final SyntheticDeclaration Void   = decl("Void",   TYPE);
 
+    // root scope variables
+    private final SyntheticDeclaration _true  = decl("true",  VARIABLE);
+    private final SyntheticDeclaration _false = decl("false", VARIABLE);
+    private final SyntheticDeclaration _null  = decl("null",  VARIABLE);
+
     // root scope functions
     private final SyntheticDeclaration print = decl("print", FUNCTION);
-
-    // root scope variables
-    private final SyntheticDeclaration _true  = decl("true", VARIABLE);
-    private final SyntheticDeclaration _false = decl("false", VARIABLE);
-    private final SyntheticDeclaration _null  = decl("null", VARIABLE);
 
     RootScope (Node node) {
         super(node, null);
@@ -41,10 +41,10 @@ public class RootScope extends Scope
         R.set(String, "type", StringType.INSTANCE);
         R.set(Void,   "type",   VoidType.INSTANCE);
 
-        R.set(print,  "type",   new FunType(StringType.INSTANCE, StringType.INSTANCE));
-
         R.set(_true,  "type",   BoolType.INSTANCE);
         R.set(_false, "type",   BoolType.INSTANCE);
         R.set(_null,  "type",   NullType.INSTANCE);
+
+        R.set(print,  "type", new FunType(StringType.INSTANCE, StringType.INSTANCE));
     }
 }

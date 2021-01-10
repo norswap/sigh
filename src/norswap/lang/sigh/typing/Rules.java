@@ -1,6 +1,5 @@
 package norswap.lang.sigh.typing;
 
-import norswap.autumn.util.ArrayStack;
 import norswap.lang.sigh.ast.*;
 import norswap.lang.sigh.typing.hierarchy.*;
 import norswap.uranium.Attribute;
@@ -29,11 +28,13 @@ import static norswap.utils.visitors.WalkVisitType.*;
  *     instance of {@link Type}.</li>
  *     <li>Every {@link ExpressionNode} instance must have its {@code type} attribute similarly
  *     set.</li>
- *     <li>Every {@link ReferenceNode} instance have its {@code decl} attribute set to the {@link
- *     DeclarationNode} it references. (TODO: might be useless, or to set if for SimpleType too)</li>
+ *     <li>Every {@link ReferenceNode} instance have its {@code scope} attribute set to the {@link
+ *     Scope} in which the declaration it references lives. This speeds up lookups in the
+ *     interpreter. Similarly, {@link VarDeclarationNode} and {@link ParameterNode} should have
+ *     their {@code scope} attribute set to the scope in which they appear.
  *     <li>All statements introducing a new scope must have their {@code scope} attribute set to the
  *     corresponding {@link Scope} (only {@link RootNode}, {@link BlockNode} and {@link
- *     FunDeclarationNode} (for parameters)). These nodes must also update the {@code current_scope}
+ *     FunDeclarationNode} (for parameters)). These nodes must also update the {@code scope}
  *     field to track the current scope during the walk.</li>
  *     <li>Every {@link TypeNode} instance must have its {@code value} set to the {@link Type} it
  *     denotes.</li>
@@ -51,7 +52,7 @@ public final class Rules
     // =============================================================================================
 
     private final Reactor R;
-    private final ArrayStack<Scope> scopes = new ArrayStack<>();
+    private Scope scope;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -139,34 +140,40 @@ public final class Rules
 
     private void reference (ReferenceNode node)
     {
-        final Scope scope = scopes.peek();
+        final Scope scope = this.scope;
 
-        // This may reference a function or a type, that may declared after use.
-        DeclarationNode maybeDecl = scope.lookup(node.name);
+        // Try to lookup immediately. This must succeed for variables, but not necessarily for
+        // functions or types. By looking up now, we can report looked up variables later
+        // as being used before being defined.
+        DeclarationContext maybeCtx = scope.lookup(node.name);
 
-        if (maybeDecl != null) {
+        if (maybeCtx != null) {
+            R.set(node, "scope", scope);
+
             R.rule(node, "type")
-            .using(maybeDecl, "type")
+            .using(maybeCtx.declaration, "type")
             .by(Rule::copyFirst);
             return;
         }
 
-        R.rule(node, "decl")
+        // Re-lookup after the scopes have been built.
+        R.rule(node, "scope")
         .by(r -> {
-            DeclarationNode decl = scope.lookup(node.name);
+            DeclarationContext ctx = scope.lookup(node.name);
+            DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
-            if (decl == null)
+            if (ctx == null)
                 r.errorFor("could not resolve: " + node.name,
                     node,
-                    node.attr("decl"), node.attr("type"));
+                    node.attr("scope"), node.attr("type"));
 
             else if (decl instanceof VarDeclarationNode)
                 r.errorFor("variable used before declaration: " +  node.name,
                     node,
-                    node.attr("decl"), node.attr("type"));
+                    node.attr("scope"), node.attr("type"));
 
             else {
-                r.set(0, decl);
+                r.set(0, ctx.scope);
 
                 R.rule(node, "type")
                 .using(decl, "type")
@@ -528,13 +535,15 @@ public final class Rules
 
     private void simpleType (SimpleTypeNode node)
     {
-        final Scope scope = scopes.peek();
+        final Scope scope = this.scope;
+
         R.rule()
             .by(r -> {
                 // type declarations may occur after use
-                DeclarationNode decl = scope.lookup(node.name);
+                DeclarationContext ctx = scope.lookup(node.name);
+                DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
-                if (decl == null)
+                if (ctx == null)
                     r.errorFor("could not resolve: " + node.name,
                         node,
                         node.attr("value"));
@@ -625,30 +634,23 @@ public final class Rules
     // =============================================================================================
 
     private void popScope (Node node) {
-        scopes.pop();
+        scope = scope.parent;
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private void root (RootNode node) {
-        assert scopes.isEmpty();
+        assert scope == null;
         RootScope root = new RootScope(node);
         root.initialize(R);
-        scopes.push(root);
+        scope = root;
         R.set(node, "scope", root);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private void postRoot (RootNode node) {
-        scopes.pop();
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     private void block (BlockNode node) {
-        Scope scope = new Scope(node, scopes.peek());
-        scopes.push(scope);
+        scope = new Scope(node, scope);
         R.set(node, "scope", scope);
     }
 
@@ -656,7 +658,8 @@ public final class Rules
 
     private void varDecl (VarDeclarationNode node)
     {
-        scopes.peek().declare(node.name, node);
+        scope.declare(node.name, node);
+        R.set(node, "scope", scope);
 
         R.rule(node, "type")
         .using(node.type, "value")
@@ -676,7 +679,8 @@ public final class Rules
 
     private void parameter (ParameterNode node)
     {
-        scopes.peek().declare(node.name, node); // in FunctionDeclarationNode scope
+        scope.declare(node.name, node); // in FunctionDeclarationNode
+        R.set(node, "scope",scope);
 
         R.rule(node, "type")
         .using(node.type, "value")
@@ -687,11 +691,8 @@ public final class Rules
 
     private void funDecl (FunDeclarationNode node)
     {
-        Scope current = scopes.peek();
-        current.declare(node.name, node);
-
-        Scope scope = new Scope(node, current);
-        scopes.push(scope);
+        scope.declare(node.name, node);
+        scope = new Scope(node, scope);
         R.set(node, "scope", scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
@@ -712,7 +713,7 @@ public final class Rules
     // ---------------------------------------------------------------------------------------------
 
     private void structDecl (StructDeclarationNode node) {
-        scopes.peek().declare(node.name, node);
+        scope.declare(node.name, node);
         R.set(node, "type", new StructType(node));
     }
 
@@ -798,7 +799,7 @@ public final class Rules
 
     private FunDeclarationNode currentFunction()
     {
-        Scope scope = scopes.peek();
+        Scope scope = this.scope;
         while (scope != null) {
             Node node = scope.node;
             if (node instanceof FunDeclarationNode)
