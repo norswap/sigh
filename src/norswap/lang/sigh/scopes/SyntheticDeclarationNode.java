@@ -1,19 +1,21 @@
 package norswap.lang.sigh.scopes;
 
 import norswap.lang.sigh.ast.DeclarationNode;
+import java.util.Locale;
 
-public class SyntheticDeclarationNode extends DeclarationNode
+/**
+ * In Sigh's implementation, every reference must resolve to a {@link DeclarationNode}.
+ * A {@code SyntheticDeclarationNode} is such a node for declarations that have not been
+ * introduced by the user.
+ *
+ * <p>At present, all such declarations are unconditionally introduced in the {@link RootScope}.
+ */
+public final class SyntheticDeclarationNode extends DeclarationNode
 {
-    public enum Kind {
-        TYPE,
-        FUNCTION,
-        VARIABLE
-    }
-
     private final String name;
-    private final Kind kind;
+    private final DeclarationKind kind;
 
-    public SyntheticDeclarationNode(String name, Kind kind) {
+    public SyntheticDeclarationNode(String name, DeclarationKind kind) {
         super(null);
         this.name = name;
         this.kind = kind;
@@ -23,7 +25,7 @@ public class SyntheticDeclarationNode extends DeclarationNode
         return name;
     }
 
-    public Kind kind() {
+    public DeclarationKind kind() {
         return kind;
     }
 
@@ -32,6 +34,6 @@ public class SyntheticDeclarationNode extends DeclarationNode
     }
 
     @Override public String declaredThing () {
-        return "built-in";
+        return "built-in " + kind.name().toLowerCase(Locale.ROOT);
     }
 }

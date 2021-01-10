@@ -2,6 +2,7 @@ package norswap.lang.sigh;
 
 import norswap.lang.sigh.ast.*;
 import norswap.lang.sigh.scopes.DeclarationContext;
+import norswap.lang.sigh.scopes.DeclarationKind;
 import norswap.lang.sigh.scopes.RootScope;
 import norswap.lang.sigh.scopes.Scope;
 import norswap.lang.sigh.scopes.SyntheticDeclarationNode;
@@ -35,8 +36,8 @@ import static norswap.utils.visitors.WalkVisitType.*;
  *     set.</li>
  *     <li>Every {@link ReferenceNode} instance have its {@code scope} attribute set to the {@link
  *     Scope} in which the declaration it references lives. This speeds up lookups in the
- *     interpreter. Similarly, {@link VarDeclarationNode} and {@link ParameterNode} should have
- *     their {@code scope} attribute set to the scope in which they appear.
+ *     interpreter. Similarly, {@link VarDeclarationNode} should have their {@code scope} attribute
+ *     set to the scope in which they appear.
  *     <li>All statements introducing a new scope must have their {@code scope} attribute set to the
  *     corresponding {@link Scope} (only {@link RootNode}, {@link BlockNode} and {@link
  *     FunDeclarationNode} (for parameters)). These nodes must also update the {@code scope}
@@ -583,7 +584,7 @@ public final class SemanticAnalysis
         if (decl instanceof StructDeclarationNode) return true;
         if (!(decl instanceof SyntheticDeclarationNode)) return false;
         SyntheticDeclarationNode synthetic = cast(decl);
-        return synthetic.kind() == SyntheticDeclarationNode.Kind.TYPE;
+        return synthetic.kind() == DeclarationKind.TYPE;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -646,10 +647,8 @@ public final class SemanticAnalysis
 
     private void root (RootNode node) {
         assert scope == null;
-        RootScope root = new RootScope(node);
-        root.initialize(R);
-        scope = root;
-        R.set(node, "scope", root);
+        scope = new RootScope(node, R);
+        R.set(node, "scope", scope);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -685,7 +684,6 @@ public final class SemanticAnalysis
     private void parameter (ParameterNode node)
     {
         scope.declare(node.name, node); // in FunctionDeclarationNode
-        R.set(node, "scope",scope);
 
         R.rule(node, "type")
         .using(node.type, "value")

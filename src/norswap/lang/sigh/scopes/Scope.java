@@ -2,16 +2,15 @@ package norswap.lang.sigh.scopes;
 
 import norswap.lang.sigh.ast.DeclarationNode;
 import norswap.lang.sigh.ast.Node;
-import norswap.lang.sigh.interpreter.Frame;
 import java.util.HashMap;
 
 /**
  * Represent a lexical scope in which declarations occurs.
- *
- * <p>Such a scope is "instantiated" at runtime as a {@link Frame}.
  */
 public class Scope
 {
+    // ---------------------------------------------------------------------------------------------
+
     /**
      * The AST node that introduces this scope.
      */
@@ -22,12 +21,18 @@ public class Scope
      */
     public final Scope parent;
 
+    // ---------------------------------------------------------------------------------------------
+
     private final HashMap<String, DeclarationNode> declarations = new HashMap<>();
+
+    // ---------------------------------------------------------------------------------------------
 
     public Scope (Node node, Scope parent) {
         this.node = node;
         this.parent = parent;
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     /**
      * Adds a new declaration to this scope.
@@ -35,6 +40,8 @@ public class Scope
     public void declare (String identifier, DeclarationNode node) {
         declarations.put(identifier, node);
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     /**
      * Looks up the name in the scope and its parents, returning a context comprising the
@@ -50,7 +57,21 @@ public class Scope
                     : null;
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Lookup the given name only in this scope, and return the corresponding declaration, or null
+     * if not found.
+     */
+    public DeclarationNode lookupLocal (String name) {
+        return declarations.get(name);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     @Override public String toString() {
         return "Scope " + declarations.toString();
     }
+
+    // ---------------------------------------------------------------------------------------------
 }
