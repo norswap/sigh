@@ -7,7 +7,6 @@ import norswap.autumn.positions.LineMapString;
 import norswap.lang.sigh.ast.Node;
 import norswap.uranium.AttributeTreeFormatter;
 import norswap.uranium.Reactor;
-import norswap.lang.sigh.analysis.SemanticAnalysis;
 import norswap.utils.IO;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;

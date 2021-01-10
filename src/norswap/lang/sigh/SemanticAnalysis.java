@@ -1,4 +1,4 @@
-package norswap.lang.sigh.analysis;
+package norswap.lang.sigh;
 
 import norswap.lang.sigh.ast.*;
 import norswap.lang.sigh.scopes.DeclarationContext;
