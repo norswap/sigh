@@ -38,6 +38,12 @@ tasks.javadoc.get().options() {
         addBooleanOption("html5", true) // nice future proofing
 }
 
+tasks.withType(JavaCompile::class) {
+    // Give unsafe casts details instead of passive agressively hinting that they exist.
+    options.compilerArgs.plusAssign("-Xlint:unchecked")
+    options.isDeprecation = true
+}
+
 // === IDE =========================================================================================
 
 idea.module {
@@ -56,8 +62,8 @@ repositories {
 
 dependencies {
     implementation("com.norswap:utils:2.0.2")
-    implementation("com.norswap:autumn:1.0.1-ALPHA")
-    implementation("com.norswap:uranium:1.0.2-ALPHA")
+    implementation("com.norswap:autumn:1.0.2-ALPHA")
+    implementation("com.norswap:uranium:1.0.3-ALPHA")
     testImplementation("org.testng:testng:6.14.3")
 }
 

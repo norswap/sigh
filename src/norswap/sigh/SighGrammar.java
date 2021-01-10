@@ -5,6 +5,7 @@ import norswap.sigh.ast.*;
 
 import static norswap.sigh.ast.UnaryOperator.NOT;
 
+@SuppressWarnings("Convert2MethodRef")
 public class SighGrammar extends DSL
 {
     // ==== LEXICAL ===========================================================
@@ -269,5 +270,5 @@ public class SighGrammar extends DSL
         .as_list(StatementNode.class)
         .push($ -> new RootNode($.span(), $.$[0]));
 
-    { make_rule_names(); }
+    { makeRuleNames(); }
 }

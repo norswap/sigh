@@ -24,14 +24,14 @@ public final class Test
         String path = Paths.get("examples/", file).toAbsolutePath().toString();
         String src = IO.slurp(path);
         SighGrammar grammar = new SighGrammar();
-        ParseOptions options = ParseOptions.builder().record_call_stack(true).get();
+        ParseOptions options = ParseOptions.builder().recordCallStack(true).get();
         ParseResult result = Autumn.parse(grammar.root, src, options);
         System.out.println(result.toString(new LineMapString(src), false, path));
 
-        if (!result.full_match)
+        if (!result.fullMatch)
             return;
 
-        Node root = cast(result.value_stack.peek());
+        Node root = cast(result.topValue());
         Reactor reactor = new Reactor();
         Walker<Node> walker = SemanticAnalysis.createWalker(reactor);
         walker.walk(root);
