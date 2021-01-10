@@ -116,7 +116,7 @@ public final class SemanticAnalysis
         walker.register(WhileNode.class,                PRE_VISIT,  analyzis::whileStmt);
         walker.register(ReturnNode.class,               PRE_VISIT,  analyzis::returnStmt);
 
-        walker.register_fallback(POST_VISIT, node -> {});
+        walker.registerFallback(POST_VISIT, node -> {});
 
         return walker;
     }
