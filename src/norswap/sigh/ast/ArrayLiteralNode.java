@@ -19,7 +19,7 @@ public class ArrayLiteralNode extends ExpressionNode
         if (components.size() == 0)
             return "[]";
 
-        int budget = contents_budget() - 2; // 2 == "[]".length()
+        int budget = contentsBudget() - 2; // 2 == "[]".length()
         StringBuilder b = new StringBuilder("[");
         int i = 0;
 

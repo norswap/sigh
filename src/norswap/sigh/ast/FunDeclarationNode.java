@@ -8,18 +8,18 @@ public class FunDeclarationNode extends DeclarationNode
 {
     public final String name;
     public final List<ParameterNode> parameters;
-    public final TypeNode return_type;
+    public final TypeNode returnType;
     public final BlockNode block;
 
     @SuppressWarnings("unchecked")
     public FunDeclarationNode
-            (Span span, Object name, Object parameters, Object return_type, Object block) {
+            (Span span, Object name, Object parameters, Object returnType, Object block) {
         super(span);
         this.name = Util.cast(name, String.class);
         this.parameters = Util.cast(parameters, List.class);
-        this.return_type = return_type == null
+        this.returnType = returnType == null
             ? new SimpleTypeNode(new Span(span.start, span.start), "Void")
-            : Util.cast(return_type, TypeNode.class);
+            : Util.cast(returnType, TypeNode.class);
         this.block = Util.cast(block, BlockNode.class);
     }
 

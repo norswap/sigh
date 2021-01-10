@@ -5,14 +5,14 @@ import norswap.utils.Util;
 
 public final class ArrayTypeNode extends TypeNode
 {
-    public final TypeNode component_type;
+    public final TypeNode componentType;
 
-    public ArrayTypeNode (Span span, Object component_type) {
+    public ArrayTypeNode (Span span, Object componentType) {
         super(span);
-        this.component_type = Util.cast(component_type, TypeNode.class);
+        this.componentType = Util.cast(componentType, TypeNode.class);
     }
 
     @Override public String contents() {
-        return component_type.contents() + "[]";
+        return componentType.contents() + "[]";
     }
 }

@@ -21,7 +21,7 @@ public final class BlockNode extends StatementNode
 
         String first = statements.get(0).contents();
 
-        return first.length() <= contents_budget() - "{  ... }".length()
+        return first.length() <= contentsBudget() - "{  ... }".length()
             ? String.format("{ %s ... }", first)
             : "{ ... }";
     }

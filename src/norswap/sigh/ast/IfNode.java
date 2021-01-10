@@ -25,7 +25,7 @@ public final class IfNode extends StatementNode
             ? String.format("if %s ...", condition)
             : String.format("if %s ... else ...", condition);
 
-        return candidate.length() <= contents_budget()
+        return candidate.length() <= contentsBudget()
             ? candidate
             : falseStatement == null
                 ? "if (?) ..."

@@ -18,7 +18,7 @@ public final class WhileNode extends StatementNode
     {
         String candidate = String.format("while %s ...", condition.contents());
 
-        return candidate.length() <= contents_budget()
+        return candidate.length() <= contentsBudget()
             ? candidate
             : "while (?) ...";
     }

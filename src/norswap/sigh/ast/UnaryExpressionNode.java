@@ -17,7 +17,7 @@ public final class UnaryExpressionNode extends ExpressionNode
     @Override public String contents ()
     {
         String candidate = operator.string + operand.contents();
-        return candidate.length() <= contents_budget()
+        return candidate.length() <= contentsBudget()
             ? candidate
             : operator.string + "(?)";
     }

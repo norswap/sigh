@@ -291,7 +291,7 @@ public final class SemanticAnalysis
             Type type = r.get(0);
 
             if (type instanceof ArrayType) {
-                if (node.field_name.equals("length"))
+                if (node.fieldName.equals("length"))
                     R.set(node, "type", IntType.INSTANCE);
                 else
                     r.errorFor("Trying to access a non-length field on an array", node,
@@ -310,7 +310,7 @@ public final class SemanticAnalysis
 
             for (DeclarationNode field: decl.fields)
             {
-                if (!field.name().equals(node.field_name)) continue;
+                if (!field.name().equals(node.fieldName)) continue;
 
                 R.rule(node, "type")
                 .using(field, "type")
@@ -320,7 +320,7 @@ public final class SemanticAnalysis
             }
 
             String description = format("Trying to access missing field %s on struct %s",
-                    node.field_name, decl.name);
+                    node.fieldName, decl.name);
             r.errorFor(description, node, node.attr("type"));
         });
     }
@@ -573,7 +573,7 @@ public final class SemanticAnalysis
     private void arrayType (ArrayTypeNode node)
     {
         R.rule(node, "value")
-            .using(node.component_type, "value")
+            .using(node.componentType, "value")
             .by(r -> r.set(0, new ArrayType(r.get(0))));
     }
 
@@ -699,7 +699,7 @@ public final class SemanticAnalysis
         R.set(node, "scope", scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
-        dependencies[0] = node.return_type.attr("value");
+        dependencies[0] = node.returnType.attr("value");
         for (int i = 1; i < dependencies.length; ++i)
             dependencies[i] = node.parameters.get(i - 1).attr("type");
 
@@ -776,17 +776,17 @@ public final class SemanticAnalysis
             return;
         }
 
-        if (node.expression == null && function.return_type != null) {
+        if (node.expression == null && function.returnType != null) {
             R.error(new SemanticError(
                 "Return without value in a function with a return type", null, node));
             return;
         }
 
-        if (function.return_type == null)
+        if (function.returnType == null)
             return;
 
         R.rule()
-        .using(function.return_type.attr("value"), node.expression.attr("type"))
+        .using(function.returnType.attr("value"), node.expression.attr("type"))
         .by(r -> {
             Type formal = r.get(0);
             Type actual = r.get(0);
