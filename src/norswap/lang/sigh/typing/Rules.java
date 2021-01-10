@@ -538,28 +538,28 @@ public final class Rules
         final Scope scope = this.scope;
 
         R.rule()
-            .by(r -> {
-                // type declarations may occur after use
-                DeclarationContext ctx = scope.lookup(node.name);
-                DeclarationNode decl = ctx == null ? null : ctx.declaration;
+        .by(r -> {
+            // type declarations may occur after use
+            DeclarationContext ctx = scope.lookup(node.name);
+            DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
-                if (ctx == null)
-                    r.errorFor("could not resolve: " + node.name,
-                        node,
-                        node.attr("value"));
+            if (ctx == null)
+                r.errorFor("could not resolve: " + node.name,
+                    node,
+                    node.attr("value"));
 
-                else if (!isTypeDecl(decl))
-                    r.errorFor(format(
-                        "%s did not resolve to a type declaration but to a %s declaration",
-                        node.name, decl.declaredThing()),
-                        node,
-                        node.attr("value"));
+            else if (!isTypeDecl(decl))
+                r.errorFor(format(
+                    "%s did not resolve to a type declaration but to a %s declaration",
+                    node.name, decl.declaredThing()),
+                    node,
+                    node.attr("value"));
 
-                else
-                    R.rule(node, "value")
-                        .using(decl, "type")
-                        .by(Rule::copyFirst);
-            });
+            else
+                R.rule(node, "value")
+                    .using(decl, "type")
+                    .by(Rule::copyFirst);
+        });
     }
 
     // ---------------------------------------------------------------------------------------------
