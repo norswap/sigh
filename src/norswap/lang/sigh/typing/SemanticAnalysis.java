@@ -18,7 +18,8 @@ import static norswap.utils.Util.cast;
 import static norswap.utils.visitors.WalkVisitType.*;
 
 /**
- * Holds the logic implementing typing rules of the languages.
+ * Holds the logic implementing semantic analyzis for the language, including typing and name
+ * resolution.
  *
  * <p>The entry point into this class is {@link #createWalker(Reactor)}.
  *
@@ -45,7 +46,7 @@ import static norswap.utils.visitors.WalkVisitType.*;
  *     that variables are declared before being used, etc...</li>
  * </ul>
  */
-public final class Rules
+public final class SemanticAnalysis
 {
     // =============================================================================================
     // region [Initialization]
@@ -56,7 +57,7 @@ public final class Rules
 
     // ---------------------------------------------------------------------------------------------
 
-    private Rules (Reactor reactor) {
+    private SemanticAnalysis(Reactor reactor) {
         this.R = reactor;
     }
 
@@ -71,44 +72,44 @@ public final class Rules
         ReflectiveFieldWalker<Node> walker = new ReflectiveFieldWalker<>(
             Node.class, PRE_VISIT, POST_VISIT);
 
-        Rules rules = new Rules(reactor);
+        SemanticAnalysis analyzis = new SemanticAnalysis(reactor);
 
         // expressions
-        walker.register(IntLiteralNode.class,           PRE_VISIT,  rules::intLiteral);
-        walker.register(FloatLiteralNode.class,         PRE_VISIT,  rules::floatLiteral);
-        walker.register(StringLiteralNode.class,        PRE_VISIT,  rules::stringLiteral);
-        walker.register(ReferenceNode.class,            PRE_VISIT,  rules::reference);
-        walker.register(ConstructorNode.class,          PRE_VISIT,  rules::constructor);
-        walker.register(ArrayLiteralNode.class,         PRE_VISIT,  rules::arrayLiteral);
-        walker.register(ParenthesizedNode.class,        PRE_VISIT,  rules::parenthesized);
-        walker.register(FieldAccessNode.class,          PRE_VISIT,  rules::fieldAccess);
-        walker.register(ArrayAccessNode.class,          PRE_VISIT,  rules::arrayAccess);
-        walker.register(FunCallNode.class,              PRE_VISIT,  rules::funCall);
-        walker.register(UnaryExpressionNode.class,      PRE_VISIT,  rules::unaryExpression);
-        walker.register(BinaryExpressionNode.class,     PRE_VISIT,  rules::binaryExpression);
+        walker.register(IntLiteralNode.class,           PRE_VISIT,  analyzis::intLiteral);
+        walker.register(FloatLiteralNode.class,         PRE_VISIT,  analyzis::floatLiteral);
+        walker.register(StringLiteralNode.class,        PRE_VISIT,  analyzis::stringLiteral);
+        walker.register(ReferenceNode.class,            PRE_VISIT,  analyzis::reference);
+        walker.register(ConstructorNode.class,          PRE_VISIT,  analyzis::constructor);
+        walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analyzis::arrayLiteral);
+        walker.register(ParenthesizedNode.class,        PRE_VISIT,  analyzis::parenthesized);
+        walker.register(FieldAccessNode.class,          PRE_VISIT,  analyzis::fieldAccess);
+        walker.register(ArrayAccessNode.class,          PRE_VISIT,  analyzis::arrayAccess);
+        walker.register(FunCallNode.class,              PRE_VISIT,  analyzis::funCall);
+        walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analyzis::unaryExpression);
+        walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analyzis::binaryExpression);
 
         // types
-        walker.register(SimpleTypeNode.class,           PRE_VISIT,  rules::simpleType);
-        walker.register(ArrayTypeNode.class,            PRE_VISIT,  rules::arrayType);
+        walker.register(SimpleTypeNode.class,           PRE_VISIT,  analyzis::simpleType);
+        walker.register(ArrayTypeNode.class,            PRE_VISIT,  analyzis::arrayType);
 
         // types, declarations & scopes
-        walker.register(RootNode.class,                 PRE_VISIT,  rules::root);
-        walker.register(BlockNode.class,                PRE_VISIT,  rules::block);
-        walker.register(VarDeclarationNode.class,       PRE_VISIT,  rules::varDecl);
-        walker.register(FieldDeclarationNode.class,     PRE_VISIT,  rules::fieldDecl);
-        walker.register(ParameterNode.class,            PRE_VISIT,  rules::parameter);
-        walker.register(FunDeclarationNode.class,       PRE_VISIT,  rules::funDecl);
-        walker.register(StructDeclarationNode.class,    PRE_VISIT,  rules::structDecl);
+        walker.register(RootNode.class,                 PRE_VISIT,  analyzis::root);
+        walker.register(BlockNode.class,                PRE_VISIT,  analyzis::block);
+        walker.register(VarDeclarationNode.class,       PRE_VISIT,  analyzis::varDecl);
+        walker.register(FieldDeclarationNode.class,     PRE_VISIT,  analyzis::fieldDecl);
+        walker.register(ParameterNode.class,            PRE_VISIT,  analyzis::parameter);
+        walker.register(FunDeclarationNode.class,       PRE_VISIT,  analyzis::funDecl);
+        walker.register(StructDeclarationNode.class,    PRE_VISIT,  analyzis::structDecl);
 
-        walker.register(RootNode.class,                 POST_VISIT, rules::popScope);
-        walker.register(BlockNode.class,                POST_VISIT, rules::popScope);
-        walker.register(FunDeclarationNode.class,       POST_VISIT, rules::popScope);
+        walker.register(RootNode.class,                 POST_VISIT, analyzis::popScope);
+        walker.register(BlockNode.class,                POST_VISIT, analyzis::popScope);
+        walker.register(FunDeclarationNode.class,       POST_VISIT, analyzis::popScope);
 
         // statements
-        walker.register(ExpressionStatementNode.class,  PRE_VISIT,  rules::expressionStmt);
-        walker.register(IfNode.class,                   PRE_VISIT,  rules::ifStmt);
-        walker.register(WhileNode.class,                PRE_VISIT,  rules::whileStmt);
-        walker.register(ReturnNode.class,               PRE_VISIT,  rules::returnStmt);
+        walker.register(ExpressionStatementNode.class,  PRE_VISIT,  analyzis::expressionStmt);
+        walker.register(IfNode.class,                   PRE_VISIT,  analyzis::ifStmt);
+        walker.register(WhileNode.class,                PRE_VISIT,  analyzis::whileStmt);
+        walker.register(ReturnNode.class,               PRE_VISIT,  analyzis::returnStmt);
 
         walker.register_fallback(POST_VISIT, node -> {});
 

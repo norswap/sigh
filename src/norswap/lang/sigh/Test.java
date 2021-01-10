@@ -7,7 +7,7 @@ import norswap.autumn.positions.LineMapString;
 import norswap.lang.sigh.ast.Node;
 import norswap.uranium.AttributeTreeFormatter;
 import norswap.uranium.Reactor;
-import norswap.lang.sigh.typing.Rules;
+import norswap.lang.sigh.typing.SemanticAnalysis;
 import norswap.utils.IO;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
@@ -34,7 +34,7 @@ public final class Test
 
         Node root = cast(result.value_stack.peek());
         Reactor reactor = new Reactor();
-        Walker<Node> walker = Rules.createWalker(reactor);
+        Walker<Node> walker = SemanticAnalysis.createWalker(reactor);
         walker.walk(root);
         reactor.run();
 
