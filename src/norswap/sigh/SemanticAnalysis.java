@@ -678,7 +678,7 @@ public final class SemanticAnalysis
 
     private void parameter (ParameterNode node)
     {
-        scope.declare(node.name, node); // in FunctionDeclarationNode
+        scope.declare(node.name, node); // scope pushed by FunDeclarationNode
 
         R.rule(node, "type")
         .using(node.type, "value")
