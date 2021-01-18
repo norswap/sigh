@@ -240,11 +240,6 @@ public final class SemanticAnalysis
             Type[] types = IntStream.range(0, dependencies.length).<Type>mapToObj(r::get)
                     .distinct().toArray(Type[]::new);
 
-            if (types.length == 1) {
-                r.set(0, types[0]);
-                return;
-            }
-
             int i = 0;
             Type supertype = null;
             for (Type type: types) {
