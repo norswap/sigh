@@ -14,7 +14,7 @@ public class SighGrammar extends DSL
         = seq("//", seq(not("\n"), any).at_least(0));
 
     public rule ws_item = choice(
-        set(" \t\n\r"),
+        set(" \t\n\r;"),
         line_comment);
 
     { ws = ws_item.at_least(0); }
