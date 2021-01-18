@@ -30,7 +30,7 @@ tasks.withType<JavaCompile> {
 
 tasks.test.get().useTestNG()
 
-tasks.javadoc.get().options() {
+tasks.javadoc.get().options {
     // https://github.com/gradle/gradle/issues/7038
     this as StandardJavadocDocletOptions
     addStringOption("Xdoclint:none", "-quiet")
