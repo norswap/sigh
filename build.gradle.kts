@@ -55,7 +55,6 @@ idea.module {
 // === DEPENDENCIES ================================================================================
 
 repositories {
-    mavenLocal()
     mavenCentral()
     jcenter()
 }
