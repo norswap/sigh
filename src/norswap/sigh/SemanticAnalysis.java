@@ -772,7 +772,7 @@ public final class SemanticAnalysis
         FunDeclarationNode function = currentFunction();
 
         if (function == null) {
-            R.error(new SemanticError("Return at the top level", null, node));
+            // top-level return
             return;
         }
 
