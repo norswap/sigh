@@ -19,6 +19,7 @@ import java.util.stream.IntStream;
 import static java.lang.String.format;
 import static norswap.sigh.ast.BinaryOperator.*;
 import static norswap.utils.Util.cast;
+import static norswap.utils.Vanilla.forEachIndexed;
 import static norswap.utils.visitors.WalkVisitType.POST_VISIT;
 import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
 
@@ -31,13 +32,18 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  * <h2>Big Principles
  * <ul>
  *     <li>Every {@link DeclarationNode} instance must have its {@code type} attribute to an
- *     instance of {@link Type}.</li>
+ *     instance of {@link Type} which is the type of the value declared (note that for struct
+ *     declaration, this is always {@link TypeType}.</li>
+ *     <li>Additionally, {@link StructDeclarationNode} (and default
+ *     {@link SyntheticDeclarationNode} must have their {@code declared} attribute set to
+ *     an instance of the type being declared.</li>
  *     <li>Every {@link ExpressionNode} instance must have its {@code type} attribute similarly
  *     set.</li>
- *     <li>Every {@link ReferenceNode} instance have its {@code scope} attribute set to the {@link
- *     Scope} in which the declaration it references lives. This speeds up lookups in the
- *     interpreter. Similarly, {@link VarDeclarationNode} should have their {@code scope} attribute
- *     set to the scope in which they appear.
+ *     <li>Every {@link ReferenceNode} instance must have its {@code decl} attribute set to the the
+ *     declaration it references and its {@code scope} attribute set to the {@link Scope} in which
+ *     the declaration it references lives. This speeds up lookups in the interpreter.</li>
+ *     <li>Similarly, {@link VarDeclarationNode} should have their {@code scope} attribute set to
+ *     the scope in which they appear.</li>
  *     <li>All statements introducing a new scope must have their {@code scope} attribute set to the
  *     corresponding {@link Scope} (only {@link RootNode}, {@link BlockNode} and {@link
  *     FunDeclarationNode} (for parameters)). These nodes must also update the {@code scope}
@@ -154,7 +160,8 @@ public final class SemanticAnalysis
         DeclarationContext maybeCtx = scope.lookup(node.name);
 
         if (maybeCtx != null) {
-            R.set(node, "scope", scope);
+            R.set(node, "decl",  maybeCtx.declaration);
+            R.set(node, "scope", maybeCtx.scope);
 
             R.rule(node, "type")
             .using(maybeCtx.declaration, "type")
@@ -163,27 +170,27 @@ public final class SemanticAnalysis
         }
 
         // Re-lookup after the scopes have been built.
-        R.rule(node, "scope")
+        R.rule(node.attr("decl"), node.attr("scope"))
         .by(r -> {
             DeclarationContext ctx = scope.lookup(node.name);
             DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
-            if (ctx == null)
+            if (ctx == null) {
                 r.errorFor("could not resolve: " + node.name,
                     node,
-                    node.attr("scope"), node.attr("type"));
-
-            else if (decl instanceof VarDeclarationNode)
-                r.errorFor("variable used before declaration: " +  node.name,
-                    node,
-                    node.attr("scope"), node.attr("type"));
-
+                    node.attr("decl"), node.attr("scope"), node.attr("type"));
+            }
             else {
-                r.set(0, ctx.scope);
+                r.set(node, "scope", ctx.scope);
+                r.set(node, "decl", decl);
 
-                R.rule(node, "type")
-                .using(decl, "type")
-                .by(Rule::copyFirst);
+                if (decl instanceof VarDeclarationNode)
+                    r.errorFor("variable used before declaration: " + node.name,
+                        node, node.attr("type"));
+                else
+                    R.rule(node, "type")
+                    .using(decl, "type")
+                    .by(Rule::copyFirst);
             }
         });
     }
@@ -193,28 +200,30 @@ public final class SemanticAnalysis
     private void constructor (ConstructorNode node)
     {
         R.rule()
-        .using(node.ref, "type")
+        .using(node.ref, "decl")
         .by(r -> {
-            Type type = r.get(0);
+            DeclarationNode decl = r.get(0);
 
-            if (!(type instanceof StructType)) {
+            if (!(decl instanceof StructDeclarationNode)) {
                 String description =
-                        "Applying the constructor operator ($) to non-struct type: "
-                        + type;
+                        "Applying the constructor operator ($) to non-struct reference for: "
+                        + decl;
                 r.errorFor(description, node, node.attr("type"));
                 return;
             }
 
-            final StructType structType = cast(type);
-            StructDeclarationNode decl = structType.node;
+            StructDeclarationNode structDecl = (StructDeclarationNode) decl;
 
-            Attribute[] dependencies =
-                    decl.fields.stream().map(f -> f.attr("type")).toArray(Attribute[]::new);
+            Attribute[] dependencies = new Attribute[structDecl.fields.size() + 1];
+            dependencies[0] = decl.attr("declared");
+            forEachIndexed(structDecl.fields, (i, field) ->
+                dependencies[i + 1] = field.attr("type"));
 
             R.rule(node, "type")
             .using(dependencies)
             .by(rr -> {
-                Type[] params = IntStream.range(0, dependencies.length).<Type>mapToObj(r::get)
+                Type structType = rr.get(0);
+                Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
                         .toArray(Type[]::new);
                 rr.set(0, new FunType(structType, params));
             });
@@ -262,8 +271,8 @@ public final class SemanticAnalysis
                 r.error(
                     "Could not find common supertype in array literal: all members have Void type.",
                     node);
-
-            r.set(0, new ArrayType(supertype));
+            else
+                r.set(0, new ArrayType(supertype));
         });
     }
 
@@ -349,20 +358,21 @@ public final class SemanticAnalysis
     {
         Attribute[] dependencies = new Attribute[node.arguments.size() + 1];
         dependencies[0] = node.function.attr("type");
-        for (int i = 1; i < dependencies.length; ++i)
-            dependencies[i] = node.arguments.get(i - 1).attr("type");
+        forEachIndexed(node.arguments, (i, dep) ->
+            dependencies[i + 1] = node.arguments.get(i).attr("type"));
 
         R.rule(node, "type")
         .using(dependencies)
         .by(r -> {
             Type maybeFunType = r.get(0);
+
             if (!(maybeFunType instanceof FunType)) {
                 r.error("trying to call a non-function expression: " + node.function, node.function);
                 return;
             }
 
             FunType funType = cast(maybeFunType);
-            r.set(0, funType.returnType);
+            r.set(node, "type", funType.returnType);
 
             Type[] params = funType.paramTypes;
             List<ExpressionNode> args = node.arguments;
@@ -558,8 +568,8 @@ public final class SemanticAnalysis
 
             else
                 R.rule(node, "value")
-                    .using(decl, "type")
-                    .by(Rule::copyFirst);
+                .using(decl, "declared")
+                .by(Rule::copyFirst);
         });
     }
 
@@ -712,7 +722,8 @@ public final class SemanticAnalysis
 
     private void structDecl (StructDeclarationNode node) {
         scope.declare(node.name, node);
-        R.set(node, "type", new StructType(node));
+        R.set(node, "type", TypeType.INSTANCE);
+        R.set(node, "declared", new StructType(node));
     }
 
     // endregion

@@ -42,15 +42,21 @@ public final class RootScope extends Scope
     public RootScope (RootNode node, Reactor reactor) {
         super(node, null);
 
-        reactor.set(Bool,   "type",   BoolType.INSTANCE);
-        reactor.set(Int,    "type",    IntType.INSTANCE);
-        reactor.set(Float,  "type",  FloatType.INSTANCE);
-        reactor.set(String, "type", StringType.INSTANCE);
-        reactor.set(Void,   "type",   VoidType.INSTANCE);
+        reactor.set(Bool,   "type",       TypeType.INSTANCE);
+        reactor.set(Int,    "type",       TypeType.INSTANCE);
+        reactor.set(Float,  "type",       TypeType.INSTANCE);
+        reactor.set(String, "type",       TypeType.INSTANCE);
+        reactor.set(Void,   "type",       TypeType.INSTANCE);
 
-        reactor.set(_true,  "type",   BoolType.INSTANCE);
-        reactor.set(_false, "type",   BoolType.INSTANCE);
-        reactor.set(_null,  "type",   NullType.INSTANCE);
+        reactor.set(Bool,   "declared",   BoolType.INSTANCE);
+        reactor.set(Int,    "declared",    IntType.INSTANCE);
+        reactor.set(Float,  "declared",  FloatType.INSTANCE);
+        reactor.set(String, "declared", StringType.INSTANCE);
+        reactor.set(Void,   "declared",   VoidType.INSTANCE);
+
+        reactor.set(_true,  "type",       BoolType.INSTANCE);
+        reactor.set(_false, "type",       BoolType.INSTANCE);
+        reactor.set(_null,  "type",       NullType.INSTANCE);
 
         reactor.set(print,  "type", new FunType(StringType.INSTANCE, StringType.INSTANCE));
     }
