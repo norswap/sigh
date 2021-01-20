@@ -15,6 +15,6 @@ public class ReturnNode extends StatementNode
     }
 
     @Override public String contents () {
-        return "return " + expression.contents();
+        return "return " + (expression == null ? "" : expression.contents());
     }
 }
