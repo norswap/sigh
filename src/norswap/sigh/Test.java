@@ -4,7 +4,7 @@ import norswap.autumn.Autumn;
 import norswap.autumn.ParseOptions;
 import norswap.autumn.ParseResult;
 import norswap.autumn.positions.LineMapString;
-import norswap.sigh.ast.Node;
+import norswap.sigh.ast.SighNode;
 import norswap.uranium.AttributeTreeFormatter;
 import norswap.uranium.Reactor;
 import norswap.utils.IO;
@@ -31,13 +31,13 @@ public final class Test
         if (!result.fullMatch)
             return;
 
-        Node root = cast(result.topValue());
+        SighNode root = cast(result.topValue());
         Reactor reactor = new Reactor();
-        Walker<Node> walker = SemanticAnalysis.createWalker(reactor);
+        Walker<SighNode> walker = SemanticAnalysis.createWalker(reactor);
         walker.walk(root);
         reactor.run();
 
         System.out.println(AttributeTreeFormatter.format(root, reactor,
-            new ReflectiveFieldWalker<>(Node.class, PRE_VISIT, POST_VISIT)));
+            new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT)));
     }
 }

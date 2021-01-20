@@ -1,7 +1,7 @@
 package norswap.sigh.scopes;
 
 import norswap.sigh.ast.DeclarationNode;
-import norswap.sigh.ast.Node;
+import norswap.sigh.ast.SighNode;
 import java.util.HashMap;
 
 /**
@@ -14,7 +14,7 @@ public class Scope
     /**
      * The AST node that introduces this scope.
      */
-    public final Node node;
+    public final SighNode node;
 
     /**
      * The parent of this scope, which is the inermost lexically enclosing scope.
@@ -27,7 +27,7 @@ public class Scope
 
     // ---------------------------------------------------------------------------------------------
 
-    public Scope (Node node, Scope parent) {
+    public Scope (SighNode node, Scope parent) {
         this.node = node;
         this.parent = parent;
     }

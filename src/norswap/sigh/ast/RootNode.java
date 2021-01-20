@@ -4,7 +4,7 @@ import norswap.autumn.positions.Span;
 import norswap.utils.Util;
 import java.util.List;
 
-public final class RootNode extends Node
+public final class RootNode extends SighNode
 {
     public final List<StatementNode> statements;
 

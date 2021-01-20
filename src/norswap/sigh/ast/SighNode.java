@@ -3,13 +3,13 @@ package norswap.sigh.ast;
 import norswap.autumn.positions.Span;
 import norswap.uranium.Attribute;
 
-public abstract class Node
+public abstract class SighNode
 {
     // ---------------------------------------------------------------------------------------------
 
     public final Span span;
 
-    protected Node (Span span) {
+    protected SighNode (Span span) {
         this.span = span;
     }
 

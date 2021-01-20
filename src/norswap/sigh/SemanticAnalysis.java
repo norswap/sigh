@@ -78,10 +78,10 @@ public final class SemanticAnalysis
      * Call this method to create a tree walker that will instantiate the typing rules defined
      * in this class when used on an AST, using the given {@code reactor}.
      */
-    public static Walker<Node> createWalker (Reactor reactor)
+    public static Walker<SighNode> createWalker (Reactor reactor)
     {
-        ReflectiveFieldWalker<Node> walker = new ReflectiveFieldWalker<>(
-            Node.class, PRE_VISIT, POST_VISIT);
+        ReflectiveFieldWalker<SighNode> walker = new ReflectiveFieldWalker<>(
+            SighNode.class, PRE_VISIT, POST_VISIT);
 
         SemanticAnalysis analysis = new SemanticAnalysis(reactor);
 
@@ -650,7 +650,7 @@ public final class SemanticAnalysis
     // region [Scopes & Declarations]
     // =============================================================================================
 
-    private void popScope (Node node) {
+    private void popScope (SighNode node) {
         scope = scope.parent;
     }
 
@@ -802,7 +802,7 @@ public final class SemanticAnalysis
     {
         Scope scope = this.scope;
         while (scope != null) {
-            Node node = scope.node;
+            SighNode node = scope.node;
             if (node instanceof FunDeclarationNode)
                 return (FunDeclarationNode) node;
             scope = scope.parent;
