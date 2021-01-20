@@ -98,6 +98,7 @@ public final class SemanticAnalysis
         walker.register(FunCallNode.class,              PRE_VISIT,  analyzis::funCall);
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analyzis::unaryExpression);
         walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analyzis::binaryExpression);
+        walker.register(AssignmentNode.class,           PRE_VISIT,  analyzis::assignment);
 
         // types
         walker.register(SimpleTypeNode.class,           PRE_VISIT,  analyzis::simpleType);
@@ -117,7 +118,7 @@ public final class SemanticAnalysis
         walker.register(FunDeclarationNode.class,       POST_VISIT, analyzis::popScope);
 
         // statements
-        walker.register(ExpressionStatementNode.class,  PRE_VISIT,  analyzis::expressionStmt);
+        walker.register(ExpressionStatementNode.class,  PRE_VISIT,  node -> {});
         walker.register(IfNode.class,                   PRE_VISIT,  analyzis::ifStmt);
         walker.register(WhileNode.class,                PRE_VISIT,  analyzis::whileStmt);
         walker.register(ReturnNode.class,               PRE_VISIT,  analyzis::returnStmt);
@@ -427,8 +428,6 @@ public final class SemanticAnalysis
 
             if (node.operator == ADD && (left instanceof StringType || right instanceof StringType))
                 r.set(0, StringType.INSTANCE);
-            else if (node.operator == ASSIGN)
-                assignment(r, node, left, right);
             else if (isArithmetic(node.operator))
                 binaryArithmetic(r, node, left, right);
             else if (isComparison(node.operator))
@@ -525,18 +524,25 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
-    private void assignment (Rule r, BinaryExpressionNode node, Type left, Type right)
+    private void assignment (AssignmentNode node)
     {
-        r.set(0, r.get(1)); // the type of the assignment is the right-side type
-        
-        if (node.left instanceof ReferenceNode
-                || node.left instanceof FieldAccessNode
-                || node.left instanceof ArrayAccessNode) {
-            if (!isAssignableTo(right, left))
-               r.errorFor("Trying to assign a value to a non-compatible lvalue.", node);
-        }
-        else
-            r.errorFor("Trying to assign to an non-lvalue expression.", node.left);
+        R.rule(node, "type")
+        .using(node.left.attr("type"), node.right.attr("type"))
+        .by(r -> {
+            Type left  = r.get(0);
+            Type right = r.get(1);
+
+            r.set(0, r.get(1)); // the type of the assignment is the right-side type
+
+            if (node.left instanceof ReferenceNode
+            ||  node.left instanceof FieldAccessNode
+            ||  node.left instanceof ArrayAccessNode) {
+                if (!isAssignableTo(right, left))
+                    r.errorFor("Trying to assign a value to a non-compatible lvalue.", node);
+            }
+            else
+                r.errorFor("Trying to assign to an non-lvalue expression.", node.left);
+        });
     }
 
     // endregion
@@ -730,20 +736,6 @@ public final class SemanticAnalysis
     // =============================================================================================
     // region [Other Statements]
     // =============================================================================================
-
-    private void expressionStmt (ExpressionStatementNode node)
-    {
-        ExpressionNode expr = node.expression;
-        if (expr instanceof BinaryExpressionNode && ((BinaryExpressionNode)expr).operator == ASSIGN)
-            return;
-        if (expr instanceof FunCallNode)
-            return;
-
-        R.error(new SemanticError("Expression used as statement. " +
-            "Only function calls and assignment expressions are allowed.", null, node));
-    }
-
-    // ---------------------------------------------------------------------------------------------
 
     private void ifStmt (IfNode node) {
         R.rule()

@@ -185,17 +185,20 @@ public class SighGrammar extends DSL
 
     public rule assignment_expression = right_expression()
         .operand(or_expression)
-        .infix(EQUALS.as_val(BinaryOperator.ASSIGN),
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2])).get();
+        .infix(EQUALS,
+            $ -> new AssignmentNode($.span(), $.$[0], $.$[1])).get();
 
     public rule expression =
         seq(assignment_expression);
 
-    // Only function calls and assignments are allowed, but parsing accepts everything.
-    // Invalid expressions are rejected during semantic analysis.
     public rule expression_stmt =
         expression
-        .push($ -> new ExpressionStatementNode($.span(), $.$[0]));
+        .filter($ -> {
+            if (!($.$[0] instanceof AssignmentNode || $.$[0] instanceof FunCallNode))
+                return false;
+            $.push(new ExpressionStatementNode($.span(), $.$[0]));
+            return true;
+        });
 
     public rule array_type = left_expression()
         .left(simple_type)

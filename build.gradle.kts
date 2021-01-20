@@ -61,7 +61,7 @@ repositories {
 
 dependencies {
     implementation("com.norswap:utils:2.0.3")
-    implementation("com.norswap:autumn:1.0.2-ALPHA")
+    implementation("com.norswap:autumn:1.0.3-ALPHA")
     implementation("com.norswap:uranium:1.0.5-ALPHA")
     testImplementation("org.testng:testng:6.14.3")
 }
