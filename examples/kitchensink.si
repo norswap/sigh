@@ -15,7 +15,8 @@ fun array_add (a: Int[]): Int
 
     var i: Int = 1
     var result: Int = a[0]
-    while i <= a.length {
+
+    while i < a.length {
         result = add(result, a[i])
         i = i + 1
     }

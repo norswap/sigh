@@ -4,11 +4,14 @@ fun main (args: String) {
     while i <= num {
         if i % 5 == 0 && i % 7 == 0
             print("fizzbuzz")
-        else if i % 5
+        else if i % 5 == 0
             print("fizz")
-        else if i % 7
+        else if i % 7 == 0
             print("buzz")
         else
             print(i)
+        i = i + 1
     }
 }
+
+main("")
