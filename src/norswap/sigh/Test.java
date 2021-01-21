@@ -5,6 +5,7 @@ import norswap.autumn.ParseOptions;
 import norswap.autumn.ParseResult;
 import norswap.autumn.positions.LineMapString;
 import norswap.sigh.ast.SighNode;
+import norswap.sigh.interpreter.Interpreter;
 import norswap.uranium.AttributeTreeFormatter;
 import norswap.uranium.Reactor;
 import norswap.utils.IO;
@@ -37,7 +38,11 @@ public final class Test
         walker.walk(root);
         reactor.run();
 
-        System.out.println(AttributeTreeFormatter.format(root, reactor,
-            new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT)));
+        if (!reactor.errors().isEmpty())
+            System.out.println(AttributeTreeFormatter.format(root, reactor,
+                new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT)));
+
+        Interpreter interpreter = new Interpreter(reactor);
+        interpreter.run(root);
     }
 }
