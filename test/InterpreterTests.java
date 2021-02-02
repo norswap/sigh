@@ -1,4 +1,5 @@
-import norswap.autumn.DSL.rule;
+import norswap.autumn.Grammar;
+import norswap.autumn.Grammar.rule;
 import norswap.autumn.ParseResult;
 import norswap.sigh.SemanticAnalysis;
 import norswap.sigh.SighGrammar;
@@ -36,7 +37,7 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    private rule rule;
+    private Grammar.rule rule;
 
     // ---------------------------------------------------------------------------------------------
 

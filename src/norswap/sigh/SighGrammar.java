@@ -1,58 +1,60 @@
 package norswap.sigh;
 
-import norswap.autumn.DSL;
+import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
 
 import static norswap.sigh.ast.UnaryOperator.NOT;
 
 @SuppressWarnings("Convert2MethodRef")
-public class SighGrammar extends DSL
+public class SighGrammar extends Grammar
 {
     // ==== LEXICAL ===========================================================
 
-    public rule line_comment
-        = seq("//", seq(not("\n"), any).at_least(0));
+    public rule line_comment =
+        seq("//", seq(not("\n"), any).at_least(0));
 
     public rule ws_item = choice(
         set(" \t\n\r;"),
         line_comment);
 
-    { ws = ws_item.at_least(0); }
+    {
+        ws = ws_item.at_least(0);
+        id_part = choice(alphanum, '_');
+    }
 
+    public rule STAR            = word("*");
+    public rule SLASH           = word("/");
+    public rule PERCENT         = word("%");
+    public rule PLUS            = word("+");
+    public rule MINUS           = word("-");
+    public rule LBRACE          = word("{");
+    public rule RBRACE          = word("}");
+    public rule LPAREN          = word("(");
+    public rule RPAREN          = word(")");
+    public rule LSQUARE         = word("[");
+    public rule RSQUARE         = word("]");
+    public rule COLON           = word(":");
+    public rule EQUALS_EQUALS   = word("==");
+    public rule EQUALS          = word("=");
+    public rule BANG_EQUAL      = word("!=");
+    public rule LANGLE_EQUAL    = word("<=");
+    public rule RANGLE_EQUAL    = word(">=");
+    public rule LANGLE          = word("<");
+    public rule RANGLE          = word(">");
+    public rule AMP_AMP         = word("&&");
+    public rule BAR_BAR         = word("||");
+    public rule BANG            = word("!");
+    public rule DOT             = word(".");
+    public rule DOLLAR          = word("$");
+    public rule COMMA           = word(",");
 
-    public rule STAR            = word("*")             .token();
-    public rule SLASH           = word("/")             .token();
-    public rule PERCENT         = word("%")             .token();
-    public rule PLUS            = word("+")             .token();
-    public rule MINUS           = word("-")             .token();
-    public rule LBRACE          = word("{")             .token();
-    public rule RBRACE          = word("}")             .token();
-    public rule LPAREN          = word("(")             .token();
-    public rule RPAREN          = word(")")             .token();
-    public rule LSQUARE         = word("[")             .token();
-    public rule RSQUARE         = word("]")             .token();
-    public rule COLON           = word(":")             .token();
-    public rule EQUALS_EQUALS   = word("==")            .token();
-    public rule EQUALS          = word("=")             .token();
-    public rule BANG_EQUAL      = word("!=")            .token();
-    public rule LANGLE_EQUAL    = word("<=")            .token();
-    public rule RANGLE_EQUAL    = word(">=")            .token();
-    public rule LANGLE          = word("<")             .token();
-    public rule RANGLE          = word(">")             .token();
-    public rule AMP_AMP         = word("&&")            .token();
-    public rule BAR_BAR         = word("||")            .token();
-    public rule BANG            = word("!")             .token();
-    public rule DOT             = word(".")             .token();
-    public rule DOLLAR          = word("$")             .token();
-    public rule COMMA           = word(",")             .token();
-
-    public rule _var            = word("var")           .token();
-    public rule _fun            = word("fun")           .token();
-    public rule _struct         = word("struct")        .token();
-    public rule _if             = word("if")            .token();
-    public rule _else           = word("else")          .token();
-    public rule _while          = word("while")         .token();
-    public rule _return         = word("return")        .token();
+    public rule _var            = reserved("var");
+    public rule _fun            = reserved("fun");
+    public rule _struct         = reserved("struct");
+    public rule _if             = reserved("if");
+    public rule _else           = reserved("else");
+    public rule _while          = reserved("while");
+    public rule _return         = reserved("return");
 
     public rule number =
         seq(opt('-'), choice('0', digit.at_least(1)));
@@ -60,14 +62,12 @@ public class SighGrammar extends DSL
     public rule integer =
         number
         .push($ -> new IntLiteralNode($.span(), Long.parseLong($.str())))
-        .word()
-        .token();
+        .word();
 
     public rule floating =
         seq(number, '.', digit.at_least(1))
         .push($ -> new FloatLiteralNode($.span(), Double.parseDouble($.str())))
-        .word()
-        .token();
+        .word();
 
     public rule string_char = choice(
         seq(set('"', '\\').not(), any),
@@ -80,14 +80,11 @@ public class SighGrammar extends DSL
     public rule string =
         seq('"', string_content, '"')
         .push($ -> new StringLiteralNode($.span(), $.$[0]))
-        .word()
-        .token();
+        .word();
 
     public rule identifier =
-        seq(choice(alpha, '_'), choice(alphanum, '_').at_least(0))
-        .push($ -> $.str())
-        .word()
-        .token();
+        identifier(seq(choice(alpha, '_'), id_part.at_least(0)))
+        .push($ -> $.str());
     
     // ==== SYNTACTIC =========================================================
     
@@ -118,8 +115,8 @@ public class SighGrammar extends DSL
     public rule basic_expression = choice(
         constructor,
         reference,
-        integer,
         floating,
+        integer,
         string,
         paren_expression,
         array);
@@ -134,12 +131,12 @@ public class SighGrammar extends DSL
         .suffix(seq(LSQUARE, lazy(() -> this.expression), RSQUARE),
             $ -> new ArrayAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(function_args,
-            $ -> new FunCallNode($.span(), $.$[0], $.$[1])).get();
+            $ -> new FunCallNode($.span(), $.$[0], $.$[1]));
 
     public rule prefix_expression = right_expression()
         .operand(suffix_expression)
         .prefix(BANG.as_val(NOT),
-            $ -> new UnaryExpressionNode($.span(), $.$[0], $.$[1])).get();
+            $ -> new UnaryExpressionNode($.span(), $.$[0], $.$[1]));
 
     public rule mult_op = choice(
         STAR        .as_val(BinaryOperator.MULTIPLY),
@@ -161,32 +158,32 @@ public class SighGrammar extends DSL
     public rule mult_expr = left_expression()
         .operand(prefix_expression)
         .infix(mult_op,
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2])).get();
+            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule add_expr = left_expression()
         .operand(mult_expr)
         .infix(add_op,
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2])).get();
+            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule order_expr = left_expression()
         .operand(add_expr)
         .infix(cmp_op,
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2])).get();
+            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule and_expression = left_expression()
         .operand(order_expr)
         .infix(AMP_AMP.as_val(BinaryOperator.AND),
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2])).get();
+            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule or_expression = left_expression()
         .operand(and_expression)
         .infix(BAR_BAR.as_val(BinaryOperator.OR),
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2])).get();
+            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule assignment_expression = right_expression()
         .operand(or_expression)
         .infix(EQUALS,
-            $ -> new AssignmentNode($.span(), $.$[0], $.$[1])).get();
+            $ -> new AssignmentNode($.span(), $.$[0], $.$[1]));
 
     public rule expression =
         seq(assignment_expression);
@@ -203,7 +200,7 @@ public class SighGrammar extends DSL
     public rule array_type = left_expression()
         .left(simple_type)
         .suffix(seq(LSQUARE, RSQUARE),
-            $ -> new ArrayTypeNode($.span(), $.$[0])).get();
+            $ -> new ArrayTypeNode($.span(), $.$[0]));
 
     public rule type =
         seq(array_type);
@@ -273,5 +270,7 @@ public class SighGrammar extends DSL
         .as_list(StatementNode.class)
         .push($ -> new RootNode($.span(), $.$[0]));
 
-    { makeRuleNames(); }
+    @Override public rule root () {
+        return root;
+    }
 }
