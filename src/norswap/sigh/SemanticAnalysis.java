@@ -10,16 +10,19 @@ import norswap.sigh.types.*;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
-import norswap.uranium.SemanticError;
+import norswap.utils.Vanilla;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 import static norswap.sigh.ast.BinaryOperator.*;
 import static norswap.utils.Util.cast;
 import static norswap.utils.Vanilla.forEachIndexed;
+import static norswap.utils.Vanilla.list;
 import static norswap.utils.visitors.WalkVisitType.POST_VISIT;
 import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
 
@@ -34,25 +37,37 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  *     <li>Every {@link DeclarationNode} instance must have its {@code type} attribute to an
  *     instance of {@link Type} which is the type of the value declared (note that for struct
  *     declaration, this is always {@link TypeType}.</li>
+ *
  *     <li>Additionally, {@link StructDeclarationNode} (and default
- *     {@link SyntheticDeclarationNode} must have their {@code declared} attribute set to
+ *     {@link SyntheticDeclarationNode} for types) must have their {@code declared} attribute set to
  *     an instance of the type being declared.</li>
+ *
  *     <li>Every {@link ExpressionNode} instance must have its {@code type} attribute similarly
  *     set.</li>
+ *
  *     <li>Every {@link ReferenceNode} instance must have its {@code decl} attribute set to the the
  *     declaration it references and its {@code scope} attribute set to the {@link Scope} in which
  *     the declaration it references lives. This speeds up lookups in the interpreter.</li>
+ *
  *     <li>Similarly, {@link VarDeclarationNode} should have their {@code scope} attribute set to
  *     the scope in which they appear.</li>
+ *
  *     <li>All statements introducing a new scope must have their {@code scope} attribute set to the
  *     corresponding {@link Scope} (only {@link RootNode}, {@link BlockNode} and {@link
  *     FunDeclarationNode} (for parameters)). These nodes must also update the {@code scope}
  *     field to track the current scope during the walk.</li>
+ *
  *     <li>Every {@link TypeNode} instance must have its {@code value} set to the {@link Type} it
  *     denotes.</li>
+ *
+ *     <li>Every {@link ReturnNode}, {@link BlockNode} and {@link IfNode} must have its {@code
+ *     returns} parameter set to a boolean to indicate whether its execution causes
+ *     unconditional exit from the surrounding function or main script.</li>
+ *
  *     <li>The rules check typing constraints: assignment of values to variables, of arguments to
  *     parameters, checking that if/while conditions are booleans, and array indices are
  *     integers.</li>
+ *
  *     <li>The rules also check a number of other constraints: that accessed struct fields exist,
  *     that variables are declared before being used, etc...</li>
  * </ul>
@@ -104,7 +119,7 @@ public final class SemanticAnalysis
         walker.register(SimpleTypeNode.class,           PRE_VISIT,  analysis::simpleType);
         walker.register(ArrayTypeNode.class,            PRE_VISIT,  analysis::arrayType);
 
-        // types, declarations & scopes
+        // declarations & scopes
         walker.register(RootNode.class,                 PRE_VISIT,  analysis::root);
         walker.register(BlockNode.class,                PRE_VISIT,  analysis::block);
         walker.register(VarDeclarationNode.class,       PRE_VISIT,  analysis::varDecl);
@@ -373,7 +388,7 @@ public final class SemanticAnalysis
             }
 
             FunType funType = cast(maybeFunType);
-            r.set(node, "type", funType.returnType);
+            r.set(0, funType.returnType);
 
             Type[] params = funType.paramTypes;
             List<ExpressionNode> args = node.arguments;
@@ -667,6 +682,11 @@ public final class SemanticAnalysis
     private void block (BlockNode node) {
         scope = new Scope(node, scope);
         R.set(node, "scope", scope);
+
+        Attribute[] deps = getReturnsDependencies(node.statements);
+        R.rule(node, "returns")
+        .using(deps)
+        .by(r -> r.set(0, deps.length != 0 && Arrays.stream(deps).anyMatch(r::get)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -722,6 +742,16 @@ public final class SemanticAnalysis
                 paramTypes[i] = r.get(i + 1);
             r.set(0, new FunType(r.get(0), paramTypes));
         });
+
+        R.rule()
+        .using(node.block.attr("returns"), node.returnType.attr("value"))
+        .by(r -> {
+            boolean returns = r.get(0);
+            Type returnType = r.get(1);
+            if (!returns && !(returnType instanceof VoidType))
+                r.error("Missing return in function.", node);
+            // NOTE: The returned value presence & type is checked in returnStmt().
+        });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -747,6 +777,11 @@ public final class SemanticAnalysis
                     node.condition);
             }
         });
+
+        Attribute[] deps = getReturnsDependencies(list(node.trueStatement, node.falseStatement));
+        R.rule(node, "returns")
+        .using(deps)
+        .by(r -> r.set(0, deps.length != 0 && Arrays.stream(deps).allMatch(r::get)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -767,6 +802,8 @@ public final class SemanticAnalysis
 
     private void returnStmt (ReturnNode node)
     {
+        R.set(node, "returns", true);
+
         FunDeclarationNode function = currentFunction();
 
         if (function == null) {
@@ -774,26 +811,28 @@ public final class SemanticAnalysis
             return;
         }
 
-        if (node.expression == null && function.returnType != null) {
-            R.error(new SemanticError(
-                "Return without value in a function with a return type", null, node));
-            return;
-        }
-
-        if (function.returnType == null)
-            return;
-
-        R.rule()
-        .using(function.returnType.attr("value"), node.expression.attr("type"))
-        .by(r -> {
-            Type formal = r.get(0);
-            Type actual = r.get(0);
-            if (!isAssignableTo(actual, formal)) {
-                r.errorFor(format(
-                    "Incompatible return type, expected %s but got %s", formal, actual),
-                    node.expression);
-            }
-        });
+        if (node.expression == null)
+            R.rule()
+            .using(function.returnType, "value")
+            .by(r -> {
+               Type returnType = r.get(0);
+               if (!(returnType instanceof VoidType))
+                   r.error("Return without value in a function with a return type.", node);
+            });
+        else
+            R.rule()
+            .using(function.returnType.attr("value"), node.expression.attr("type"))
+            .by(r -> {
+                Type formal = r.get(0);
+                Type actual = r.get(0);
+                if (formal instanceof VoidType)
+                    r.error("Return with value in a Void function.", node);
+                else if (!isAssignableTo(actual, formal)) {
+                    r.errorFor(format(
+                        "Incompatible return type, expected %s but got %s", formal, actual),
+                        node.expression);
+                }
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -808,6 +847,25 @@ public final class SemanticAnalysis
             scope = scope.parent;
         }
         return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private boolean isReturnContainer (SighNode node) {
+        return node instanceof BlockNode
+            || node instanceof IfNode
+            || node instanceof ReturnNode;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /** Get the depedencies necessary to compute the "returns" attribute of the parent. */
+    private Attribute[] getReturnsDependencies (List<? extends SighNode> children) {
+        return children.stream()
+            .filter(Objects::nonNull)
+            .filter(this::isReturnContainer)
+            .map(it -> it.attr("returns"))
+            .toArray(Attribute[]::new);
     }
 
     // endregion
