@@ -79,7 +79,15 @@ public final class SemanticAnalysis
     // =============================================================================================
 
     private final Reactor R;
+
+    /** Current scope. */
     private Scope scope;
+
+    /** Current context for type inference (currently only to infer the type of empty arrays). */
+    private SighNode inferenceContext;
+
+    /** Index of the current function argument. */
+    private int argumentIndex;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -193,8 +201,7 @@ public final class SemanticAnalysis
 
             if (ctx == null) {
                 r.errorFor("could not resolve: " + node.name,
-                    node,
-                    node.attr("decl"), node.attr("scope"), node.attr("type"));
+                    node, node.attr("decl"), node.attr("scope"), node.attr("type"));
             }
             else {
                 r.set(node, "scope", ctx.scope);
@@ -251,8 +258,25 @@ public final class SemanticAnalysis
     private void arrayLiteral (ArrayLiteralNode node)
     {
         if (node.components.size() == 0) {
-            // compatible with all array types
-            R.set(node, "type", new ArrayType(NullType.INSTANCE));
+            // Empty array: we need a type int to know the desired type.
+
+            final SighNode context = this.inferenceContext;
+
+            if (context instanceof VarDeclarationNode)
+                R.rule(node, "type_hint")
+                .using(context, "type")
+                .by(Rule::copyFirst);
+            else if (context instanceof FunCallNode)
+                R.rule(node, "type_hint")
+                .using(((FunCallNode) context).function.attr("type"), node.attr("index"))
+                .by(r -> {
+                    FunType funType = r.get(0);
+                    r.set(0, funType.paramTypes[(int) r.get(1)]);
+                });
+
+            R.rule(node, "type")
+            .using(node, "type_hint")
+            .by(Rule::copyFirst);
             return;
         }
 
@@ -372,6 +396,8 @@ public final class SemanticAnalysis
 
     private void funCall (FunCallNode node)
     {
+        this.inferenceContext = node;
+
         Attribute[] dependencies = new Attribute[node.arguments.size() + 1];
         dependencies[0] = node.function.attr("type");
         forEachIndexed(node.arguments, (i, dep) ->
@@ -624,6 +650,9 @@ public final class SemanticAnalysis
         if (a instanceof VoidType || b instanceof VoidType)
             return false;
 
+        if (a instanceof IntType && b instanceof FloatType)
+            return true;
+
         if (a instanceof ArrayType)
             return b instanceof ArrayType
                 && isAssignableTo(((ArrayType)a).componentType, ((ArrayType)b).componentType);
@@ -638,8 +667,13 @@ public final class SemanticAnalysis
      */
     private static boolean isComparableTo (Type a, Type b)
     {
-        return !(a instanceof VoidType || b instanceof VoidType) &&
-            (a.equals(b) || a.isReference() && b.isReference());
+        if (a instanceof VoidType || b instanceof VoidType)
+            return false;
+
+        return a.isReference() && b.isReference()
+            || a.equals(b)
+            || a instanceof IntType && b instanceof FloatType
+            || a instanceof FloatType && b instanceof IntType;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -693,6 +727,8 @@ public final class SemanticAnalysis
 
     private void varDecl (VarDeclarationNode node)
     {
+        this.inferenceContext = node;
+
         scope.declare(node.name, node);
         R.set(node, "scope", scope);
 
@@ -728,6 +764,8 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
         R.set(node, "scope", scope);
+
+        Vanilla.forEachIndexed(node.parameters, (param, i) -> R.set(param, "index", i));
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
         dependencies[0] = node.returnType.attr("value");
