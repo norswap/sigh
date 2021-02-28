@@ -6,16 +6,12 @@ import norswap.autumn.ParseResult;
 import norswap.autumn.positions.LineMapString;
 import norswap.sigh.ast.SighNode;
 import norswap.sigh.interpreter.Interpreter;
-import norswap.uranium.AttributeTreeFormatter;
 import norswap.uranium.Reactor;
 import norswap.utils.IO;
-import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
-
 import java.nio.file.Paths;
 
 import static norswap.utils.Util.cast;
-import static norswap.utils.visitors.WalkVisitType.*;
 
 public final class Test
 {
@@ -32,17 +28,22 @@ public final class Test
         if (!result.fullMatch)
             return;
 
-        SighNode root = cast(result.topValue());
+        SighNode tree = cast(result.topValue());
         Reactor reactor = new Reactor();
         Walker<SighNode> walker = SemanticAnalysis.createWalker(reactor);
-        walker.walk(root);
+        walker.walk(tree);
         reactor.run();
 
-        if (!reactor.errors().isEmpty())
-            System.out.println(AttributeTreeFormatter.format(root, reactor,
-                new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT)));
+        System.out.println(reactor.errors());
+        if (!reactor.errors().isEmpty()) {
+            reactor.reportErrors(Object::toString);
+            // Alternatively, print the whole tree:
+            // System.out.println(AttributeTreeFormatter.format(tree, reactor,
+            //    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT)));
+        }
 
         Interpreter interpreter = new Interpreter(reactor);
-        interpreter.run(root);
+        interpreter.run(tree);
+        System.out.println("success");
     }
 }
