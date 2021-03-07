@@ -57,12 +57,18 @@ idea.module {
 repositories {
     mavenCentral()
     jcenter()
+    maven {
+        url = uri("https://autumn.jfrog.io/artifactory/gradle")
+    }
+    flatDir {
+        dirs = setOf(File("libs"))
+    }
 }
 
 dependencies {
-    implementation("com.norswap:utils:2.1.6")
-    implementation("com.norswap:autumn:1.0.6")
-    implementation("com.norswap:uranium:1.0.7-ALPHA")
+    implementation("com.norswap:utils:2.1.8")
+    implementation("com.norswap:autumn:1.1.0")
+    implementation("com.norswap:uranium:1.0.8-ALPHA")
     implementation("org.ow2.asm:asm-all:5.2")
     testImplementation("org.testng:testng:6.14.3")
 }
