@@ -829,7 +829,7 @@ public final class SemanticAnalysis
         Attribute[] deps = getReturnsDependencies(list(node.trueStatement, node.falseStatement));
         R.rule(node, "returns")
         .using(deps)
-        .by(r -> r.set(0, deps.length != 0 && Arrays.stream(deps).allMatch(r::get)));
+        .by(r -> r.set(0, deps.length == 2 && Arrays.stream(deps).allMatch(r::get)));
     }
 
     // ---------------------------------------------------------------------------------------------

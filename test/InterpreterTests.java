@@ -20,8 +20,7 @@ import java.util.Set;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertThrows;
 
-public final class InterpreterTests extends TestFixture
-{
+public final class InterpreterTests extends TestFixture {
     // ---------------------------------------------------------------------------------------------
 
     private final SighGrammar grammar = new SighGrammar();
@@ -52,8 +51,7 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    private void check (rule rule, String input, Object expectedReturn, String expectedOutput)
-    {
+    private void check (rule rule, String input, Object expectedReturn, String expectedOutput) {
         // TODO
         // (1) write proper parsing tests
         // (2) write some kind of automated runner, and use it here
@@ -73,9 +71,9 @@ public final class InterpreterTests extends TestFixture
             LineMapString map = new LineMapString("<test>", input);
             String report = reactor.reportErrors(it ->
                 it.toString() + " (" + ((SighNode) it).span.startString(map) + ")");
-//            String tree = AttributeTreeFormatter.format(root, reactor,
-//                    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT));
-//            System.err.println(tree);
+            //            String tree = AttributeTreeFormatter.format(root, reactor,
+            //                    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT));
+            //            System.err.println(tree);
             throw new AssertionError(report);
         }
 
@@ -99,13 +97,13 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testLiteralsAndUnary()
-    {
+    @Test
+    public void testLiteralsAndUnary () {
         checkExpr("42", 42L);
         checkExpr("42.0", 42.0d);
         checkExpr("\"hello\"", "hello");
         checkExpr("(42)", 42L);
-        checkExpr("[1, 2, 3]", new Object[] { 1L, 2L, 3L });
+        checkExpr("[1, 2, 3]", new Object[]{1L, 2L, 3L});
         checkExpr("true", true);
         checkExpr("false", false);
         checkExpr("null", Null.INSTANCE);
@@ -116,8 +114,8 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testNumericBinary()
-    {
+    @Test
+    public void testNumericBinary () {
         checkExpr("1 + 2", 3L);
         checkExpr("2 - 1", 1L);
         checkExpr("2 * 3", 6L);
@@ -153,13 +151,13 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testOtherBinary()
-    {
-        checkExpr("true && false",  false);
-        checkExpr("false && true",  false);
-        checkExpr("true && true",   true);
-        checkExpr("true || false",  true);
-        checkExpr("false || true",  true);
+    @Test
+    public void testOtherBinary () {
+        checkExpr("true && false", false);
+        checkExpr("false && true", false);
+        checkExpr("true && true", true);
+        checkExpr("true || false", true);
+        checkExpr("false || true", true);
         checkExpr("false || false", false);
 
         checkExpr("1 + \"a\"", "1a");
@@ -187,13 +185,13 @@ public final class InterpreterTests extends TestFixture
         checkExpr("1 != 1.0", false);
 
         checkExpr("\"hi\" != \"hi\"", true);
-        checkExpr("[1] != [1]",true);
+        checkExpr("[1] != [1]", true);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testVarDecl()
-    {
+    @Test
+    public void testVarDecl () {
         check("var x: Int = 1; return x", 1L);
         check("var x: Float = 2.0; return x", 2d);
 
@@ -203,8 +201,8 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testRootAndBlock()
-    {
+    @Test
+    public void testRootAndBlock () {
         rule = grammar.root;
         check("return", null);
         check("return 1", 1L);
@@ -219,18 +217,18 @@ public final class InterpreterTests extends TestFixture
         // NOTE: I might want to forbid this in the future.
         check(
             "var x: Int = 1;" +
-            "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
-            "print(\"\" + x)",
+                "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
+                "print(\"\" + x)",
             null, "1\n2\n1\n");
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testCalls()
-    {
+    @Test
+    public void testCalls () {
         check(
             "fun add (a: Int, b: Int): Int { return a + b } " +
-            "return add(4, 7)",
+                "return add(4, 7)",
             11L);
 
         HashMap<String, Object> point = new HashMap<>();
@@ -239,7 +237,7 @@ public final class InterpreterTests extends TestFixture
 
         check(
             "struct Point { var x: Int; var y: Int }" +
-            "return $Point(1, 2)",
+                "return $Point(1, 2)",
             point);
 
         check("var str: String = null; return print(str + 1)", "null1", "null1\n");
@@ -247,8 +245,8 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testArrayStructAccess()
-    {
+    @Test
+    public void testArrayStructAccess () {
         checkExpr("[1][0]", 1L);
         checkExpr("[1.0][0]", 1d);
         checkExpr("[1, 2][1]", 2L);
@@ -260,7 +258,7 @@ public final class InterpreterTests extends TestFixture
         checkExpr("[1].length", 1L);
         checkExpr("[1, 2].length", 2L);
 
-        checkThrows("var array: Int[] = null; return array[0]",     NullPointerException.class);
+        checkThrows("var array: Int[] = null; return array[0]", NullPointerException.class);
         checkThrows("var array: Int[] = null; return array.length", NullPointerException.class);
 
         check("var x: Int[] = [0, 1]; x[0] = 3; return x[0]", 3L);
@@ -271,33 +269,33 @@ public final class InterpreterTests extends TestFixture
 
         check(
             "struct P { var x: Int; var y: Int }" +
-            "return $P(1, 2).y",
-                2L);
+                "return $P(1, 2).y",
+            2L);
 
         checkThrows(
             "struct P { var x: Int; var y: Int }" +
-            "var p: P = null;" +
-            "return p.y",
-                NullPointerException.class);
+                "var p: P = null;" +
+                "return p.y",
+            NullPointerException.class);
 
         check(
             "struct P { var x: Int; var y: Int }" +
-            "var p: P = $P(1, 2);" +
-            "p.y = 42;" +
-            "return p.y",
-                42L);
+                "var p: P = $P(1, 2);" +
+                "p.y = 42;" +
+                "return p.y",
+            42L);
 
         checkThrows(
             "struct P { var x: Int; var y: Int }" +
-            "var p: P = null;" +
-            "p.y = 42",
-                NullPointerException.class);
+                "var p: P = null;" +
+                "p.y = 42",
+            NullPointerException.class);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testIfWhile()
-    {
+    @Test
+    public void testIfWhile () {
         check("if (true) return 1 else return 2", 1L);
         check("if (false) return 1 else return 2", 2L);
         check("if (false) return 1 else if (true) return 2 else return 3 ", 2L);
@@ -308,8 +306,8 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testInference()
-    {
+    @Test
+    public void testInference () {
         check("var array: Int[] = []", null);
         check("var array: String[] = []", null);
         check("fun use_array (array: Int[]) {} ; use_array([])", null);
@@ -317,10 +315,17 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testTypeAsValues()
-    {
+    @Test
+    public void testTypeAsValues () {
         check("struct S{} ; return \"\"+ S", "S");
         check("struct S{} ; var type: Type = S ; return \"\"+ type", "S");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testUnconditionalReturn()
+    {
+        check("fun f(): Int { if (true) return 1 else return 2 } ; return f()", 1L);
     }
 
     // ---------------------------------------------------------------------------------------------
