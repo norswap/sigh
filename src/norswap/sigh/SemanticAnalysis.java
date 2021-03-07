@@ -779,8 +779,8 @@ public final class SemanticAnalysis
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
         dependencies[0] = node.returnType.attr("value");
-        for (int i = 1; i < dependencies.length; ++i)
-            dependencies[i] = node.parameters.get(i - 1).attr("type");
+        forEachIndexed(node.parameters, (i, param) ->
+            dependencies[i + 1] = param.attr("type"));
 
         R.rule(node, "type")
         .using(dependencies)
