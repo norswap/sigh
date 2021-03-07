@@ -308,6 +308,15 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
+    @Test public void testInference()
+    {
+        check("var array: Int[] = []", null);
+        check("var array: String[] = []", null);
+        check("fun use_array (array: Int[]) {} ; use_array([])", null);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     @Test public void testTypeAsValues()
     {
         check("struct S{} ; return \"\"+ S", "S");
