@@ -869,7 +869,7 @@ public final class SemanticAnalysis
             .using(function.returnType.attr("value"), node.expression.attr("type"))
             .by(r -> {
                 Type formal = r.get(0);
-                Type actual = r.get(0);
+                Type actual = r.get(1);
                 if (formal instanceof VoidType)
                     r.error("Return with value in a Void function.", node);
                 else if (!isAssignableTo(actual, formal)) {
