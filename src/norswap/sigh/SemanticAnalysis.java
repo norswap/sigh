@@ -49,7 +49,7 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  *     the declaration it references lives. This speeds up lookups in the interpreter.</li>
  *
  *     <li>Similarly, {@link VarDeclarationNode} should have their {@code scope} attribute set to
- *     the scope in which they appear.</li>
+ *     the scope in which they appear (this also speeds up the interpreter).</li>
  *
  *     <li>All statements introducing a new scope must have their {@code scope} attribute set to the
  *     corresponding {@link Scope} (only {@link RootNode}, {@link BlockNode} and {@link
