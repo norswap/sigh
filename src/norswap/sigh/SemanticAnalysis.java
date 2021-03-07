@@ -853,11 +853,8 @@ public final class SemanticAnalysis
         R.set(node, "returns", true);
 
         FunDeclarationNode function = currentFunction();
-
-        if (function == null) {
-            // top-level return
+        if (function == null) // top-level return
             return;
-        }
 
         if (node.expression == null)
             R.rule()
