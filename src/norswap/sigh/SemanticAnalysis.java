@@ -333,7 +333,8 @@ public final class SemanticAnalysis
 
             if (type instanceof ArrayType) {
                 if (node.fieldName.equals("length"))
-                    R.set(node, "type", IntType.INSTANCE);
+                    R.rule(node, "type")
+                    .by(rr -> rr.set(0, IntType.INSTANCE));
                 else
                     r.errorFor("Trying to access a non-length field on an array", node,
                         node.attr("type"));
