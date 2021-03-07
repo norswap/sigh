@@ -55,5 +55,8 @@ fun sum_pair (pair: Pair): Int {
 
 validate5(sum_pair($Pair(2, 3)))
 
-var intArray: Int[] = [];
-var stringArray: String[] = [];
+fun use_array (array: Int[]) {}
+
+var intArray: Int[] = []
+var stringArray: String[] = []
+use_array([])
