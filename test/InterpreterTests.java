@@ -1,25 +1,22 @@
 import norswap.autumn.Grammar;
 import norswap.autumn.Grammar.rule;
 import norswap.autumn.ParseResult;
+import norswap.autumn.positions.LineMapString;
 import norswap.sigh.SemanticAnalysis;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.SighNode;
 import norswap.sigh.interpreter.Interpreter;
 import norswap.sigh.interpreter.Null;
-import norswap.uranium.AttributeTreeFormatter;
 import norswap.uranium.Reactor;
 import norswap.uranium.SemanticError;
 import norswap.utils.IO;
 import norswap.utils.TestFixture;
 import norswap.utils.data.wrappers.Pair;
-import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
 import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Set;
 
-import static norswap.utils.visitors.WalkVisitType.POST_VISIT;
-import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertThrows;
 
@@ -73,13 +70,13 @@ public final class InterpreterTests extends TestFixture
         Set<SemanticError> errors = reactor.errors();
 
         if (!errors.isEmpty()) {
-            for (SemanticError error: errors) {
-                System.err.println(error);
-            }
-            String tree = AttributeTreeFormatter.format(root, reactor,
-                    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT));
-            System.err.println(tree);
-            throw new AssertionError("semantic errors");
+            LineMapString map = new LineMapString("<test>", input);
+            String report = reactor.reportErrors(it ->
+                it.toString() + " (" + ((SighNode) it).span.startString(map) + ")");
+//            String tree = AttributeTreeFormatter.format(root, reactor,
+//                    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT));
+//            System.err.println(tree);
+            throw new AssertionError(report);
         }
 
         Pair<String, Object> result = IO.captureStdout(() -> interpreter.run(root));
