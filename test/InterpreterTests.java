@@ -178,7 +178,6 @@ public final class InterpreterTests extends TestFixture
         checkExpr("1 == 1.0", true);
 
         checkExpr("\"hi\" == \"hi\"", false);
-        checkExpr("[] == []", false);
         checkExpr("[1] == [1]", false);
 
         checkExpr("1 != 1", false);
@@ -191,7 +190,6 @@ public final class InterpreterTests extends TestFixture
         checkExpr("1 != 1.0", false);
 
         checkExpr("\"hi\" != \"hi\"", true);
-        checkExpr("[] != []", true);
         checkExpr("[1] != [1]",true);
     }
 
@@ -258,16 +256,15 @@ public final class InterpreterTests extends TestFixture
         checkExpr("[1.0][0]", 1d);
         checkExpr("[1, 2][1]", 2L);
 
-        checkExpr("[].length", 0L);
+        // TODO check that this fails (& maybe improve so that it generates a better message?)
+        // or change to make it legal (introduce a top type, and make it a top type array if thre
+        // is no inference context available)
+        // checkExpr("[].length", 0L);
         checkExpr("[1].length", 1L);
         checkExpr("[1, 2].length", 2L);
 
         checkThrows("var array: Int[] = null; return array[0]",     NullPointerException.class);
         checkThrows("var array: Int[] = null; return array.length", NullPointerException.class);
-
-        checkThrows("return [][0]",  ArrayIndexOutOfBoundsException.class);
-        checkThrows("return [][1]",  ArrayIndexOutOfBoundsException.class);
-        checkThrows("return [][-1]", ArrayIndexOutOfBoundsException.class);
 
         check("var x: Int[] = [0, 1]; x[0] = 3; return x[0]", 3L);
         checkThrows("var x: Int[] = []; x[0] = 3; return x[0]",
