@@ -10,7 +10,6 @@ import norswap.sigh.types.*;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
-import norswap.utils.Vanilla;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
 import java.util.Arrays;
@@ -398,8 +397,10 @@ public final class SemanticAnalysis
 
         Attribute[] dependencies = new Attribute[node.arguments.size() + 1];
         dependencies[0] = node.function.attr("type");
-        forEachIndexed(node.arguments, (i, dep) ->
-            dependencies[i + 1] = dep.attr("type"));
+        forEachIndexed(node.arguments, (i, arg) -> {
+            dependencies[i + 1] = arg.attr("type");
+            R.set(arg, "index", i);
+        });
 
         R.rule(node, "type")
         .using(dependencies)
@@ -775,8 +776,6 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
         R.set(node, "scope", scope);
-
-        Vanilla.forEachIndexed(node.parameters, (param, i) -> R.set(param, "index", i));
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
         dependencies[0] = node.returnType.attr("value");
