@@ -22,7 +22,6 @@ public abstract class SighNode
         return new Attribute(this, name);
     }
 
-
     // ---------------------------------------------------------------------------------------------
 
     /**
