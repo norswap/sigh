@@ -61,7 +61,7 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  *     denotes.</li>
  *
  *     <li>Every {@link ReturnNode}, {@link BlockNode} and {@link IfNode} must have its {@code
- *     returns} parameter set to a boolean to indicate whether its execution causes
+ *     returns} attribute set to a boolean to indicate whether its execution causes
  *     unconditional exit from the surrounding function or main script.</li>
  *
  *     <li>The rules check typing constraints: assignment of values to variables, of arguments to
@@ -257,26 +257,23 @@ public final class SemanticAnalysis
 
     private void arrayLiteral (ArrayLiteralNode node)
     {
-        if (node.components.size() == 0) {
+        if (node.components.size() == 0) { // []
             // Empty array: we need a type int to know the desired type.
 
             final SighNode context = this.inferenceContext;
 
             if (context instanceof VarDeclarationNode)
-                R.rule(node, "type_hint")
+                R.rule(node, "type")
                 .using(context, "type")
                 .by(Rule::copyFirst);
-            else if (context instanceof FunCallNode)
-                R.rule(node, "type_hint")
+            else if (context instanceof FunCallNode) {
+                R.rule(node, "type")
                 .using(((FunCallNode) context).function.attr("type"), node.attr("index"))
                 .by(r -> {
                     FunType funType = r.get(0);
                     r.set(0, funType.paramTypes[(int) r.get(1)]);
                 });
-
-            R.rule(node, "type")
-            .using(node, "type_hint")
-            .by(Rule::copyFirst);
+            }
             return;
         }
 
@@ -401,7 +398,7 @@ public final class SemanticAnalysis
         Attribute[] dependencies = new Attribute[node.arguments.size() + 1];
         dependencies[0] = node.function.attr("type");
         forEachIndexed(node.arguments, (i, dep) ->
-            dependencies[i + 1] = node.arguments.get(i).attr("type"));
+            dependencies[i + 1] = dep.attr("type"));
 
         R.rule(node, "type")
         .using(dependencies)
@@ -625,8 +622,8 @@ public final class SemanticAnalysis
     private void arrayType (ArrayTypeNode node)
     {
         R.rule(node, "value")
-            .using(node.componentType, "value")
-            .by(r -> r.set(0, new ArrayType(r.get(0))));
+        .using(node.componentType, "value")
+        .by(r -> r.set(0, new ArrayType(r.get(0))));
     }
 
     // ---------------------------------------------------------------------------------------------
