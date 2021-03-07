@@ -1,10 +1,14 @@
 package norswap.sigh.interpreter;
 
 import norswap.sigh.ast.*;
+import norswap.sigh.scopes.DeclarationKind;
 import norswap.sigh.scopes.RootScope;
 import norswap.sigh.scopes.Scope;
 import norswap.sigh.scopes.SyntheticDeclarationNode;
-import norswap.sigh.types.*;
+import norswap.sigh.types.FloatType;
+import norswap.sigh.types.IntType;
+import norswap.sigh.types.StringType;
+import norswap.sigh.types.Type;
 import norswap.uranium.Reactor;
 import norswap.utils.Util;
 import norswap.utils.exceptions.NoStackException;
@@ -444,13 +448,18 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object reference (ReferenceNode node) {
+    private Object reference (ReferenceNode node)
+    {
         Scope scope = reactor.get(node, "scope");
-        Type type = reactor.get(node, "type");
+        DeclarationNode decl = reactor.get(node, "decl");
 
-        return type instanceof FunType || type instanceof TypeType
-            ? scope.lookupLocal(node.name) // DeclarationNode
-            : frame.get(scope, node.name);
+        if (decl instanceof VarDeclarationNode
+        || decl instanceof ParameterNode
+        || decl instanceof SyntheticDeclarationNode
+                && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
+            return frame.get(scope, node.name);
+
+        return decl; // structure or function
     }
 
     // ---------------------------------------------------------------------------------------------

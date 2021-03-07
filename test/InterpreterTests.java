@@ -311,5 +311,13 @@ public final class InterpreterTests extends TestFixture
 
     // ---------------------------------------------------------------------------------------------
 
+    @Test public void testTypeAsValues()
+    {
+        check("struct S{} ; return \"\"+ S", "S");
+        check("struct S{} ; var type: Type = S ; return \"\"+ type", "S");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     // NOTE(norswap): Not incredibly complete, but should cover the basics.
 }

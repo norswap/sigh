@@ -49,6 +49,9 @@ struct Pair {
     var b: Int
 }
 
+var type: Type = Pair
+print("" + type)
+
 fun sum_pair (pair: Pair): Int {
     return pair.a + pair.b
 }
