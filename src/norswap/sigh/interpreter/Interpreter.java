@@ -83,7 +83,13 @@ public final class Interpreter
     // ---------------------------------------------------------------------------------------------
 
     public Object run (SighNode node) {
-        return visitor.apply(node);
+        try {
+            return visitor.apply(node);
+        } catch (InterpreterException | Return e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new InterpreterException("exception while executing " + node, e);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -101,7 +107,7 @@ public final class Interpreter
     // ---------------------------------------------------------------------------------------------
 
     private <T> T get(SighNode node) {
-        return cast(visitor.apply(node));
+        return cast(run(node));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -308,7 +314,7 @@ public final class Interpreter
         frame.initRoot(root);
 
         try {
-            node.statements.forEach(visitor::apply);
+            node.statements.forEach(this::run);
         } catch (Return r) {
             return r.value;
             // allow returning from the main script
@@ -323,7 +329,7 @@ public final class Interpreter
     private Void block (BlockNode node) {
         Scope scope = reactor.get(node, "scope");
         frame = new Frame(scope, frame);
-        node.statements.forEach(visitor::apply);
+        node.statements.forEach(this::run);
         frame = frame.parent;
         return null;
     }
@@ -359,7 +365,7 @@ public final class Interpreter
     private Object funCall (FunCallNode node)
     {
         Object decl = get(node.function);
-        node.arguments.forEach(visitor::apply);
+        node.arguments.forEach(this::run);
         Object[] args = map(node.arguments, new Object[0], visitor);
 
         if (decl == Null.INSTANCE)
