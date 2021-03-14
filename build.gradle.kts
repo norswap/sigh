@@ -8,7 +8,7 @@ plugins {
 // === MAIN BUILD DETAILS ==========================================================================
 
 group = "com.norswap"
-version = "1.0.0-ALPHA" // not -SNAPSHOT because Bintray is boneheaded and forbids it
+version = "1.0.1-ALPHA"
 description = "Language implementation demo"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
@@ -56,7 +56,6 @@ idea.module {
 
 repositories {
     mavenCentral()
-    jcenter()
     maven {
         url = uri("https://autumn.jfrog.io/artifactory/gradle")
     }
