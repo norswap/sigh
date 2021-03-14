@@ -199,7 +199,7 @@ public final class SemanticAnalysis
             DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
             if (ctx == null) {
-                r.errorFor("could not resolve: " + node.name,
+                r.errorFor("Could not resolve: " + node.name,
                     node, node.attr("decl"), node.attr("scope"), node.attr("type"));
             }
             else {
@@ -207,7 +207,7 @@ public final class SemanticAnalysis
                 r.set(node, "decl", decl);
 
                 if (decl instanceof VarDeclarationNode)
-                    r.errorFor("variable used before declaration: " + node.name,
+                    r.errorFor("Variable used before declaration: " + node.name,
                         node, node.attr("type"));
                 else
                     R.rule(node, "type")
@@ -375,7 +375,7 @@ public final class SemanticAnalysis
         .by(r -> {
             Type type = r.get(0);
             if (!(type instanceof IntType))
-                r.error("Indexing an array using a non-int-valued expression.", node.index);
+                r.error("Indexing an array using a non-Int-valued expression", node.index);
         });
 
         R.rule(node, "type")
@@ -449,7 +449,7 @@ public final class SemanticAnalysis
         .by(r -> {
             Type opType = r.get(0);
             if (!(opType instanceof BoolType))
-                r.error("trying to negate type: " + opType, node);
+                r.error("Trying to negate type: " + opType, node);
         });
     }
 
@@ -507,12 +507,12 @@ public final class SemanticAnalysis
             else if (right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
             else
-                r.error(arithmeticError(node, "int", right), node);
+                r.error(arithmeticError(node, "Int", right), node);
         else if (left instanceof FloatType)
             if (right instanceof IntType || right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
             else
-                r.error(arithmeticError(node, "float", right), node);
+                r.error(arithmeticError(node, "Float", right), node);
         else
             r.error(arithmeticError(node, left, right), node);
     }
@@ -520,7 +520,7 @@ public final class SemanticAnalysis
     // ---------------------------------------------------------------------------------------------
 
     private static String arithmeticError (BinaryExpressionNode node, Object left, Object right) {
-        return format("trying to %s %s with %s", node.operator.name().toLowerCase(), left, right);
+        return format("Trying to %s %s with %s", node.operator.name().toLowerCase(), left, right);
     }
 
     // ---------------------------------------------------------------------------------------------
