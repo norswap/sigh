@@ -47,7 +47,7 @@ public final class Test
         }
 
         Interpreter interpreter = new Interpreter(reactor);
-        interpreter.run(tree);
+        interpreter.interpret(tree);
         System.out.println("success");
     }
 }

@@ -11,6 +11,7 @@ import norswap.sigh.types.StringType;
 import norswap.sigh.types.Type;
 import norswap.uranium.Reactor;
 import norswap.utils.Util;
+import norswap.utils.exceptions.Exceptions;
 import norswap.utils.exceptions.NoStackException;
 import norswap.utils.visitors.ValuedVisitor;
 import java.util.Arrays;
@@ -82,10 +83,20 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
-    public Object run (SighNode node) {
+    public Object interpret (SighNode root) {
+        try {
+            return run(root);
+        } catch (PassthroughException e) {
+            throw Exceptions.runtime(e.getCause());
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private Object run (SighNode node) {
         try {
             return visitor.apply(node);
-        } catch (InterpreterException | Return e) {
+        } catch (InterpreterException | Return | PassthroughException e) {
             throw e;
         } catch (RuntimeException e) {
             throw new InterpreterException("exception while executing " + node, e);
@@ -249,14 +260,19 @@ public final class Interpreter
             ArrayAccessNode arrayAccess = (ArrayAccessNode) node.left;
             Object[] array = getNonNullArray(arrayAccess.array);
             int index = getIndex(arrayAccess.index);
-            return array[index] = get(node.right);
+            try {
+                return array[index] = get(node.right);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw new PassthroughException(e);
+            }
         }
 
         if (node.left instanceof FieldAccessNode) {
             FieldAccessNode fieldAccess = (FieldAccessNode) node.left;
             Object object = get(fieldAccess.stem);
             if (object == Null.INSTANCE)
-                throw new NullPointerException("accessing field of null object");
+                throw new PassthroughException(
+                    new NullPointerException("accessing field of null object"));
             Map<String, Object> struct = cast(object);
             Object right = get(node.right);
             struct.put(fieldAccess.fieldName, right);
@@ -284,7 +300,7 @@ public final class Interpreter
     {
         Object object = get(node);
         if (object == Null.INSTANCE)
-            throw new NullPointerException("indexing null array");
+            throw new PassthroughException(new NullPointerException("indexing null array"));
         return (Object[]) object;
     }
 
@@ -301,7 +317,11 @@ public final class Interpreter
     private Object arrayAccess (ArrayAccessNode node)
     {
         Object[] array = getNonNullArray(node.array);
-        return array[getIndex(node.index)];
+        try {
+            return array[getIndex(node.index)];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new PassthroughException(e);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -354,7 +374,8 @@ public final class Interpreter
     {
         Object stem = get(node.stem);
         if (stem == Null.INSTANCE)
-            throw new NullPointerException("accessing field of null object");
+            throw new PassthroughException(
+                new NullPointerException("accessing field of null object"));
         return stem instanceof Map
                 ? Util.<Map<String, Object>>cast(stem).get(node.fieldName)
                 : (long) ((Object[]) stem).length; // only field on arrays
@@ -369,7 +390,7 @@ public final class Interpreter
         Object[] args = map(node.arguments, new Object[0], visitor);
 
         if (decl == Null.INSTANCE)
-            throw new NullPointerException("calling a null function");
+            throw new PassthroughException(new NullPointerException("calling a null function"));
 
         if (decl instanceof SyntheticDeclarationNode)
             return builtin(((SyntheticDeclarationNode) decl).name(), args);

@@ -78,7 +78,7 @@ public final class InterpreterTests extends TestFixture {
             throw new AssertionError(report);
         }
 
-        Pair<String, Object> result = IO.captureStdout(() -> interpreter.run(root));
+        Pair<String, Object> result = IO.captureStdout(() -> interpreter.interpret(root));
         assertEquals(result.b, expectedReturn);
         if (expectedOutput != null) assertEquals(result.a, expectedOutput);
     }
@@ -215,11 +215,10 @@ public final class InterpreterTests extends TestFixture {
 
         check("{ print(\"a\"); print(\"b\") }", null, "a\nb\n");
 
-        // NOTE: I might want to forbid this in the future.
         check(
             "var x: Int = 1;" +
-                "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
-                "print(\"\" + x)",
+            "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
+            "print(\"\" + x)",
             null, "1\n2\n1\n");
     }
 
