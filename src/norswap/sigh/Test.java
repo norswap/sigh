@@ -37,11 +37,12 @@ public final class Test
         reactor.run();
 
         if (!reactor.errors().isEmpty()) {
-            System.out.println(reactor.reportErrors(it -> it.toString() + " (" + ((SighNode) it).span.startString(lineMap) + ")"));
+            System.out.println(reactor.reportErrors(it ->
+                it.toString() + " (" + ((SighNode) it).span.startString(lineMap) + ")"));
 
             // Alternatively, print the whole tree:
-            // System.out.println(AttributeTreeFormatter.format(tree, reactor,
-            //    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT)));
+            // System.out.println(
+            //     AttributeTreeFormatter.formatWalkFields(tree, reactor, SighNode.class));
             return;
         }
 
