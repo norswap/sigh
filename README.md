@@ -10,3 +10,5 @@ A language implementation demo, demonstrating the use of [Autumn] and [Uranium].
 Key files:
 - [`SighGrammar`](/src/norswap/sigh/SighGrammar.java)
 - [`SemanticAnalysis`](/src/norswap/sigh/SemanticAnalysis.java)
+- [`Interpreter`](/src/norswap/sigh/interpreter/Interpreter.java)
+- [`SemanticAnalysisTests`](/test/SemanticAnalysisTests.java)
