@@ -431,7 +431,7 @@ public final class SemanticAnalysis
                 if (!isAssignableTo(argType, paramType))
                     r.errorFor(format(
                             "incompatible argument provided for argument %d: expected %s but got %s",
-                            i, argType, paramType),
+                            i, paramType, argType),
                         node.arguments.get(i));
             }
         });
