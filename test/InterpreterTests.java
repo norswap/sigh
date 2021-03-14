@@ -163,6 +163,7 @@ public final class InterpreterTests extends TestFixture {
 
         checkExpr("1 + \"a\"", "1a");
         checkExpr("\"a\" + 1", "a1");
+        checkExpr("\"a\" + true", "atrue");
 
         checkExpr("1 == 1", true);
         checkExpr("1 == 2", false);

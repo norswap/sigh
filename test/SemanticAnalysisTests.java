@@ -94,6 +94,11 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return 3.0 / 2");
         successInput("return 2.0 % 3");
         successInput("return 3.0 % 2");
+
+        failureInputWith("return 2 + true", "Trying to add Int with Bool");
+        failureInputWith("return true + 2", "Trying to add Bool with Int");
+        failureInputWith("return 2 + [1]", "Trying to add Int with Int[]");
+        failureInputWith("return [1] + 2", "Trying to add Int[] with Int");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -106,8 +111,14 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return false || true");
         successInput("return false || false");
 
+        failureInputWith("return false || 1",
+            "Attempting to perform binary logic on non-boolean type: Int");
+        failureInputWith("return 2 || true",
+            "Attempting to perform binary logic on non-boolean type: Int");
+
         successInput("return 1 + \"a\"");
         successInput("return \"a\" + 1");
+        successInput("return \"a\" + true");
 
         successInput("return 1 == 1");
         successInput("return 1 == 2");
@@ -117,6 +128,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return false == false");
         successInput("return true == false");
         successInput("return 1 == 1.0");
+
+        failureInputWith("return true == 1", "Trying to compare incomparable types Bool and Int");
+        failureInputWith("return 2 == false", "Trying to compare incomparable types Int and Bool");
 
         successInput("return \"hi\" == \"hi\"");
         successInput("return [1] == [1]");
@@ -130,6 +144,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return true != false");
         successInput("return 1 != 1.0");
 
+        failureInputWith("return true != 1", "Trying to compare incomparable types Bool and Int");
+        failureInputWith("return 2 != false", "Trying to compare incomparable types Int and Bool");
+
         successInput("return \"hi\" != \"hi\"");
         successInput("return [1] != [1]");
     }
@@ -142,6 +159,10 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         successInput("var x: Int = 0; return x = 3");
         successInput("var x: String = \"0\"; return x = \"S\"");
+
+        failureInputWith("var x: Int = true", "expected Int but got Bool");
+        failureInputWith("return x + 1", "Could not resolve: x");
+        failureInputWith("return x + 1; var x: Int = 2", "Variable used before declaration: x");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -175,6 +196,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "return $Point(1, 2)");
 
         successInput("var str: String = null; return print(str + 1)");
+
+        failureInputWith("return print(1)", "argument 0: expected String but got Int");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -183,6 +206,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [1][0]");
         successInput("return [1.0][0]");
         successInput("return [1, 2][1]");
+
+        failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
 
         // TODO make this legal?
         // successInput("[].length", 0L);
@@ -216,6 +241,16 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "struct P { var x: Int; var y: Int }" +
             "var p: P = null;" +
             "p.y = 42");
+
+        failureInputWith(
+            "struct P { var x: Int; var y: Int }" +
+            "return $P(1, true)",
+            "argument 1: expected Int but got Bool");
+
+        failureInputWith(
+            "struct P { var x: Int; var y: Int }" +
+            "return $P(1, 2).z",
+            "Trying to access missing field z on struct P");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -228,6 +263,11 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("if (false) return 1 else if (false) return 2 else return 3 ");
 
         successInput("var i: Int = 0; while (i < 3) { print(\"\" + i); i = i + 1 } ");
+
+        failureInputWith("if 1 return 1",
+            "If statement with a non-boolean condition of type: Int");
+        failureInputWith("while 1 return 1",
+            "While statement with a non-boolean condition of type: Int");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -250,6 +290,11 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     @Test public void testUnconditionalReturn()
     {
         successInput("fun f(): Int { if (true) return 1 else return 2 } ; return f()");
+
+        // TODO: would be nice if this pinpointed the if-statement as missing the return,
+        //   not the whole function declaration
+        failureInputWith("fun f(): Int { if (true) return 1 } ; return f()",
+            "Missing return in function");
     }
 
     // ---------------------------------------------------------------------------------------------
