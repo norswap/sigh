@@ -1,3 +1,4 @@
+import norswap.autumn.AutumnTestFixture;
 import norswap.autumn.Grammar;
 import norswap.autumn.Grammar.rule;
 import norswap.autumn.ParseResult;
@@ -24,7 +25,7 @@ public final class InterpreterTests extends TestFixture {
     // ---------------------------------------------------------------------------------------------
 
     private final SighGrammar grammar = new SighGrammar();
-    private final norswap.autumn.TestFixture autumnFixture = new norswap.autumn.TestFixture();
+    private final AutumnTestFixture autumnFixture = new AutumnTestFixture();
 
     {
         autumnFixture.runTwice = false;
