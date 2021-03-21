@@ -432,7 +432,7 @@ public final class Interpreter
         if (arg == Null.INSTANCE)
             return "null";
         else if (arg instanceof Object[])
-            return Arrays.toString((Object[]) arg);
+            return Arrays.deepToString((Object[]) arg);
         else if (arg instanceof FunDeclarationNode)
             return ((FunDeclarationNode) arg).name;
         else if (arg instanceof StructDeclarationNode)
