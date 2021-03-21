@@ -469,7 +469,7 @@ public final class Interpreter
     private Void whileStmt (WhileNode node)
     {
         while (get(node.condition))
-            get(node.block);
+            get(node.body);
         return null;
     }
 

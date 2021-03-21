@@ -6,12 +6,12 @@ import norswap.utils.Util;
 public final class WhileNode extends StatementNode
 {
     public final ExpressionNode condition;
-    public final StatementNode block;
+    public final StatementNode body;
 
-    public WhileNode (Span span, Object condition, Object block) {
+    public WhileNode (Span span, Object condition, Object body) {
         super(span);
         this.condition = Util.cast(condition, ExpressionNode.class);
-        this.block = Util.cast(block, StatementNode.class);
+        this.body = Util.cast(body, StatementNode.class);
     }
 
     @Override public String contents ()
