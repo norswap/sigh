@@ -174,8 +174,10 @@ public final class Interpreter
             return numericOp(node, floating, (Number) left, (Number) right);
 
         switch (node.operator) {
-            case EQUALITY:      return  left == right;
-            case NOT_EQUALS:    return  left != right;
+            case EQUALITY:
+                return  leftType.isPrimitive() ? left.equals(right) : left == right;
+            case NOT_EQUALS:
+                return  leftType.isPrimitive() ? !left.equals(right) : left != right;
         }
 
         throw new Error("should not reach here");
