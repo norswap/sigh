@@ -13,9 +13,13 @@ public class SighGrammar extends Grammar
     public rule line_comment =
         seq("//", seq(not("\n"), any).at_least(0));
 
+    public rule multiline_comment =
+        seq("/*", seq(not("*/"), any).at_least(0), "*/");
+
     public rule ws_item = choice(
         set(" \t\n\r;"),
-        line_comment);
+        line_comment,
+        multiline_comment);
 
     {
         ws = ws_item.at_least(0);
