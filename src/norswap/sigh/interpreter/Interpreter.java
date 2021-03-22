@@ -311,6 +311,7 @@ public final class Interpreter
     private Object unaryExpression (UnaryExpressionNode node)
     {
         // there is only NOT
+        assert node.operator == UnaryOperator.NOT;
         return ! (boolean) get(node.operand);
     }
 
