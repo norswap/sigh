@@ -254,7 +254,7 @@ public final class Interpreter
             Scope scope = reactor.get(node.left, "scope");
             String name = ((ReferenceNode) node.left).name;
             Object rvalue = get(node.right);
-            frame.set(scope, name, rvalue);
+            assign(scope, name, rvalue, reactor.get(node, "type"));
             return rvalue;
         }
 
@@ -502,8 +502,17 @@ public final class Interpreter
     private Void varDecl (VarDeclarationNode node)
     {
         Scope scope = reactor.get(node, "scope");
-        frame.set(scope, node.name, get(node.initializer));
+        assign(scope, node.name, get(node.initializer), reactor.get(node, "type"));
         return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void assign (Scope scope, String name, Object value, Type targetType)
+    {
+        if (value instanceof Long && targetType instanceof FloatType)
+            value = ((Long) value).doubleValue();
+        frame.set(scope, name, value);
     }
 
     // ---------------------------------------------------------------------------------------------
