@@ -46,10 +46,11 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  *
  *     <li>Every {@link ReferenceNode} instance must have its {@code decl} attribute set to the the
  *     declaration it references and its {@code scope} attribute set to the {@link Scope} in which
- *     the declaration it references lives. This speeds up lookups in the interpreter.</li>
+ *     the declaration it references lives. This speeds up lookups in the interpreter and simplifies the compiler.</li>
  *
- *     <li>Similarly, {@link VarDeclarationNode} should have their {@code scope} attribute set to
- *     the scope in which they appear (this also speeds up the interpreter).</li>
+ *     <li>For the same reasons, {@link VarDeclarationNode} and {@link ParameterNode} should have
+ *     their {@code scope} attribute set to the scope in which they appear (this also speeds up the
+ *     interpreter).</li>
  *
  *     <li>All statements introducing a new scope must have their {@code scope} attribute set to the
  *     corresponding {@link Scope} (only {@link RootNode}, {@link BlockNode} and {@link
@@ -762,6 +763,7 @@ public final class SemanticAnalysis
 
     private void parameter (ParameterNode node)
     {
+        R.set(node, "scope", scope);
         scope.declare(node.name, node); // scope pushed by FunDeclarationNode
 
         R.rule(node, "type")
