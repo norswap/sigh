@@ -199,6 +199,9 @@ public final class InterpreterTests extends TestFixture {
 
         check("var x: Int = 0; return x = 3", 3L);
         check("var x: String = \"0\"; return x = \"S\"", "S");
+
+        // implicit conversions
+        check("var x: Float = 1; x = 2; return x", 2.0d);
     }
 
     // ---------------------------------------------------------------------------------------------

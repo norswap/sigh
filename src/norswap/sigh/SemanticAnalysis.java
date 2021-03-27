@@ -573,7 +573,7 @@ public final class SemanticAnalysis
             Type left  = r.get(0);
             Type right = r.get(1);
 
-            r.set(0, r.get(1)); // the type of the assignment is the right-side type
+            r.set(0, r.get(0)); // the type of the assignment is the left-side type
 
             if (node.left instanceof ReferenceNode
             ||  node.left instanceof FieldAccessNode

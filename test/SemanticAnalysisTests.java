@@ -163,6 +163,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         failureInputWith("var x: Int = true", "expected Int but got Bool");
         failureInputWith("return x + 1", "Could not resolve: x");
         failureInputWith("return x + 1; var x: Int = 2", "Variable used before declaration: x");
+
+        // implicit conversions
+        successInput("var x: Float = 1 ; x = 2");
     }
 
     // ---------------------------------------------------------------------------------------------
