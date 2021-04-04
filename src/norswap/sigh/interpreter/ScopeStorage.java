@@ -11,12 +11,12 @@ import java.util.HashMap;
  * at runtime (for instance, one for each function invocation), sometimes at the same type,
  * in the presence of recursion.
  */
-public final class Frame
+public final class ScopeStorage
 {
     // ---------------------------------------------------------------------------------------------
 
     public final Scope scope;
-    public final Frame parent;
+    public final ScopeStorage parent;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ public final class Frame
 
     // ---------------------------------------------------------------------------------------------
 
-    Frame (Scope scope, Frame parent) {
+    ScopeStorage (Scope scope, ScopeStorage parent) {
         this.scope = scope;
         this.parent = parent;
     }
@@ -77,7 +77,7 @@ public final class Frame
     // ---------------------------------------------------------------------------------------------
 
     @Override public String toString() {
-        return "Frame " + values.toString();
+        return "ScopeStorage " + values.toString();
     }
 
     // ---------------------------------------------------------------------------------------------

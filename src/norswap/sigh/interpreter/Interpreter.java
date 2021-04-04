@@ -44,7 +44,7 @@ public final class Interpreter
 
     private final ValuedVisitor<SighNode, Object> visitor = new ValuedVisitor<>();
     private final Reactor reactor;
-    private Frame frame = null;
+    private ScopeStorage storage = null;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -331,10 +331,10 @@ public final class Interpreter
 
     private Object root (RootNode node)
     {
-        assert frame == null;
+        assert storage == null;
         RootScope root = reactor.get(node, "scope");
-        frame = new Frame(root, null);
-        frame.initRoot(root);
+        storage = new ScopeStorage(root, null);
+        storage.initRoot(root);
 
         try {
             node.statements.forEach(this::run);
@@ -342,7 +342,7 @@ public final class Interpreter
             return r.value;
             // allow returning from the main script
         } finally {
-            frame = null;
+            storage = null;
         }
         return null;
     }
@@ -351,9 +351,9 @@ public final class Interpreter
 
     private Void block (BlockNode node) {
         Scope scope = reactor.get(node, "scope");
-        frame = new Frame(scope, frame);
+        storage = new ScopeStorage(scope, storage);
         node.statements.forEach(this::run);
-        frame = frame.parent;
+        storage = storage.parent;
         return null;
     }
 
@@ -402,18 +402,18 @@ public final class Interpreter
             return buildStruct(((Constructor) decl).declaration, args);
 
         Scope scope = reactor.get(decl, "scope");
-        frame = new Frame(scope, frame);
+        storage = new ScopeStorage(scope, storage);
 
         FunDeclarationNode funDecl = (FunDeclarationNode) decl;
         coIterate(args, funDecl.parameters,
-                (arg, param) -> frame.set(scope, param.name, arg));
+                (arg, param) -> storage.set(scope, param.name, arg));
 
         try {
             get(funDecl.block);
         } catch (Return r) {
             return r.value;
         } finally {
-            frame = frame.parent;
+            storage = storage.parent;
         }
         return null;
     }
@@ -487,7 +487,7 @@ public final class Interpreter
         || decl instanceof ParameterNode
         || decl instanceof SyntheticDeclarationNode
                 && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
-            return frame.get(scope, node.name);
+            return storage.get(scope, node.name);
 
         return decl; // structure or function
     }
@@ -513,7 +513,7 @@ public final class Interpreter
     {
         if (value instanceof Long && targetType instanceof FloatType)
             value = ((Long) value).doubleValue();
-        frame.set(scope, name, value);
+        storage.set(scope, name, value);
     }
 
     // ---------------------------------------------------------------------------------------------
