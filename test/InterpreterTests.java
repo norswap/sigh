@@ -22,6 +22,9 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertThrows;
 
 public final class InterpreterTests extends TestFixture {
+
+    // TODO peeling
+
     // ---------------------------------------------------------------------------------------------
 
     private final SighGrammar grammar = new SighGrammar();
@@ -81,6 +84,13 @@ public final class InterpreterTests extends TestFixture {
         Pair<String, Object> result = IO.captureStdout(() -> interpreter.interpret(root));
         assertEquals(result.b, expectedReturn);
         if (expectedOutput != null) assertEquals(result.a, expectedOutput);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void checkExpr (String input, Object expectedReturn, String expectedOutput) {
+        rule = grammar.root;
+        check("return " + input, expectedReturn, expectedOutput);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -148,17 +158,21 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("3.0 / 2", 3d / 2d);
         checkExpr("2.0 % 3", 2.0d);
         checkExpr("3.0 % 2", 1.0d);
+
+        checkExpr("2 * (4-1) * 4.0 / 6 % (2+1)", 1.0d);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Test
     public void testOtherBinary () {
-        checkExpr("true && false", false);
-        checkExpr("false && true", false);
-        checkExpr("true && true", true);
-        checkExpr("true || false", true);
-        checkExpr("false || true", true);
+        checkExpr("true  && true",  true);
+        checkExpr("true  || true",  true);
+        checkExpr("true  || false", true);
+        checkExpr("false || true",  true);
+        checkExpr("false && true",  false);
+        checkExpr("true  && false", false);
+        checkExpr("false && false", false);
         checkExpr("false || false", false);
 
         checkExpr("1 + \"a\"", "1a");
@@ -173,8 +187,6 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("false == false", true);
         checkExpr("true == false", false);
         checkExpr("1 == 1.0", true);
-
-        checkExpr("\"hi\" == \"hi\"", false);
         checkExpr("[1] == [1]", false);
 
         checkExpr("1 != 1", false);
@@ -186,8 +198,12 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("true != false", true);
         checkExpr("1 != 1.0", false);
 
-        checkExpr("\"hi\" != \"hi\"", true);
+        checkExpr("\"hi\" != \"hi2\"", true);
         checkExpr("[1] != [1]", true);
+
+         // test short circuit
+        checkExpr("true || print(\"x\") == \"y\"", true, "");
+        checkExpr("false && print(\"x\") == \"y\"", false, "");
     }
 
     // ---------------------------------------------------------------------------------------------
