@@ -33,12 +33,12 @@ validate5(6) // some men just want to watch the world burn
 
 fun validate5 (value: Int)
 {
-    if (math != 5)
-        print("It's a bug! We wanted 5 but got: " + math)
+    if (value!= 5)
+        print("We wanted 5 but got: " + value)
 
-    if (math > 5)
+    if (value > 5)
         print("It was too big.")
-    else if (math < 5)
+    else if (value < 5)
         print("It was too small.")
     else
         print("It's just right.")

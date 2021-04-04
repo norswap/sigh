@@ -25,6 +25,13 @@ import static norswap.utils.Vanilla.map;
 /**
  * Implements a simple but inefficient interpreter for Sigh.
  *
+ * <h2>Limitations</h2>
+ * <ul>
+ *     <li>The compiled code currently doesn't support closures (using variables in functions that
+ *     are declared in some surroudning scopes outside the function). The top scope is supported.
+ *     </li>
+ * </ul>
+ *
  * <p>Runtime value representation:
  * <ul>
  *     <li>{@code Int}, {@code Float}, {@code Bool}: {@link Long}, {@link Double}, {@link Boolean}</li>
@@ -45,6 +52,8 @@ public final class Interpreter
     private final ValuedVisitor<SighNode, Object> visitor = new ValuedVisitor<>();
     private final Reactor reactor;
     private ScopeStorage storage = null;
+    private RootScope rootScope;
+    private ScopeStorage rootStorage;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -332,9 +341,9 @@ public final class Interpreter
     private Object root (RootNode node)
     {
         assert storage == null;
-        RootScope root = reactor.get(node, "scope");
-        storage = new ScopeStorage(root, null);
-        storage.initRoot(root);
+        rootScope = reactor.get(node, "scope");
+        storage = rootStorage = new ScopeStorage(rootScope, null);
+        storage.initRoot(rootScope);
 
         try {
             node.statements.forEach(this::run);
@@ -401,6 +410,7 @@ public final class Interpreter
         if (decl instanceof Constructor)
             return buildStruct(((Constructor) decl).declaration, args);
 
+        ScopeStorage oldStorage = storage;
         Scope scope = reactor.get(decl, "scope");
         storage = new ScopeStorage(scope, storage);
 
@@ -413,7 +423,7 @@ public final class Interpreter
         } catch (Return r) {
             return r.value;
         } finally {
-            storage = storage.parent;
+            storage = oldStorage;
         }
         return null;
     }
@@ -487,7 +497,9 @@ public final class Interpreter
         || decl instanceof ParameterNode
         || decl instanceof SyntheticDeclarationNode
                 && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
-            return storage.get(scope, node.name);
+            return scope == rootScope
+                ? rootStorage.get(scope, node.name)
+                : storage.get(scope, node.name);
 
         return decl; // structure or function
     }
