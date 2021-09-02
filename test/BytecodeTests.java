@@ -251,6 +251,7 @@ public class BytecodeTests
     }
 
     @Test public void testMethod() {
+        check("fun test (x: String):String { return x } print(test(\"a\"))", "a");
         check("fun test (x: String) { print(x) } ; test(\"a\")", "a");
         check("fun test () { fun foo() { print(\"a\") } foo() foo() } test()", "a\na");
     }

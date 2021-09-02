@@ -627,7 +627,7 @@ public class BytecodeCompiler
                 invokeStatic(method, Boolean.class, "valueOf", boolean.class);
             method.visitInsn(ARETURN);
         } else {
-            method.visitInsn(nodeAsmType(node).getOpcode(IRETURN));
+            method.visitInsn(nodeAsmType(node.expression).getOpcode(IRETURN));
         }
 
         return null;
