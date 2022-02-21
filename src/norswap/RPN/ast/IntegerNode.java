@@ -1,16 +1,19 @@
 package norswap.RPN.ast;
 
-public class IntegerNode implements NodeRPN
+import norswap.autumn.positions.Span;
+
+public class IntegerNode extends NodeRPN
 {
     public final int value;
 
-    public IntegerNode(String value)
+    public IntegerNode(Span span, String value)
     {
+        super(span);
         this.value = Integer.parseInt(value);
     }
 
-    public int value()
+    public String contents()
     {
-        return value;
+        return Integer.toString(value);
     }
 }

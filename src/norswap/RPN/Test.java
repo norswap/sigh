@@ -8,6 +8,9 @@ import norswap.autumn.positions.LineMapString;
 import norswap.RPN.ast.NodeRPN;
 import norswap.utils.IO;
 import java.nio.file.Paths;
+import norswap.uranium.Reactor;
+import norswap.RPN.ast.NodeRPN;
+import norswap.utils.visitors.Walker;
 
 import static norswap.utils.Util.cast;
 
@@ -28,20 +31,20 @@ public final class Test
             return;
 
         NodeRPN tree = cast(result.topValue());
-        // Reactor reactor = new Reactor();
-        // Walker<SighNode> walker = SemanticAnalysis.createWalker(reactor);
-        // walker.walk(tree);
-        // reactor.run();
+        Reactor reactor = new Reactor();
+         Walker<NodeRPN> walker = RPNSemantic.createWalker(reactor);
+         walker.walk(tree);
+         reactor.run();
 
-        // if (!reactor.errors().isEmpty()) {
-        //     System.out.println(reactor.reportErrors(it ->
-        //         it.toString() + " (" + ((SighNode) it).span.startString(lineMap) + ")"));
+         if (!reactor.errors().isEmpty()) {
+             System.out.println(reactor.reportErrors(it ->
+                 it.toString() + " (" + ((NodeRPN) it).span.startString(lineMap) + ")"));
 
-        //     // Alternatively, print the whole tree:
-        //     // System.out.println(
-        //     //     AttributeTreeFormatter.formatWalkFields(tree, reactor, SighNode.class));
-        //     return;
-        // }
+             // Alternatively, print the whole tree:
+             // System.out.println(
+             //     AttributeTreeFormatter.formatWalkFields(tree, reactor, SighNode.class));
+             return;
+         }
 
         // Interpreter interpreter = new Interpreter(reactor);
         // interpreter.interpret(tree);

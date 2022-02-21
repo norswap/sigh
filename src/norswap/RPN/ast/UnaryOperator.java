@@ -1,14 +1,19 @@
 package norswap.RPN.ast;
 
-public abstract class UnaryOperator extends OperatorNode
+import norswap.autumn.positions.Span;
+
+public class UnaryOperator extends OperatorNode
 {
     public final NodeRPN operand;
 
-    public UnaryOperator(String name, NodeRPN operand)
+    public UnaryOperator(Span span, Operators name)
     {
-        super(name);
-        this.operand = operand;
+        super(span, name);
+        this.operand = null;
     }
 
-    public abstract int value();
+    public String contents()
+    {
+        return name.toString();
+    }
 }

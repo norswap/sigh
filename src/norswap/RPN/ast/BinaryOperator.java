@@ -1,16 +1,19 @@
 package norswap.RPN.ast;
 
-public abstract class BinaryOperator extends OperatorNode
+import norswap.autumn.positions.Span;
+public class BinaryOperator extends OperatorNode
 {
     public final NodeRPN op1;
     public final NodeRPN op2;
 
-    public BinaryOperator(String name, NodeRPN op1, NodeRPN op2)
+    public BinaryOperator(Span span, Operators name)
     {
-        super(name);
-        this.op1 = op1;
-        this.op2 = op2;
+        super(span, name);
+        this.op1 = null;
+        this.op2 = null;
     }
 
-    public abstract int value();
+    public String contents(){
+        return name.toString();
+    };
 }

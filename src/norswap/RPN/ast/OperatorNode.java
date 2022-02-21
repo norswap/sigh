@@ -1,10 +1,13 @@
 package norswap.RPN.ast;
 
-public abstract class OperatorNode implements NodeRPN {
-    public final String name;
 
-    public OperatorNode(String name) {
+import norswap.autumn.positions.Span;
+
+public abstract class OperatorNode extends NodeRPN {
+    public final Operators name;
+
+    public OperatorNode(Span span, Operators name) {
+        super(span);
         this.name = name;
     }
-    public abstract int value();
 }

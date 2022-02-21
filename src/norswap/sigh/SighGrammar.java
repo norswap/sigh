@@ -83,7 +83,7 @@ public class SighGrammar extends Grammar
 
     public rule string =
         seq('"', string_content, '"')
-        .push($ -> new StringLiteralNode($.span(), $.$[0]))
+        .push($ ->new StringLiteralNode($.span(), $.$[0]))
         .word();
 
     public rule identifier =
