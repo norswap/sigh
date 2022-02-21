@@ -5,7 +5,8 @@ import norswap.autumn.ParseOptions;
 import norswap.autumn.ParseResult;
 import norswap.autumn.positions.LineMap;
 import norswap.autumn.positions.LineMapString;
-import norswap.RPN.ast.NodeRPN;
+import norswap.RPN.ast.*;
+import norswap.RPN.interpreter.Interpreter;
 import norswap.utils.IO;
 import java.nio.file.Paths;
 import norswap.uranium.Reactor;
@@ -30,7 +31,7 @@ public final class Test
         if (!result.fullMatch)
             return;
 
-        NodeRPN tree = cast(result.topValue());
+        MainNode tree = cast(result.topValue());
         Reactor reactor = new Reactor();
          Walker<NodeRPN> walker = RPNSemantic.createWalker(reactor);
          walker.walk(tree);
@@ -46,8 +47,9 @@ public final class Test
              return;
          }
 
-        // Interpreter interpreter = new Interpreter(reactor);
-        // interpreter.interpret(tree);
+         Interpreter interpreter = new Interpreter(tree.content);
+         interpreter.run();
         System.out.println("success");
+
     }
 }

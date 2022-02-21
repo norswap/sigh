@@ -12,6 +12,11 @@ public class IntegerNode extends NodeRPN
         this.value = Integer.parseInt(value);
     }
 
+    public int getValue()
+    {
+        return value;
+    }
+
     public String contents()
     {
         return Integer.toString(value);

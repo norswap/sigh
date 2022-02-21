@@ -27,6 +27,7 @@ public class RPNSemantic {
             walker.register(UnaryOperator.class, PRE_VISIT, semantic::unary_operator);
             walker.register(BinaryOperator.class, PRE_VISIT, semantic::binary_operator);
             walker.register(MainNode.class, PRE_VISIT, node -> {});
+            walker.register(MainNode.class, POST_VISIT, semantic::post_main);
 
             walker.registerFallback(POST_VISIT, node -> {});
 
@@ -60,5 +61,10 @@ public class RPNSemantic {
             stackSize--;
         }
 
+        private void post_main(MainNode node) {
+            if (stackSize != 1) {
+                reactor.error(new SemanticError("Your program is ending with " + stackSize + " elements on the stack. There must be only one.", null, node));
+            }
+        }
 
 }
