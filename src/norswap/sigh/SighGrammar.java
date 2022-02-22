@@ -276,9 +276,11 @@ public class SighGrammar extends Grammar
 
     public rule maybe_classInheritence = seq(_sonOf, identifier).or_push_null();
 
+    public rule class_body = seq(LBRACE, choice(fun_decl, var_decl, struct_decl).at_least(0).as_list(SighNode.class), RBRACE);
+
     public rule classHeader = seq(_class, identifier, maybe_classInheritence);
 
-    public rule classDecl = seq(classHeader, block).push(ctx -> {
+    public rule classDecl = seq(classHeader, class_body).push(ctx -> {
         return new ClassDeclarationNode(ctx.span(), ctx.$0(), ctx.$1(), ctx.$2());
     });
 

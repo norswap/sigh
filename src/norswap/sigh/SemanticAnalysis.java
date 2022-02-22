@@ -135,10 +135,12 @@ public final class SemanticAnalysis
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
+        walker.register(ClassDeclarationNode.class,     PRE_VISIT,  analysis::classDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, analysis::popScope);
         walker.register(BlockNode.class,                POST_VISIT, analysis::popScope);
         walker.register(FunDeclarationNode.class,       POST_VISIT, analysis::popScope);
+        walker.register(ClassDeclarationNode.class,     POST_VISIT, analysis::popScope);
 
         // statements
         walker.register(ExpressionStatementNode.class,  PRE_VISIT,  node -> {});
@@ -775,6 +777,14 @@ public final class SemanticAnalysis
 
     private void funDecl (FunDeclarationNode node)
     {
+        // Check if the function declaration is a constructor.
+        if (scope.node instanceof ClassDeclarationNode) {
+            ClassDeclarationNode classDecl = (ClassDeclarationNode) scope.node;
+            if (classDecl.name.equals(node.name)) {
+                // Rename the function
+                node.name = "<constructor>";
+            }
+        }
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
         R.set(node, "scope", scope);
@@ -815,19 +825,22 @@ public final class SemanticAnalysis
     // ---------------------------------------------------------------------------------------------
 
     private void classDecl (ClassDeclarationNode node) {
-        scope.declare(node.name, node);
-        R.set(node, "type", TypeType.INSTANCE);
-        R.set(node, "declared", new ClassType(node));
 
-        R.rule(node, "type")
-        .using(node.superClass.attr("type"))
-        .by(r -> {
-            Type superType = r.get(0);
-            if (!(superType instanceof ClassType))
-                r.error("Super class must be a class.", node.superClass);
-            else if (!((ClassType)superType).isSubclassOf(node))
-                r.error("Super class must be a subclass of this class.", node.superClass);
-        });
+        scope.declare(node.name, node);
+        scope = new Scope(node, scope);
+        R.set(node, "type", new ClassType(node));
+
+        final Scope classScope = scope;
+
+        R.rule(node, "constructor")
+                .by(r -> {
+                    DeclarationContext constructor = classScope.lookup("<constructor>");
+                    if (constructor == null) {
+                        r.error("Missing constructor for class `" + node.name + "`.", node);
+                    } else {
+                        r.set(0, constructor);
+                    }
+                });
     }
 
     // endregion

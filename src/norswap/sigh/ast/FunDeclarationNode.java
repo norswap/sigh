@@ -6,7 +6,7 @@ import java.util.List;
 
 public class FunDeclarationNode extends DeclarationNode
 {
-    public final String name;
+    public String name;
     public final List<ParameterNode> parameters;
     public final TypeNode returnType;
     public final BlockNode block;
