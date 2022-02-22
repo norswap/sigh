@@ -812,6 +812,24 @@ public final class SemanticAnalysis
         R.set(node, "declared", new StructType(node));
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    private void classDecl (ClassDeclarationNode node) {
+        scope.declare(node.name, node);
+        R.set(node, "type", TypeType.INSTANCE);
+        R.set(node, "declared", new ClassType(node));
+
+        R.rule(node, "type")
+        .using(node.superClass.attr("type"))
+        .by(r -> {
+            Type superType = r.get(0);
+            if (!(superType instanceof ClassType))
+                r.error("Super class must be a class.", node.superClass);
+            else if (!((ClassType)superType).isSubclassOf(node))
+                r.error("Super class must be a subclass of this class.", node.superClass);
+        });
+    }
+
     // endregion
     // =============================================================================================
     // region [Other Statements]

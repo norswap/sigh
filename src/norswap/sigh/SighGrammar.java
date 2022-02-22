@@ -59,6 +59,9 @@ public class SighGrammar extends Grammar
     public rule _else           = reserved("else");
     public rule _while          = reserved("while");
     public rule _return         = reserved("return");
+    public rule _class          = reserved("class");
+    public rule _sonOf          = reserved("sonOf");
+
 
     public rule number =
         seq(opt('-'), choice('0', digit.at_least(1)));
@@ -217,7 +220,8 @@ public class SighGrammar extends Grammar
         this.if_stmt,
         this.while_stmt,
         this.return_stmt,
-        this.expression_stmt));
+        this.expression_stmt,
+        this.classDecl));
 
     public rule statements =
         statement.at_least(0)
@@ -268,6 +272,15 @@ public class SighGrammar extends Grammar
     public rule return_stmt =
         seq(_return, expression.or_push_null())
         .push($ -> new ReturnNode($.span(), $.$[0]));
+
+
+    public rule maybe_classInheritence = seq(_sonOf, identifier).or_push_null();
+
+    public rule classHeader = seq(_class, identifier, maybe_classInheritence);
+
+    public rule classDecl = seq(classHeader, block).push(ctx -> {
+        return new ClassDeclarationNode(ctx.span(), ctx.$0(), ctx.$1(), ctx.$2());
+    });
 
     public rule root =
         seq(ws, statement.at_least(1))

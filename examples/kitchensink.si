@@ -1,5 +1,22 @@
 // This file showcases every single syntactic feature in the language.
 
+class myClass {
+    var a : int = 2
+
+    struct ClassStruct {
+        var a: Int
+        var b: Int
+    }
+
+    fun classFunct() : int {
+        return 2
+    }
+}
+
+class myOtherClass sonOf myClass {
+    var b : int = 3
+}
+
 fun array_add (a: Int[]): Int
 {
     fun add (a: Int, b: Int): Int {
