@@ -12,6 +12,8 @@ import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -828,9 +830,14 @@ public final class SemanticAnalysis
 
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
-        R.set(node, "type", new ClassType(node));
+         // R.set(node, "type", new ClassType(node));
 
         final Scope classScope = scope;
+
+        R.rule(node, "type").using(node, "ancestors").by(r -> {
+            ArrayList<DeclarationContext> name = r.get(0);
+            
+        });
 
         R.rule(node, "constructor")
                 .by(r -> {
@@ -842,8 +849,9 @@ public final class SemanticAnalysis
                     }
                 });
 
-        R.rule(node, "parent")
+        R.rule(node, "ancestors")
                 .by(r -> {
+                    ArrayList<DeclarationContext> ancestors = new ArrayList<>();
                     if (node.parent != null) {
                         // Check if the parent class is declared.
                         DeclarationContext parent = classScope.lookup(node.parent);
@@ -859,6 +867,7 @@ public final class SemanticAnalysis
                                 boolean cyclic = false;
                                 String path = node.name + " <- ";
                                 while (current != null && !cyclic) {
+                                    ancestors.add(current);
                                     ClassDeclarationNode parentClass = (ClassDeclarationNode) current.declaration;
                                     path += parentClass.name + " <- ";
                                     if (parentClass.name.equals(node.name)) {
@@ -867,14 +876,14 @@ public final class SemanticAnalysis
                                     current = classScope.lookup(parentClass.parent);
                                 }
                                 if (!cyclic) {
-                                    r.set(0, new ClassType((ClassDeclarationNode) parent.declaration));
+                                    r.set(0, ancestors);
                                 } else {
                                     r.error("Cyclic inheritance detected : " + path, node);
                                 }
                             }
                         }
                     } else {
-                        r.set(0, new ClassType(null));
+                        r.set(0, ancestors);
                     }
                 });
 
