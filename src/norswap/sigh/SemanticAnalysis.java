@@ -13,10 +13,8 @@ import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
@@ -802,7 +800,11 @@ public final class SemanticAnalysis
             Type[] paramTypes = new Type[node.parameters.size()];
             for (int i = 0; i < paramTypes.length; ++i)
                 paramTypes[i] = r.get(i + 1);
-            r.set(0, new FunType(r.get(0), paramTypes));
+            if (node.name.equals("<constructor>") && !(r.get(0) instanceof VoidType)){
+                r.error("constructor must return void", node.returnType);
+            } else {
+                r.set(0, new FunType(r.get(0), paramTypes));
+            }
         });
 
         R.rule()
@@ -830,13 +832,42 @@ public final class SemanticAnalysis
 
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
-         // R.set(node, "type", new ClassType(node));
 
         final Scope classScope = scope;
 
-        R.rule(node, "type").using(node, "ancestors").by(r -> {
-            ArrayList<DeclarationContext> name = r.get(0);
-            
+        R.rule().using(node.attr("ancestors")).by(r -> {
+            ArrayList<DeclarationContext> ancestors = r.get(0);
+            ClassType type = new ClassType(node.name);
+
+            // Awaits for the ancestors to be resolved.
+            ArrayList<DeclarationNode> attributes = new ArrayList<>();
+            ArrayList<String> names = new ArrayList<>();
+            for (DeclarationContext ancestor : ancestors) {
+                ClassDeclarationNode ancestorNode = (ClassDeclarationNode) ancestor.declaration;
+                for (DeclarationNode decl : ancestorNode.body) {
+                    attributes.add(decl);
+                    names.add(decl.name());
+                }
+            }
+
+
+//            Attribute[] dependencies = new Attribute[structDecl.fields.size() + 1];
+//            dependencies[0] = decl.attr("declared");
+//            forEachIndexed(structDecl.fields, (i, field) ->
+//                    dependencies[i + 1] = field.attr("type"));
+
+
+            Attribute[] dependencies = new Attribute[attributes.size()];
+            for (int i = 0; i < attributes.size(); i++) {
+                dependencies[i] = attributes.get(i).attr("type");
+            }
+
+            R.rule(node, "type").using(dependencies).by(rr -> {
+                for (int i = 0; i < dependencies.length; i++) {
+                    type.addKeys(names.get(i), rr.get(i));
+                }
+                rr.set(0, type);
+            });
         });
 
         R.rule(node, "constructor")
@@ -852,6 +883,7 @@ public final class SemanticAnalysis
         R.rule(node, "ancestors")
                 .by(r -> {
                     ArrayList<DeclarationContext> ancestors = new ArrayList<>();
+                    ancestors.add(classScope.lookup(node.name));
                     if (node.parent != null) {
                         // Check if the parent class is declared.
                         DeclarationContext parent = classScope.lookup(node.parent);

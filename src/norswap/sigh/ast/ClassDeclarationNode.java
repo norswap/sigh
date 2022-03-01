@@ -7,10 +7,10 @@ import java.util.List;
 public class ClassDeclarationNode extends DeclarationNode {
     
     public String name;
-    public List<SighNode> body;
+    public List<DeclarationNode> body;
     public String parent;
 
-    public ClassDeclarationNode (Span span, String name, String parent, List<SighNode> body) {
+    public ClassDeclarationNode (Span span, String name, String parent, List<DeclarationNode> body) {
         super(span);
         this.name = name;
         this.parent = parent; 
