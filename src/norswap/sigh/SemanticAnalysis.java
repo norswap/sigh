@@ -841,6 +841,43 @@ public final class SemanticAnalysis
                         r.set(0, constructor);
                     }
                 });
+
+        R.rule(node, "parent")
+                .by(r -> {
+                    if (node.parent != null) {
+                        // Check if the parent class is declared.
+                        DeclarationContext parent = classScope.lookup(node.parent);
+                        if (parent == null) {
+                            r.error("No implementation found for parent class `" + node.parent + "`.", node);
+                        } else {
+                            // Check if the parent is a class.
+                            if (!(parent.declaration instanceof ClassDeclarationNode)) {
+                                r.error("Parent class `" + node.parent + "` is not a class.", node);
+                            } else {
+                                // Check for cyclic inheritance.
+                                DeclarationContext current = parent;
+                                boolean cyclic = false;
+                                String path = node.name + " <- ";
+                                while (current != null && !cyclic) {
+                                    ClassDeclarationNode parentClass = (ClassDeclarationNode) current.declaration;
+                                    path += parentClass.name + " <- ";
+                                    if (parentClass.name.equals(node.name)) {
+                                        cyclic = true;
+                                    }
+                                    current = classScope.lookup(parentClass.parent);
+                                }
+                                if (!cyclic) {
+                                    r.set(0, new ClassType((ClassDeclarationNode) parent.declaration));
+                                } else {
+                                    r.error("Cyclic inheritance detected : " + path, node);
+                                }
+                            }
+                        }
+                    } else {
+                        r.set(0, new ClassType(null));
+                    }
+                });
+
     }
 
     // endregion
