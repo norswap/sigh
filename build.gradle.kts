@@ -63,7 +63,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.norswap:utils:2.1.9")
+    implementation("com.norswap:utils:2.1.12")
     implementation("com.norswap:autumn:1.2.0")
     implementation("com.norswap:uranium:1.0.9-ALPHA")
     implementation("org.ow2.asm:asm-all:5.2")
