@@ -594,11 +594,12 @@ public class BytecodeCompiler
 
     private Object expressionStmt (ExpressionStatementNode node) {
         run(node.expression);
-        if (!(node.expression instanceof FunCallNode))
-            return null;
-        Type type = reactor.get(node.expression, "type");
-        if (!(type instanceof VoidType))
-            method.visitInsn(type instanceof IntType || type instanceof FloatType ? POP2 : POP);
+        if (node.expression instanceof AssignmentNode)
+            pop(reactor.get(node.expression, "type"));
+        else if (node.expression instanceof FunCallNode) {
+            Type type = reactor.get(node.expression, "type");
+            if (!(type instanceof VoidType)) pop(type);
+        }
         return null;
     }
 
@@ -762,7 +763,8 @@ public class BytecodeCompiler
         if (node.left instanceof ReferenceNode) {
             ReferenceNode left = (ReferenceNode) node.left;
             run(node.right);
-            implicitConversion(node, node.right);
+            Type type = implicitConversion(node, node.right);
+            dup(type);
             method.visitVarInsn(nodeAsmType(node).getOpcode(ISTORE), varIndex(left));
         }
         else if (node.left instanceof ArrayAccessNode) {
@@ -771,14 +773,16 @@ public class BytecodeCompiler
             run(left.index);
             method.visitInsn(L2I);
             run(node.right);
-            implicitConversion(node, node.right);
+            Type type = implicitConversion(node, node.right);
+            dup_x2(type);
             method.visitInsn(nodeAsmType(node).getOpcode(IASTORE));
         }
         else if (node.left instanceof FieldAccessNode) {
             FieldAccessNode left = (FieldAccessNode) node.left;
             run(left.stem);
             run(node.right);
-            implicitConversion(node, node.right);
+            Type type = implicitConversion(node, node.right);
+            dup_x1(type);
             StructType structType = reactor.get(left.stem, "type");
             Type fieldType = reactor.get(node, "type");
             method.visitFieldInsn(PUTFIELD, structBinaryName(structType), left.fieldName,
@@ -902,15 +906,78 @@ public class BytecodeCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private void implicitConversion (Type left, Type right) {
-        if (left instanceof FloatType && right instanceof IntType)
+    /**
+     * Implicitly converts the value at the top of the stack (of type {@code right}) to the type
+     * {@code left} if compatible, in which case {@code left} is returned. Otherwise returns {@code
+     * right}.
+     */
+    private Type implicitConversion (Type left, Type right) {
+        if (left instanceof FloatType && right instanceof IntType) {
             method.visitInsn(L2D);
+            return left;
+        }
+        return right;
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private void implicitConversion (SighNode left, SighNode right) {
-        implicitConversion((Type) reactor.get(left,  "type"), reactor.get(right, "type"));
+    /**
+     * Like {@link #implicitConversion(Type, Type)}, using the type attributes of the passed nodes.
+     */
+    private Type implicitConversion (SighNode left, SighNode right) {
+        return implicitConversion((Type) reactor.get(left,  "type"), reactor.get(right, "type"));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Calls the right dup instruction depending on {@code type}, the type of the value at the top
+     * of the stack.
+     */
+    private void dup (Type type) {
+        if (type instanceof FloatType || type instanceof IntType)
+            method.visitInsn(DUP2);
+        else
+            method.visitInsn(DUP);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Calls the right dup_x2 ([x, y] => [y, x, y]) instruction depending on {@code type}, the type
+     * of the value at the top of the stack.
+     */
+    private void dup_x1 (Type type) {
+        if (type instanceof FloatType || type instanceof IntType)
+            method.visitInsn(DUP2_X1);
+        else
+            method.visitInsn(DUP_X1);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Calls the right dup_x2 ([x, y, z] => [z, x, y, z]) instruction depending on {@code type}, the
+     * type of the value at the top of the stack.
+     */
+    private void dup_x2 (Type type) {
+        if (type instanceof FloatType || type instanceof IntType)
+            method.visitInsn(DUP2_X2);
+        else
+            method.visitInsn(DUP_X2);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Calls the right pop instruction depending on {@code type}, the type of the value at the top
+     * of the stack.
+     */
+    private void pop (Type type) {
+        if (type instanceof FloatType || type instanceof IntType)
+            method.visitInsn(POP2);
+        else
+            method.visitInsn(POP);
     }
 
     // endregion
