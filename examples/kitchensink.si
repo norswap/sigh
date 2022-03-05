@@ -63,3 +63,20 @@ fun use_array (array: Int[]) {}
 var intArray: Int[] = []
 var stringArray: String[] = []
 use_array([])
+
+fun myFunc() : Unborn<Int> {
+	var myVar : Int = 0
+	// ...
+	// Some time-taking treatment
+	// ...
+	return myVar
+} 
+var aNiceVar : Unborn<Int> = myFunc()
+// ...
+// Some treatment that doesn't require the variable aNiceVar
+// ...
+
+Born(aNiceVar, { // Awaits for aNiceVar's result
+    aNiceVar = 0 // You can do something if the other thread crashes
+})
+aNiceVar = aNiceVar + 1 // From now on, aNiceVar can be used as a simple int

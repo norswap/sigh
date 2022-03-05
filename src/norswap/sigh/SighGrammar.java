@@ -59,6 +59,8 @@ public class SighGrammar extends Grammar
     public rule _else           = reserved("else");
     public rule _while          = reserved("while");
     public rule _return         = reserved("return");
+    public rule _unborn         = reserved("Unborn");
+    public rule _born           = reserved("Born");
 
     public rule number =
         seq(opt('-'), choice('0', digit.at_least(1)));
@@ -206,9 +208,16 @@ public class SighGrammar extends Grammar
         .suffix(seq(LSQUARE, RSQUARE),
             $ -> new ArrayTypeNode($.span(), $.$[0]));
 
-    public rule type =
-        seq(array_type);
+    public rule unborn_type = left_expression()
+        .left(_unborn)
+        .suffix(seq(LANGLE, array_type, RANGLE),
+            $ -> new UnbornTypeNode($.span(), $.$[0]));
 
+    public rule type = choice(
+        seq(array_type),
+        seq(unborn_type)
+    );
+        
     public rule statement = lazy(() -> choice(
         this.block,
         this.var_decl,
@@ -217,7 +226,9 @@ public class SighGrammar extends Grammar
         this.if_stmt,
         this.while_stmt,
         this.return_stmt,
-        this.expression_stmt));
+        this.expression_stmt,
+        this.born_stmt
+        ));
 
     public rule statements =
         statement.at_least(0)
@@ -268,6 +279,10 @@ public class SighGrammar extends Grammar
     public rule return_stmt =
         seq(_return, expression.or_push_null())
         .push($ -> new ReturnNode($.span(), $.$[0]));
+
+    public rule born_stmt =
+        seq(_born, LPAREN, identifier, COMMA, block, RPAREN)
+        .push($ -> new BornNode($.span(), $.$[0], $.$[1]));
 
     public rule root =
         seq(ws, statement.at_least(1))
