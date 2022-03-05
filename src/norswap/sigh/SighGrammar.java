@@ -59,8 +59,14 @@ public class SighGrammar extends Grammar
     public rule _else           = reserved("else");
     public rule _while          = reserved("while");
     public rule _return         = reserved("return");
+<<<<<<< HEAD
     public rule _unborn         = reserved("Unborn");
     public rule _born           = reserved("Born");
+=======
+    public rule _class          = reserved("class");
+    public rule _sonOf          = reserved("sonOf");
+
+>>>>>>> classes
 
     public rule number =
         seq(opt('-'), choice('0', digit.at_least(1)));
@@ -227,8 +233,12 @@ public class SighGrammar extends Grammar
         this.while_stmt,
         this.return_stmt,
         this.expression_stmt,
+<<<<<<< HEAD
         this.born_stmt
         ));
+=======
+        this.classDecl));
+>>>>>>> classes
 
     public rule statements =
         statement.at_least(0)
@@ -283,6 +293,16 @@ public class SighGrammar extends Grammar
     public rule born_stmt =
         seq(_born, LPAREN, identifier, COMMA, block, RPAREN)
         .push($ -> new BornNode($.span(), $.$[0], $.$[1]));
+
+    public rule maybe_classInheritence = seq(_sonOf, identifier).or_push_null();
+
+    public rule class_body = seq(LBRACE, choice(fun_decl, var_decl, struct_decl).at_least(0).as_list(SighNode.class), RBRACE);
+
+    public rule classHeader = seq(_class, identifier, maybe_classInheritence);
+
+    public rule classDecl = seq(classHeader, class_body).push(ctx -> {
+        return new ClassDeclarationNode(ctx.span(), ctx.$0(), ctx.$1(), ctx.$2());
+    });
 
     public rule root =
         seq(ws, statement.at_least(1))

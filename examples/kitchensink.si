@@ -1,5 +1,58 @@
 // This file showcases every single syntactic feature in the language.
 
+class myClass {
+    var a : Int = 0
+
+    fun myClass(initialVal : Int) {
+        a = initialVal
+    }
+
+    struct ClassStruct {
+        var a: Int
+        var b: Int
+    }
+
+    fun classFunct() : Int {
+        return 2
+    }
+}
+
+var myVar : myClass = myClass(4)
+
+class myOtherClass sonOf myClass {
+
+    fun myOtherClass() {
+    }
+}
+
+class yetAnotherClass sonOf aClassThatDoesNotExist {
+    var c : Int = 4
+}
+
+class yetAnotherClass2 sonOf array_add {
+    var c : Int = 4
+
+    fun yetAnotherClass2() {
+        c = 0
+    }
+}
+
+class cycleClass1 sonOf cycleClass2 {
+    var d : Int = 5
+
+    fun cycleClass1() : Int {
+        d = 0
+    }
+}
+
+class cycleClass2 sonOf cycleClass1 {
+    var e : Int = 6
+
+    fun cycleClass2() {
+        e = 0
+    }
+}
+
 fun array_add (a: Int[]): Int
 {
     fun add (a: Int, b: Int): Int {

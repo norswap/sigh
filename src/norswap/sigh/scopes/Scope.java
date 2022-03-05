@@ -74,4 +74,8 @@ public class Scope
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    public HashMap<String, DeclarationNode> getDeclarationsClone() {
+        return (HashMap<String, DeclarationNode>) declarations.clone();
+    }
 }

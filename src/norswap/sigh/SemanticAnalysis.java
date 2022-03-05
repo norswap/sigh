@@ -12,9 +12,9 @@ import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
@@ -135,10 +135,12 @@ public final class SemanticAnalysis
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
+        walker.register(ClassDeclarationNode.class,     PRE_VISIT,  analysis::classDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, analysis::popScope);
         walker.register(BlockNode.class,                POST_VISIT, analysis::popScope);
         walker.register(FunDeclarationNode.class,       POST_VISIT, analysis::popScope);
+        walker.register(ClassDeclarationNode.class,     POST_VISIT, analysis::popScope);
 
         // statements
         walker.register(ExpressionStatementNode.class,  PRE_VISIT,  node -> {});
@@ -775,6 +777,14 @@ public final class SemanticAnalysis
 
     private void funDecl (FunDeclarationNode node)
     {
+        // Check if the function declaration is a constructor.
+        if (scope.node instanceof ClassDeclarationNode) {
+            ClassDeclarationNode classDecl = (ClassDeclarationNode) scope.node;
+            if (classDecl.name.equals(node.name)) {
+                // Rename the function
+                node.name = "<constructor>";
+            }
+        }
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
         R.set(node, "scope", scope);
@@ -790,7 +800,11 @@ public final class SemanticAnalysis
             Type[] paramTypes = new Type[node.parameters.size()];
             for (int i = 0; i < paramTypes.length; ++i)
                 paramTypes[i] = r.get(i + 1);
-            r.set(0, new FunType(r.get(0), paramTypes));
+            if (node.name.equals("<constructor>") && !(r.get(0) instanceof VoidType)){
+                r.error("constructor must return void", node.returnType);
+            } else {
+                r.set(0, new FunType(r.get(0), paramTypes));
+            }
         });
 
         R.rule()
@@ -810,6 +824,101 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         R.set(node, "type", TypeType.INSTANCE);
         R.set(node, "declared", new StructType(node));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void classDecl (ClassDeclarationNode node) {
+
+        scope.declare(node.name, node);
+        scope = new Scope(node, scope);
+
+        final Scope classScope = scope;
+
+        R.rule().using(node.attr("ancestors")).by(r -> {
+            ArrayList<DeclarationContext> ancestors = r.get(0);
+            ClassType type = new ClassType(node.name);
+
+            // Awaits for the ancestors to be resolved.
+            ArrayList<DeclarationNode> attributes = new ArrayList<>();
+            ArrayList<String> names = new ArrayList<>();
+            for (DeclarationContext ancestor : ancestors) {
+                ClassDeclarationNode ancestorNode = (ClassDeclarationNode) ancestor.declaration;
+                for (DeclarationNode decl : ancestorNode.body) {
+                    attributes.add(decl);
+                    names.add(decl.name());
+                }
+            }
+
+
+//            Attribute[] dependencies = new Attribute[structDecl.fields.size() + 1];
+//            dependencies[0] = decl.attr("declared");
+//            forEachIndexed(structDecl.fields, (i, field) ->
+//                    dependencies[i + 1] = field.attr("type"));
+
+
+            Attribute[] dependencies = new Attribute[attributes.size()];
+            for (int i = 0; i < attributes.size(); i++) {
+                dependencies[i] = attributes.get(i).attr("type");
+            }
+
+            R.rule(node, "type").using(dependencies).by(rr -> {
+                for (int i = 0; i < dependencies.length; i++) {
+                    type.addKeys(names.get(i), rr.get(i));
+                }
+                rr.set(0, type);
+            });
+        });
+
+        R.rule(node, "constructor")
+                .by(r -> {
+                    DeclarationContext constructor = classScope.lookup("<constructor>");
+                    if (constructor == null) {
+                        r.error("Missing constructor for class `" + node.name + "`.", node);
+                    } else {
+                        r.set(0, constructor);
+                    }
+                });
+
+        R.rule(node, "ancestors")
+                .by(r -> {
+                    ArrayList<DeclarationContext> ancestors = new ArrayList<>();
+                    ancestors.add(classScope.lookup(node.name));
+                    if (node.parent != null) {
+                        // Check if the parent class is declared.
+                        DeclarationContext parent = classScope.lookup(node.parent);
+                        if (parent == null) {
+                            r.error("No implementation found for parent class `" + node.parent + "`.", node);
+                        } else {
+                            // Check if the parent is a class.
+                            if (!(parent.declaration instanceof ClassDeclarationNode)) {
+                                r.error("Parent class `" + node.parent + "` is not a class.", node);
+                            } else {
+                                // Check for cyclic inheritance.
+                                DeclarationContext current = parent;
+                                boolean cyclic = false;
+                                String path = node.name + " <- ";
+                                while (current != null && !cyclic) {
+                                    ancestors.add(current);
+                                    ClassDeclarationNode parentClass = (ClassDeclarationNode) current.declaration;
+                                    path += parentClass.name + " <- ";
+                                    if (parentClass.name.equals(node.name)) {
+                                        cyclic = true;
+                                    }
+                                    current = classScope.lookup(parentClass.parent);
+                                }
+                                if (!cyclic) {
+                                    r.set(0, ancestors);
+                                } else {
+                                    r.error("Cyclic inheritance detected : " + path, node);
+                                }
+                            }
+                        }
+                    } else {
+                        r.set(0, ancestors);
+                    }
+                });
+
     }
 
     // endregion
