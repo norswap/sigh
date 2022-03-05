@@ -201,10 +201,10 @@ public class SighGrammar extends Grammar
             return true;
         });
 
-    public rule array_declaration=seq(LSQUARE,opt(integer),RSQUARE);
+
     public rule array_type = left_expression()
         .left(simple_type)
-        .suffix(seq(array_declaration.at_least(1)),
+        .suffix(seq(LSQUARE, RSQUARE),
             $ -> new ArrayTypeNode($.span(), $.$[0]));
 
     public rule type =
@@ -215,6 +215,7 @@ public class SighGrammar extends Grammar
         this.var_decl,
         this.fun_decl,
         this.struct_decl,
+        this.array_decl,
         this.if_stmt,
         this.while_stmt,
         this.return_stmt,
@@ -231,6 +232,13 @@ public class SighGrammar extends Grammar
     public rule var_decl =
         seq(_var, identifier, COLON, type, EQUALS, expression)
         .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
+
+    public rule array_decl=choice(
+        seq(_var, identifier, COLON,type,seq(LSQUARE,integer,RSQUARE).at_least(1)),
+        seq(_var, identifier, COLON,type,seq(LSQUARE,RSQUARE).at_least(1), EQUALS, expression)
+        )
+        .push($ -> new ArrayDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
+
 
     public rule parameter =
         seq(identifier, COLON, type)
