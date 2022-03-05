@@ -3,6 +3,7 @@ package norswap.sigh.types;
 public final class ArrayType extends Type
 {
     public final Type componentType;
+    public static final ArrayType INSTANCE = new ArrayType(IntType.INSTANCE);
 
     public ArrayType (Type componentType) {
         this.componentType = componentType;

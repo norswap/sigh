@@ -210,6 +210,10 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [1.0][0]");
         successInput("return [1, 2][1]");
 
+        successInput("return [1, 1]*[2, 2]");
+        successInput("return [[1, 2, 3], [4, 5, 6]]");
+        successInput("return [[[1], [2], [3]], [[4], [5], [6]]]");
+
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
 
         // TODO make this legal?
@@ -217,6 +221,14 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         successInput("return [1].length");
         successInput("return [1, 2].length");
+
+        successInput("return [4, 2].avg");
+        successInput("return [1, 3, 4, 2].count");
+        successInput("return [4, 2].sum");
+        successInput("return ([4, 2]+[1, 1])[0]");
+        successInput("return ([4, 2]+[1, 1])[1]");
+        successInput("return ([4, 2]*[2, 3])[0]");
+        successInput("return ([4, 2]*[2, 3])[1]");
 
         successInput("var array: Int[] = null; return array[0]");
         successInput("var array: Int[] = null; return array.length");

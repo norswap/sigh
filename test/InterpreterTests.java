@@ -278,6 +278,14 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("[1].length", 1L);
         checkExpr("[1, 2].length", 2L);
 
+        checkExpr("[4, 2].avg", 3L);
+        checkExpr("[1, 3, 4, 2].count", 4L);
+        checkExpr("[4, 2].sum", 6L);
+        checkExpr("([4, 2]+[1, 1])[0]", 5L );
+        checkExpr("([4, 2]+[1, 1])[1]", 3L );
+        checkExpr("([4, 2]*[2, 3])[0]", 8L );
+        checkExpr("([4, 2]*[2, 3])[1]", 6L );
+
         checkThrows("var array: Int[] = null; return array[0]", NullPointerException.class);
         checkThrows("var array: Int[] = null; return array.length", NullPointerException.class);
 

@@ -5,6 +5,7 @@ import norswap.sigh.scopes.DeclarationKind;
 import norswap.sigh.scopes.RootScope;
 import norswap.sigh.scopes.Scope;
 import norswap.sigh.scopes.SyntheticDeclarationNode;
+import norswap.sigh.types.ArrayType;
 import norswap.sigh.types.FloatType;
 import norswap.sigh.types.IntType;
 import norswap.sigh.types.StringType;
@@ -157,6 +158,46 @@ public final class Interpreter
     }
 
     // ---------------------------------------------------------------------------------------------
+    private Object arrayExpression( BinaryExpressionNode node){
+        Type leftType  = reactor.get(node.left, "type");
+        Type rightType = reactor.get(node.right, "type");
+
+        Object left  = get(node.left);
+        Object right = get(node.right);
+
+        if(node.operator == BinaryOperator.ADD){
+            Object[] leftArray=(Object[])left;
+            Object[] rightArray=(Object[])right;
+            if(leftArray.length!=rightArray.length){
+                throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
+            }
+            Long[] result=new Long[leftArray.length];
+            for(int i=0;i<leftArray.length;i++){
+                result[i]=(long)leftArray[i]+(long) rightArray[i];
+            }
+            return result;
+        }
+        if (node.operator==BinaryOperator.MULTIPLY){
+            Object[] leftArray=(Object[])left;
+            Object[] rightArray=(Object[])right;
+            if(leftArray.length!=rightArray.length){
+                throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
+            }
+            Long[] result=new Long[leftArray.length];
+            for(int i=0;i<leftArray.length;i++){
+                result[i]=(long)leftArray[i]*(long) rightArray[i];
+            }
+            return result;
+        }
+        switch (node.operator) {
+            case EQUALITY:
+                return  leftType.isPrimitive() ? left.equals(right) : left == right;
+            case NOT_EQUALS:
+                return  leftType.isPrimitive() ? !left.equals(right) : left != right;
+        }
+
+        throw new InterpreterException("Operation not implemented yet", new Exception());
+    }
 
     private Object binaryExpression (BinaryExpressionNode node)
     {
@@ -175,7 +216,9 @@ public final class Interpreter
         if (node.operator == BinaryOperator.ADD
                 && (leftType instanceof StringType || rightType instanceof StringType))
             return convertToString(left) + convertToString(right);
-
+        else if (leftType instanceof ArrayType || rightType instanceof ArrayType) {
+            return arrayExpression(node);
+        }
         boolean floating = leftType instanceof FloatType || rightType instanceof FloatType;
         boolean numeric  = floating || leftType instanceof IntType;
 
@@ -375,23 +418,59 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object expressionStmt (ExpressionStatementNode node) {
+    private Object expressionStmt(ExpressionStatementNode node) {
         get(node.expression);
         return null;  // discard value
     }
 
     // ---------------------------------------------------------------------------------------------
+    private long average(Object[] tab){
+        long a=0;
+        for(Object o:tab){
+            a=a+(long)o;
+        }
+        return (a=a/tab.length);
+    }
+
+    private long sum(Object[] tab){
+        long a=0;
+        for(Object o:tab){
+            a=a+(long)o;
+        }
+        return a;
+    }
+
+    private long count(Object[] tab){
+        long n=0;
+        for(Object o:tab){
+            n+=1;
+        }
+        return n;
+    }
 
     private Object fieldAccess (FieldAccessNode node)
     {
         Object stem = get(node.stem);
         if (stem == Null.INSTANCE)
             throw new PassthroughException(
-                new NullPointerException("accessing field of null object"));
-        return stem instanceof Map
+                    new NullPointerException("accessing field of null object"));
+        if(! (stem instanceof  Map)){
+            String fieldName=node.fieldName;
+            if(fieldName.equals("length"))
+                return (long) ((Object[]) stem).length;
+            else if(fieldName.equals("avg"))
+                return (long) average((Object[]) stem);
+            else if(fieldName.equals("count"))
+                return (long) count((Object[]) stem);
+            else if(fieldName.equals("sum"))
+                return (long) sum((Object[]) stem);
+        }
+        return Util.<Map<String, Object>>cast(stem).get(node.fieldName);
+        /*return stem instanceof Map
                 ? Util.<Map<String, Object>>cast(stem).get(node.fieldName)
-                : (long) ((Object[]) stem).length; // only field on arrays
+                :(long) ((Object[]) stem).length;  // only field on arrays*/
     }
+
 
     // ---------------------------------------------------------------------------------------------
 

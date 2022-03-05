@@ -324,47 +324,57 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+
     private void fieldAccess (FieldAccessNode node)
     {
         R.rule()
-        .using(node.stem, "type")
-        .by(r -> {
-            Type type = r.get(0);
+                .using(node.stem, "type")
+                .by(r -> {
+                    Type type = r.get(0);
 
-            if (type instanceof ArrayType) {
-                if (node.fieldName.equals("length"))
-                    R.rule(node, "type")
-                    .by(rr -> rr.set(0, IntType.INSTANCE));
-                else
-                    r.errorFor("Trying to access a non-length field on an array", node,
-                        node.attr("type"));
-                return;
-            }
-            
-            if (!(type instanceof StructType)) {
-                r.errorFor("Trying to access a field on an expression of type " + type,
-                        node,
-                        node.attr("type"));
-                return;
-            }
+                    if (type instanceof ArrayType) {
+                        if (node.fieldName.equals("length"))
+                            R.rule(node, "type")
+                                    .by(rr -> rr.set(0, IntType.INSTANCE));
+                        else if(node.fieldName.equals("avg"))
+                            R.rule(node, "type")
+                                    .by(rr -> rr.set(0, IntType.INSTANCE));
+                        else if(node.fieldName.equals("count"))
+                            R.rule(node, "type")
+                                    .by(rr -> rr.set(0, IntType.INSTANCE));
+                        else if(node.fieldName.equals("sum"))
+                            R.rule(node, "type")
+                                    .by(rr -> rr.set(0, IntType.INSTANCE));
+                        else
+                            r.errorFor("Trying to access a non-length field on an array", node,
+                                    node.attr("type"));
+                        return;
+                    }
 
-            StructDeclarationNode decl = ((StructType) type).node;
+                    if (!(type instanceof StructType)) {
+                        r.errorFor("Trying to access a field on an expression of type " + type,
+                                node,
+                                node.attr("type"));
+                        return;
+                    }
 
-            for (DeclarationNode field: decl.fields)
-            {
-                if (!field.name().equals(node.fieldName)) continue;
+                    StructDeclarationNode decl = ((StructType) type).node;
 
-                R.rule(node, "type")
-                .using(field, "type")
-                .by(Rule::copyFirst);
+                    for (DeclarationNode field: decl.fields)
+                    {
+                        if (!field.name().equals(node.fieldName)) continue;
 
-                return;
-            }
+                        R.rule(node, "type")
+                                .using(field, "type")
+                                .by(Rule::copyFirst);
 
-            String description = format("Trying to access missing field %s on struct %s",
-                    node.fieldName, decl.name);
-            r.errorFor(description, node, node.attr("type"));
-        });
+                        return;
+                    }
+
+                    String description = format("Trying to access missing field %s on struct %s",
+                            node.fieldName, decl.name);
+                    r.errorFor(description, node, node.attr("type"));
+                });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -514,6 +524,12 @@ public final class SemanticAnalysis
                 r.set(0, FloatType.INSTANCE);
             else
                 r.error(arithmeticError(node, "Float", right), node);
+            //TODO : new rule
+        else if (left instanceof ArrayType)
+            if(right instanceof ArrayType)
+                r.set(0, ArrayType.INSTANCE);
+            else
+                r.error(arithmeticError(node, left, right), node);
         else
             r.error(arithmeticError(node, left, right), node);
     }
