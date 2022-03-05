@@ -80,6 +80,7 @@ public final class Interpreter
         visitor.register(RootNode.class,                 this::root);
         visitor.register(BlockNode.class,                this::block);
         visitor.register(VarDeclarationNode.class,       this::varDecl);
+        visitor.register(ArrayDeclarationNode.class,     this::arrayDecl);
         // no need to visitor other declarations! (use fallback)
 
         // statements
@@ -383,6 +384,10 @@ public final class Interpreter
             }
         }
 
+        if (node.left instanceof ArrayLiteralNode){
+
+        }
+
         if (node.left instanceof FieldAccessNode) {
             FieldAccessNode fieldAccess = (FieldAccessNode) node.left;
             Object object = get(fieldAccess.stem);
@@ -635,6 +640,7 @@ public final class Interpreter
         DeclarationNode decl = reactor.get(node, "decl");
 
         if (decl instanceof VarDeclarationNode
+        || decl instanceof ArrayDeclarationNode
         || decl instanceof ParameterNode
         || decl instanceof SyntheticDeclarationNode
                 && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
@@ -657,6 +663,14 @@ public final class Interpreter
     {
         Scope scope = reactor.get(node, "scope");
         assign(scope, node.name, get(node.initializer), reactor.get(node, "type"));
+        return null;
+    }
+
+    private Void arrayDecl (ArrayDeclarationNode node)
+    {
+        Scope scope = reactor.get(node, "scope");
+        assign(scope, node.name, get(node.initializer), reactor.get(node, "type"));
+
         return null;
     }
 

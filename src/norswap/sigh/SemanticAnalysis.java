@@ -776,7 +776,7 @@ public final class SemanticAnalysis
 
         R.rule(node, "type")
                 .using(node.type, "value")
-                .by(Rule::copyFirst);
+                .by(r -> r.set(0, new ArrayType(r.get(0))));
 
         R.rule()
                 .using(node.type.attr("value"), node.initializer.attr("type"))
