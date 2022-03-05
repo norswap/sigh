@@ -171,23 +171,85 @@ public final class Interpreter
             if(leftArray.length!=rightArray.length){
                 throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
             }
-            Long[] result=new Long[leftArray.length];
-            for(int i=0;i<leftArray.length;i++){
-                result[i]=(long)leftArray[i]+(long) rightArray[i];
+            if(leftArray[0] instanceof Double ){
+                Double[] result=new Double[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(double)leftArray[i]+(double) rightArray[i];
+                }
+                return result;
             }
-            return result;
+            else{
+                Long[] result=new Long[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(Long)leftArray[i]+(Long) rightArray[i];
+                }
+                return result;
+            }
         }
-        if (node.operator==BinaryOperator.MULTIPLY){
+        else if (node.operator==BinaryOperator.MULTIPLY){
             Object[] leftArray=(Object[])left;
             Object[] rightArray=(Object[])right;
             if(leftArray.length!=rightArray.length){
                 throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
             }
-            Long[] result=new Long[leftArray.length];
-            for(int i=0;i<leftArray.length;i++){
-                result[i]=(long)leftArray[i]*(long) rightArray[i];
+            if(leftArray[0] instanceof Double ){
+                Double[] result=new Double[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(double)leftArray[i]*(double) rightArray[i];
+                }
+                return result;
             }
-            return result;
+            else{
+                Long[] result=new Long[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(Long)leftArray[i]*(Long) rightArray[i];
+                }
+                return result;
+            }
+        }
+        else if (node.operator==BinaryOperator.SUBTRACT){
+            Object[] leftArray=(Object[])left;
+            Object[] rightArray=(Object[])right;
+            if(leftArray.length!=rightArray.length){
+                throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
+            }
+            if(leftArray[0] instanceof Double ){
+                Double[] result=new Double[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(double)leftArray[i]-(double) rightArray[i];
+                }
+                return result;
+            }
+            else{
+                Long[] result=new Long[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(Long)leftArray[i]-(Long) rightArray[i];
+                }
+                return result;
+            }
+        }
+        else if (node.operator==BinaryOperator.DIVIDE){
+            Object[] leftArray=(Object[])left;
+            Object[] rightArray=(Object[])right;
+            if(leftArray.length!=rightArray.length){
+                throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
+            }
+
+            if(leftArray[0] instanceof Double ){
+                Double[] result=new Double[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(double)leftArray[i]/(double) rightArray[i];
+                }
+                return result;
+            }
+            else{
+                Long[] result=new Long[leftArray.length];
+                for(int i=0;i<leftArray.length;i++){
+                    result[i]=(Long)leftArray[i]/(Long) rightArray[i];
+                }
+                return result;
+            }
+
         }
         switch (node.operator) {
             case EQUALITY:
