@@ -286,6 +286,10 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("([4, 2]*[2, 3])[0]", 8L );
         checkExpr("([4, 2]*[2, 3])[1]", 6L );
 
+        checkExpr("[[1, 2, 3], [4, 5, 6]][0][1]", 2L);
+        //checkExpr("([[1, 2, 3], [4, 5, 6]]+[[1, 1, 1], [2, 2, 2]])[0][1]", 3L);
+        checkExpr("[[[1], [2], [3]], [[4], [5], [6]]][1][2][0]",6L);
+
         checkThrows("var array: Int[] = null; return array[0]", NullPointerException.class);
         checkThrows("var array: Int[] = null; return array.length", NullPointerException.class);
 

@@ -201,9 +201,10 @@ public class SighGrammar extends Grammar
             return true;
         });
 
+    public rule array_declaration=seq(LSQUARE,opt(integer),RSQUARE);
     public rule array_type = left_expression()
         .left(simple_type)
-        .suffix(seq(LSQUARE, RSQUARE),
+        .suffix(seq(array_declaration.at_least(1)),
             $ -> new ArrayTypeNode($.span(), $.$[0]));
 
     public rule type =
