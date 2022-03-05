@@ -769,12 +769,27 @@ public final class SemanticAnalysis
     // ---------------------------------------------------------------------------------------------
     private void arrayDecl (ArrayDeclarationNode node)
     {
+        this.inferenceContext = node;
+
+        scope.declare(node.name, node);
         R.set(node, "scope", scope);
-        scope.declare(node.name, node); // scope pushed by ArrayDeclarationNode
 
         R.rule(node, "type")
                 .using(node.type, "value")
                 .by(Rule::copyFirst);
+
+        R.rule()
+                .using(node.type.attr("value"), node.initializer.attr("type"))
+                .by(r -> {
+                    Type expected = r.get(0);
+                    Type actual = r.get(1);
+
+                    if (!isAssignableTo(actual, expected))
+                        r.error(format(
+                                "incompatible initializer type provided for variable `%s`: expected %s but got %s",
+                                node.name, expected, actual),
+                                node.initializer);
+                });
     }
     // ---------------------------------------------------------------------------------------------
 

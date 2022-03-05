@@ -234,10 +234,11 @@ public class SighGrammar extends Grammar
         .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule array_decl=choice(
-        seq(_var, identifier, COLON,type,seq(LSQUARE,integer,RSQUARE).at_least(1)),
         seq(_var, identifier, COLON,type,seq(LSQUARE,RSQUARE).at_least(1), EQUALS, expression)
-        )
-        .push($ -> new ArrayDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
+                .push($ -> new ArrayDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], true)),
+        seq(_var, identifier, COLON,type,seq(LSQUARE,integer,RSQUARE).at_least(1))
+                .push($ -> new ArrayDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], false)));
+        //.push($ -> new ArrayDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
 
 
     public rule parameter =

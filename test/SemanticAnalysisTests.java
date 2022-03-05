@@ -213,13 +213,16 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [1, 1]*[2, 2]");
         successInput("return [[1, 2, 3], [4, 5, 6]]");
         successInput("return [[[1], [2], [3]], [[4], [5], [6]]]");
+        successInput("var x: Int[2]");
         successInput("var x: Int[2][3][4]");
         successInput("var x: Int[][][]=[[[1]],[[2]]]");
-
+        failureInputWith("var x: Int[][][]=[[[1.0]],[[2.0]]]",
+                "incompatible initializer type provided for variable `x`:" +
+                                 " expected Int[][][] but got Float[][][]");
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
 
         // TODO make this legal?
-        // successInput("[].length", 0L);
+        //successInput("[].length");
 
         successInput("return [1].length");
         successInput("return [1, 2].length");

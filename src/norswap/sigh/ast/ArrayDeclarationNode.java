@@ -7,12 +7,14 @@ public class ArrayDeclarationNode extends DeclarationNode{
     public final String name;
     public final TypeNode type;
     public final ExpressionNode initializer;
+    public boolean shaped;
 
-    public ArrayDeclarationNode(Span span, Object name, Object type, Object initializer) {
+    public ArrayDeclarationNode(Span span, Object name, Object type, Object initializer, boolean shaped) {
         super(span);
         this.name = Util.cast(name, String.class);
         this.type = Util.cast(type, TypeNode.class);
         this.initializer = Util.cast(initializer, ExpressionNode.class);
+        this.shaped=shaped;
     }
 
     @Override public String name () {
