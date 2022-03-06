@@ -20,6 +20,7 @@ Key files:
 [review]: https://www.youtube.com/watch?v=AgnVQWw-4gk&list=PLOech0kWpH8-njQpmSNGSiQBPUvl8v3IM
 
 Tests:
+- [`GrammarTests`](/test/GrammarTests.java)
 - [`SemanticAnalysisTests`](/test/SemanticAnalysisTests.java)
 - [`InterpreterTests`](/test/InterpreterTests.java)
 - [`InterpreterTests`](/test/InterpreterTests.java)
