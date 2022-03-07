@@ -283,7 +283,7 @@ public final class SemanticAnalysis
                     .using(dependencies)
                     .by(rr -> {
                         Type classType = rr.get(0);
-                        System.out.println("class is the follwing: " + classType);
+                        System.out.println("class is the following: " + classType);
                         Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
                             .toArray(Type[]::new);
                         rr.set(0, new FunType(classType, params));
