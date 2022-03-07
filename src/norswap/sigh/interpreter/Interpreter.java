@@ -173,18 +173,30 @@ public final class Interpreter
                 throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
             }
             if(leftArray[0] instanceof Double ){
-                Double[] result=new Double[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(double)leftArray[i]+(double) rightArray[i];
+                if (rightArray[0] instanceof Double) {
+                    Double[] result = new Double[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (double) leftArray[i] + (double) rightArray[i];
+                    }
+                    return result;
+                }else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
                 }
-                return result;
+            }
+            else if(leftArray[0] instanceof Long ){
+                if (rightArray[0] instanceof Long) {
+                    Long[] result = new Long[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (Long) leftArray[i] + (Long) rightArray[i];
+                    }
+                    return result;
+                }
+                else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
+                }
             }
             else{
-                Long[] result=new Long[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(Long)leftArray[i]+(Long) rightArray[i];
-                }
-                return result;
+                throw new InterpreterException("Operation not implemented",new Exception());
             }
         }
         else if (node.operator==BinaryOperator.MULTIPLY){
@@ -194,18 +206,30 @@ public final class Interpreter
                 throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
             }
             if(leftArray[0] instanceof Double ){
-                Double[] result=new Double[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(double)leftArray[i]*(double) rightArray[i];
+                if (rightArray[0] instanceof Double) {
+                    Double[] result = new Double[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (double) leftArray[i] * (double) rightArray[i];
+                    }
+                    return result;
+                }else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
                 }
-                return result;
+            }
+            else if(leftArray[0] instanceof Long ){
+                if (rightArray[0] instanceof Long) {
+                    Long[] result = new Long[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (long) leftArray[i] *(long) rightArray[i];
+                    }
+                    return result;
+                }
+                else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
+                }
             }
             else{
-                Long[] result=new Long[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(Long)leftArray[i]*(Long) rightArray[i];
-                }
-                return result;
+                throw new InterpreterException("Operation not implemented",new Exception());
             }
         }
         else if (node.operator==BinaryOperator.SUBTRACT){
@@ -215,18 +239,30 @@ public final class Interpreter
                 throw new InterpreterException("Try to operate on two arrays with different sizes",new Exception());
             }
             if(leftArray[0] instanceof Double ){
-                Double[] result=new Double[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(double)leftArray[i]-(double) rightArray[i];
+                if (rightArray[0] instanceof Double) {
+                    Double[] result = new Double[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (double) leftArray[i] - (double) rightArray[i];
+                    }
+                    return result;
+                }else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
                 }
-                return result;
+            }
+            else if(leftArray[0] instanceof Long ){
+                if (rightArray[0] instanceof Long) {
+                    Long[] result = new Long[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (Long) leftArray[i] - (Long) rightArray[i];
+                    }
+                    return result;
+                }
+                else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
+                }
             }
             else{
-                Long[] result=new Long[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(Long)leftArray[i]-(Long) rightArray[i];
-                }
-                return result;
+                throw new InterpreterException("Operation not implemented",new Exception());
             }
         }
         else if (node.operator==BinaryOperator.DIVIDE){
@@ -237,18 +273,30 @@ public final class Interpreter
             }
 
             if(leftArray[0] instanceof Double ){
-                Double[] result=new Double[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(double)leftArray[i]/(double) rightArray[i];
+                if (rightArray[0] instanceof Double) {
+                    Double[] result = new Double[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (double) leftArray[i] / (double) rightArray[i];
+                    }
+                    return result;
+                }else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
                 }
-                return result;
+            }
+            else if(leftArray[0] instanceof Long ){
+                if (rightArray[0] instanceof Long) {
+                    Long[] result = new Long[leftArray.length];
+                    for (int i = 0; i < leftArray.length; i++) {
+                        result[i] = (Long) leftArray[i] / (Long) rightArray[i];
+                    }
+                    return result;
+                }
+                else{
+                    throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
+                }
             }
             else{
-                Long[] result=new Long[leftArray.length];
-                for(int i=0;i<leftArray.length;i++){
-                    result[i]=(Long)leftArray[i]/(Long) rightArray[i];
-                }
-                return result;
+                throw new InterpreterException("Operation not implemented",new Exception());
             }
 
         }

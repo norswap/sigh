@@ -7,6 +7,7 @@ import norswap.sigh.SemanticAnalysis;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.SighNode;
 import norswap.sigh.interpreter.Interpreter;
+import norswap.sigh.interpreter.InterpreterException;
 import norswap.sigh.interpreter.Null;
 import norswap.uranium.Reactor;
 import norswap.uranium.SemanticError;
@@ -295,14 +296,8 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("([3.0, 2.0]/[2.0, 1.0])[0]", 1.5d );
 
         checkExpr("[[1, 2, 3], [4, 5, 6]][0][1]", 2L);
-        check("var x: Int[2] "+
-                "return x[0]", 0L);
-        //("var x: Int[2][3][4]");
-        //successInput("var x: Int[][][]=[[[1]],[[2]]]");
-        //failureInputWith("var x: Int[][][]=[[[1.0]],[[2.0]]]",
-                //"incompatible initializer type provided for variable `x`:" +
-                //        " expected Int[][][] but got Float[][][]");
-        //checkExpr("([[1, 2, 3], [4, 5, 6]]+[[1, 1, 1], [2, 2, 2]])[0][1]", 3L);
+
+
         checkExpr("[[[1], [2], [3]], [[4], [5], [6]]][1][2][0]",6L);
 
         checkThrows("var array: Int[] = null; return array[0]", NullPointerException.class);
@@ -349,11 +344,16 @@ public final class InterpreterTests extends TestFixture {
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[0]", 5L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[]{2}; var y: Float[]{2};" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[1]", 6L);
+        checkThrows("var x: Int[]{2}; var y: Float[]{2};" +
+        "x[0]=1;x[1]=1;" +
+            "y[0]=4.0;y[1]=5.0;" +
+            "var z:Int[]=x+y;" +
+            "return z[1]", InterpreterException.class);
     }
 
     // ---------------------------------------------------------------------------------------------
