@@ -213,6 +213,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [1, 1]*[2, 2]");
         successInput("return [[1, 2, 3], [4, 5, 6]]");
         successInput("return [[[1], [2], [3]], [[4], [5], [6]]]");
+        successInput("var x: Int[][][]; return x");
 
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
 
