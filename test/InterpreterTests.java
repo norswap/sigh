@@ -352,6 +352,17 @@ public final class InterpreterTests extends TestFixture {
     // ---------------------------------------------------------------------------------------------
 
     @Test
+    public void testTypeAsValuesClass () {
+        // TODO: here we cannot find why this does not return C
+        // In fact the return value is "ClassDeclaration(class C)" instead
+        // We checked all parts were the structs are defined and did class the same way
+        // However, nothing from what we understood and changed managed to provide a solution
+        check("class C{} ; return \"\"+ C", "C");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test
     public void testClassCalls () {
         rule = grammar.root;
 
@@ -361,13 +372,26 @@ public final class InterpreterTests extends TestFixture {
             "return create Car()", emptyClass);
 
         HashMap<String, Object> oneFunctionClass = new HashMap<>();
-        oneFunctionClass.put("brand", 0);
+        oneFunctionClass.put("brand", "() -> String");
         // TODO: trouver un moyen de comprendre le bon nombre de parametres
         // Ici on ne donne aucun paramètre et c'est que l'on est sensé faire,
         // mais le programme demande à avoir un paramètre, car il sait qu'il y a une fonction
         // dans la classe (si deux fonctions sont déclarées, 2 paramètres sont demandés, etc.
         check("class Car { fun brand (): String { return \"Ferrari\" } }" +
             "return create Car()", oneFunctionClass);
+
+        HashMap<String, Object> twoFunctionClass = new HashMap<>();
+        oneFunctionClass.put("brand", "() -> String");
+        oneFunctionClass.put("speed", "() -> Int");
+        // TODO: trouver un moyen de comprendre le bon nombre de parametres
+        // Ici on ne donne aucun paramètre et c'est que l'on est sensé faire,
+        // mais le programme demande à avoir un paramètre, car il sait qu'il y a une fonction
+        // dans la classe (si deux fonctions sont déclarées, 2 paramètres sont demandés, etc.
+        check("class Car { " +
+            "fun brand (): String { return \"Ferrari\" }" +
+            "fun speed (): Int { return 350 }" +
+            " }" +
+            "return create Car()", twoFunctionClass);
     }
 
     // ---------------------------------------------------------------------------------------------
