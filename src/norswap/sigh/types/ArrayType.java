@@ -1,9 +1,12 @@
 package norswap.sigh.types;
 
+import norswap.sigh.ast.ArrayDeclarationNode;
+
 public final class ArrayType extends Type
 {
     public final Type componentType;
     public static final ArrayType INSTANCE = new ArrayType(IntType.INSTANCE);
+    public ArrayDeclarationNode node;
 
     public ArrayType (Type componentType) {
         this.componentType = componentType;

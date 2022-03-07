@@ -283,6 +283,7 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("[4, 2].avg", 3L);
         checkExpr("[1, 3, 4, 2].count", 4L);
         checkExpr("[4, 2].sum", 6L);
+
         checkExpr("([4, 2]+[1, 1])[0]", 5L );
         checkExpr("([4, 2]+[1, 1])[1]", 3L );
         checkExpr("([4, 2]*[2, 3])[0]", 8L );
@@ -292,6 +293,17 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("([4, 2]/[1, 1])[0]", 4L );
         checkExpr("([3, 2]/[2, 1])[0]", 1L );
         checkExpr("([3.0, 2.0]/[2.0, 1.0])[0]", 1.5d );
+
+        checkExpr("[[1, 2, 3], [4, 5, 6]][0][1]", 2L);
+        check("var x: Int[2] "+
+                "return x[0]", 0L);
+        //("var x: Int[2][3][4]");
+        //successInput("var x: Int[][][]=[[[1]],[[2]]]");
+        //failureInputWith("var x: Int[][][]=[[[1.0]],[[2.0]]]",
+                //"incompatible initializer type provided for variable `x`:" +
+                //        " expected Int[][][] but got Float[][][]");
+        //checkExpr("([[1, 2, 3], [4, 5, 6]]+[[1, 1, 1], [2, 2, 2]])[0][1]", 3L);
+        checkExpr("[[[1], [2], [3]], [[4], [5], [6]]][1][2][0]",6L);
 
         checkThrows("var array: Int[] = null; return array[0]", NullPointerException.class);
         checkThrows("var array: Int[] = null; return array.length", NullPointerException.class);
