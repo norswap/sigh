@@ -766,7 +766,7 @@ public final class SemanticAnalysis
                     node.initializer);
         });
     }
-    // ---------------------------------------------------------------------------------------------
+
     private void arrayDecl (ArrayDeclarationNode node)
     {
         this.inferenceContext = node;
@@ -775,22 +775,11 @@ public final class SemanticAnalysis
         R.set(node, "scope", scope);
 
         R.rule(node, "type")
-                .using(node.type, "value")
-                .by(r -> r.set(0, new ArrayType(r.get(0))));
+            .using(node.type, "value")
+            .by(Rule::copyFirst);
 
-        R.rule()
-                .using(node.type.attr("value"), node.initializer.attr("type"))
-                .by(r -> {
-                    Type expected = r.get(0);
-                    Type actual = r.get(1);
-
-                    if (!isAssignableTo(actual, expected))
-                        r.error(format(
-                                "incompatible initializer type provided for variable `%s`: expected %s but got %s",
-                                node.name, expected, actual),
-                                node.initializer);
-                });
     }
+
     // ---------------------------------------------------------------------------------------------
 
     private void fieldDecl (FieldDeclarationNode node)

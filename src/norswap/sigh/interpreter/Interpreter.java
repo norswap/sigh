@@ -384,10 +384,6 @@ public final class Interpreter
             }
         }
 
-        if (node.left instanceof ArrayLiteralNode){
-
-        }
-
         if (node.left instanceof FieldAccessNode) {
             FieldAccessNode fieldAccess = (FieldAccessNode) node.left;
             Object object = get(fieldAccess.stem);
@@ -640,8 +636,8 @@ public final class Interpreter
         DeclarationNode decl = reactor.get(node, "decl");
 
         if (decl instanceof VarDeclarationNode
-        || decl instanceof ArrayDeclarationNode
         || decl instanceof ParameterNode
+        || decl instanceof ArrayDeclarationNode
         || decl instanceof SyntheticDeclarationNode
                 && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
             return scope == rootScope
@@ -669,8 +665,7 @@ public final class Interpreter
     private Void arrayDecl (ArrayDeclarationNode node)
     {
         Scope scope = reactor.get(node, "scope");
-        assign(scope, node.name, get(node.initializer), reactor.get(node, "type"));
-
+        assign(scope, node.name, node.createArray(0), reactor.get(node, "type"));
         return null;
     }
 
