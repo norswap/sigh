@@ -90,6 +90,7 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testArrayDeclaration(){
         rule=grammar.var_decl;
         success("var x:Int [][][] {1,2,3}");
+
     }
 
     // ---------------------------------------------------------------------------------------------

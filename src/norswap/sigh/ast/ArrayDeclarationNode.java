@@ -35,8 +35,8 @@ public final class ArrayDeclarationNode extends DeclarationNode
         int size=Integer.parseInt(((IntLiteralNode)initializer.get(index)).contents());
         Object[] array=new Object[size];
         if(index==initializer.size()-1)return array;
-        for(Object i:array){
-            i=createArray(index+1);
+        for(int i=0;i<size;i++){
+            array[i]=createArray(index+1);
         }
         return array;
 

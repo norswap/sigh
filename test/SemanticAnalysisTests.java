@@ -275,6 +275,16 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("var x: Int[][][]{1,2,3}; return x[0][0]");
         successInput("var x: Int[][][]{1,2,3}; return x[0][0][0]");
         successInput("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]");
+        successInput("var x: Int[]{2}; var y: Int[]{2};" +
+            "x[0]=1;x[1]=1;" +
+            "y[0]=4;y[1]=5;" +
+            "var z:Int[]=x+y;" +
+            "return z[0]");
+        successInput("var x: Int[]{2}; var y: Int[]{2};" +
+            "x[0]=1;x[1]=1;" +
+            "y[0]=4;y[1]=5;" +
+            "var z:Int[]=x+y;" +
+            "return z[1]");
     }
 
     // ---------------------------------------------------------------------------------------------
