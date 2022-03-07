@@ -261,16 +261,6 @@ public final class InterpreterTests extends TestFixture {
                 "return $Point(1, 2)",
             point);
 
-        HashMap<String, Object> classs = new HashMap<>();
-        check("class Car {}" +
-            "return create Car()", classs);
-
-        HashMap<String, Object> filled_class = new HashMap<>();
-        classs.put("f", 0);
-        // Todo trouver un moyen de comprendre le bon nombre de parametres
-        check("class Car { fun brand (): String { return \"Ferrari\" } }" +
-            "return create Car()", filled_class);
-
         check("var str: String = null; return print(str + 1)", "null1", "null1\n");
     }
 
@@ -357,6 +347,27 @@ public final class InterpreterTests extends TestFixture {
     @Test public void testUnconditionalReturn()
     {
         check("fun f(): Int { if (true) return 1 else return 2 } ; return f()", 1L);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test
+    public void testClassCalls () {
+        rule = grammar.root;
+
+        // Test that the return of an empty class is empty
+        HashMap<String, Object> emptyClass = new HashMap<>();
+        check("class Car {}" +
+            "return create Car()", emptyClass);
+
+        HashMap<String, Object> oneFunctionClass = new HashMap<>();
+        oneFunctionClass.put("brand", 0);
+        // TODO: trouver un moyen de comprendre le bon nombre de parametres
+        // Ici on ne donne aucun paramètre et c'est que l'on est sensé faire,
+        // mais le programme demande à avoir un paramètre, car il sait qu'il y a une fonction
+        // dans la classe (si deux fonctions sont déclarées, 2 paramètres sont demandés, etc.
+        check("class Car { fun brand (): String { return \"Ferrari\" } }" +
+            "return create Car()", oneFunctionClass);
     }
 
     // ---------------------------------------------------------------------------------------------
