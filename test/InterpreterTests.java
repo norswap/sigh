@@ -246,6 +246,7 @@ public final class InterpreterTests extends TestFixture {
 
     @Test
     public void testCalls () {
+        rule = grammar.root;
         check(
             "fun add (a: Int, b: Int): Int { return a + b } " +
                 "return add(4, 7)",
@@ -259,6 +260,16 @@ public final class InterpreterTests extends TestFixture {
             "struct Point { var x: Int; var y: Int }" +
                 "return $Point(1, 2)",
             point);
+
+        HashMap<String, Object> classs = new HashMap<>();
+        check("class Car {}" +
+            "return create Car()", classs);
+
+        HashMap<String, Object> filled_class = new HashMap<>();
+        classs.put("f", 0);
+        // Todo trouver un moyen de comprendre le bon nombre de parametres
+        check("class Car { fun brand (): String { return \"Ferrari\" } }" +
+            "return create Car()", filled_class);
 
         check("var str: String = null; return print(str + 1)", "null1", "null1\n");
     }
