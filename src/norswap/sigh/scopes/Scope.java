@@ -5,7 +5,7 @@ import norswap.sigh.ast.SighNode;
 import java.util.HashMap;
 
 /**
- * Represent a lexical scope in which declarations occurs.
+ * Represent a lexical scope in which declarations occur.
  */
 public class Scope
 {

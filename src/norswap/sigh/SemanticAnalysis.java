@@ -114,6 +114,7 @@ public final class SemanticAnalysis
         walker.register(StringLiteralNode.class,        PRE_VISIT,  analysis::stringLiteral);
         walker.register(ReferenceNode.class,            PRE_VISIT,  analysis::reference);
         walker.register(ConstructorNode.class,          PRE_VISIT,  analysis::constructor);
+        walker.register(ClassConstructorNode.class,     PRE_VISIT,  analysis::classConstructor);
         walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analysis::arrayLiteral);
         walker.register(ParenthesizedNode.class,        PRE_VISIT,  analysis::parenthesized);
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
@@ -135,6 +136,7 @@ public final class SemanticAnalysis
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
+        walker.register(ClassDeclarationNode.class,     PRE_VISIT,  analysis::classDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, analysis::popScope);
         walker.register(BlockNode.class,                POST_VISIT, analysis::popScope);
@@ -223,34 +225,70 @@ public final class SemanticAnalysis
     private void constructor (ConstructorNode node)
     {
         R.rule()
-        .using(node.ref, "decl")
-        .by(r -> {
-            DeclarationNode decl = r.get(0);
+            .using(node.ref, "decl")
+            .by(r -> {
+                DeclarationNode decl = r.get(0);
 
-            if (!(decl instanceof StructDeclarationNode)) {
-                String description =
+                if (!(decl instanceof StructDeclarationNode)) {
+                    String description =
                         "Applying the constructor operator ($) to non-struct reference for: "
-                        + decl;
-                r.errorFor(description, node, node.attr("type"));
-                return;
-            }
+                            + decl;
+                    r.errorFor(description, node, node.attr("type"));
+                    return;
+                }
 
-            StructDeclarationNode structDecl = (StructDeclarationNode) decl;
+                StructDeclarationNode structDecl = (StructDeclarationNode) decl;
 
-            Attribute[] dependencies = new Attribute[structDecl.fields.size() + 1];
-            dependencies[0] = decl.attr("declared");
-            forEachIndexed(structDecl.fields, (i, field) ->
-                dependencies[i + 1] = field.attr("type"));
+                Attribute[] dependencies = new Attribute[structDecl.fields.size() + 1];
+                dependencies[0] = decl.attr("declared");
+                forEachIndexed(structDecl.fields, (i, field) ->
+                    dependencies[i + 1] = field.attr("type"));
 
-            R.rule(node, "type")
-            .using(dependencies)
-            .by(rr -> {
-                Type structType = rr.get(0);
-                Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
-                        .toArray(Type[]::new);
-                rr.set(0, new FunType(structType, params));
+                R.rule(node, "type")
+                    .using(dependencies)
+                    .by(rr -> {
+                        Type structType = rr.get(0);
+                        Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
+                            .toArray(Type[]::new);
+                        rr.set(0, new FunType(structType, params));
+                    });
             });
-        });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void classConstructor (ClassConstructorNode node)
+    {
+        R.rule()
+            .using(node.ref, "decl")
+            .by(r -> {
+                DeclarationNode decl = r.get(0);
+
+                if (!(decl instanceof ClassDeclarationNode)) {
+                    String description =
+                        "Applying the constructor operator (create) to non-class reference for: "
+                            + decl;
+                    r.errorFor(description, node, node.attr("type"));
+                    return;
+                }
+
+                ClassDeclarationNode classDecl = (ClassDeclarationNode) decl;
+
+                Attribute[] dependencies = new Attribute[classDecl.functions.size() + 1];
+                dependencies[0] = decl.attr("declared");
+                forEachIndexed(classDecl.functions, (i, field) ->
+                    dependencies[i + 1] = field.attr("type"));
+
+                R.rule(node, "type")
+                    .using(dependencies)
+                    .by(rr -> {
+                        Type classType = rr.get(0);
+                        System.out.println("class is the follwinfg: " + classType);
+                        Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
+                            .toArray(Type[]::new);
+                        rr.set(0, new FunType(classType, params));
+                    });
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -341,29 +379,52 @@ public final class SemanticAnalysis
                 return;
             }
             
-            if (!(type instanceof StructType)) {
+            if (!(type instanceof StructType) && !(type instanceof ClassType)) {
                 r.errorFor("Trying to access a field on an expression of type " + type,
                         node,
                         node.attr("type"));
                 return;
             }
 
-            StructDeclarationNode decl = ((StructType) type).node;
+            if (type instanceof StructType) {
+                StructDeclarationNode decl = ((StructType) type).node;
 
-            for (DeclarationNode field: decl.fields)
-            {
-                if (!field.name().equals(node.fieldName)) continue;
+                for (DeclarationNode field: decl.fields)
+                {
+                    if (!field.name().equals(node.fieldName)) continue;
 
-                R.rule(node, "type")
-                .using(field, "type")
-                .by(Rule::copyFirst);
+                    R.rule(node, "type")
+                        .using(field, "type")
+                        .by(Rule::copyFirst);
 
-                return;
+                    return;
+                }
+
+                String description = format("Trying to access missing field %s on struct %s",
+                    node.fieldName, decl.name);
+                r.errorFor(description, node, node.attr("type"));
             }
 
-            String description = format("Trying to access missing field %s on struct %s",
+            if (type instanceof ClassType) {
+                ClassDeclarationNode decl = ((ClassType) type).node;
+
+                for (DeclarationNode field: decl.functions)
+                {
+                    if (!field.name().equals(node.fieldName)) continue;
+
+                    R.rule(node, "type")
+                        .using(field, "type")
+                        .by(Rule::copyFirst);
+
+                    return;
+                }
+
+                String description = format("Trying to access missing field %s on class %s",
                     node.fieldName, decl.name);
-            r.errorFor(description, node, node.attr("type"));
+                r.errorFor(description, node, node.attr("type"));
+            }
+
+
         });
     }
 
@@ -633,7 +694,7 @@ public final class SemanticAnalysis
 
     private static boolean isTypeDecl (DeclarationNode decl)
     {
-        if (decl instanceof StructDeclarationNode) return true;
+        if (decl instanceof StructDeclarationNode || decl instanceof ClassDeclarationNode) return true;
         if (!(decl instanceof SyntheticDeclarationNode)) return false;
         SyntheticDeclarationNode synthetic = cast(decl);
         return synthetic.kind() == DeclarationKind.TYPE;
@@ -810,6 +871,12 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         R.set(node, "type", TypeType.INSTANCE);
         R.set(node, "declared", new StructType(node));
+    }
+
+    private void classDecl (ClassDeclarationNode node) {
+        scope.declare(node.name, node);
+        R.set(node, "type", TypeType.INSTANCE);
+        R.set(node, "declared", new ClassType(node));
     }
 
     // endregion

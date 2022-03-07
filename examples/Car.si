@@ -1,0 +1,20 @@
+class Car {
+    attr {
+        brand: String
+        max_speed: Int
+    }
+
+    creator Car(brand: String, max_speed: Int) {
+        this.brand = brand
+        this.max_speed = max_speed
+    }
+
+    meth set_max_speed(speed: Int) {
+        max_speed: Int
+    }
+}
+
+var brand: String = "Ferrari"
+var speed: Int = 350
+
+create Car(brand, speed)

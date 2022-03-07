@@ -22,6 +22,16 @@ public final class TypeUtils {
     // ---------------------------------------------------------------------------------------------
 
     /**
+     * Returns the slash-separated binary type name for the runtime representation of the given
+     * structure.
+     */
+    public static String classBinaryName (ClassType type) {
+        return type.name();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
      * Returns a java {@link Class} used for the runtime representation of the given Sigh {@link
      * Type}.
      *

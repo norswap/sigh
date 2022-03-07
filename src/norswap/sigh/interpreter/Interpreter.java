@@ -39,10 +39,12 @@ import static norswap.utils.Vanilla.map;
  *     <li>{@code null}: {@link Null#INSTANCE}</li>
  *     <li>Arrays: {@code Object[]}</li>
  *     <li>Structs: {@code HashMap<String, Object>}</li>
+ *     <li>Classes: {@code HashMap<String, Object>}</li>
  *     <li>Functions: the corresponding {@link DeclarationNode} ({@link FunDeclarationNode} or
  *     {@link SyntheticDeclarationNode}), excepted structure constructors, which are
- *     represented by {@link Constructor}</li>
+ *     represented by {@link Constructor} and class constructors, which are represented by {@link ClassConstructor}</li>
  *     <li>Types: the corresponding {@link StructDeclarationNode}</li>
+ *     <li>Types: the corresponding {@link ClassDeclarationNode}</li>
  * </ul>
  */
 public final class Interpreter
@@ -66,6 +68,7 @@ public final class Interpreter
         visitor.register(StringLiteralNode.class,        this::stringLiteral);
         visitor.register(ReferenceNode.class,            this::reference);
         visitor.register(ConstructorNode.class,          this::constructor);
+        visitor.register(ClassConstructorNode.class,     this::classConstructor);
         visitor.register(ArrayLiteralNode.class,         this::arrayLiteral);
         visitor.register(ParenthesizedNode.class,        this::parenthesized);
         visitor.register(FieldAccessNode.class,          this::fieldAccess);
@@ -375,6 +378,13 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
+    private ClassConstructor classConstructor (ClassConstructorNode node) {
+        // guaranteed safe by semantic analysis
+        return new ClassConstructor(get(node.ref));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private Object expressionStmt (ExpressionStatementNode node) {
         get(node.expression);
         return null;  // discard value
@@ -409,6 +419,9 @@ public final class Interpreter
 
         if (decl instanceof Constructor)
             return buildStruct(((Constructor) decl).declaration, args);
+
+        if (decl instanceof ClassConstructor)
+            return buildClass(((ClassConstructor) decl).declaration, args);
 
         ScopeStorage oldStorage = storage;
         Scope scope = reactor.get(decl, "scope");
@@ -452,6 +465,8 @@ public final class Interpreter
             return ((StructDeclarationNode) arg).name;
         else if (arg instanceof Constructor)
             return "$" + ((Constructor) arg).declaration.name;
+        else if (arg instanceof ClassConstructor)
+            return "$" + ((ClassConstructor) arg).declaration.name;
         else
             return arg.toString();
     }
@@ -464,6 +479,16 @@ public final class Interpreter
         for (int i = 0; i < node.fields.size(); ++i)
             struct.put(node.fields.get(i).name, args[i]);
         return struct;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private HashMap<String, Object> buildClass (ClassDeclarationNode node, Object[] args)
+    {
+        HashMap<String, Object> classs = new HashMap<>();
+        for (int i = 0; i < node.functions.size(); ++i)
+            classs.put(node.functions.get(i).name, args[i]);
+        return classs;
     }
 
     // ---------------------------------------------------------------------------------------------

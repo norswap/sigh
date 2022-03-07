@@ -1,0 +1,10 @@
+struct Pair {
+}
+
+var type: Type = Pair
+print("" + type)
+
+class Car {
+}
+var type: Type = Car
+print("" + type)
