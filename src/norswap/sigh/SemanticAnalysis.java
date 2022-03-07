@@ -131,6 +131,7 @@ public final class SemanticAnalysis
         walker.register(RootNode.class,                 PRE_VISIT,  analysis::root);
         walker.register(BlockNode.class,                PRE_VISIT,  analysis::block);
         walker.register(VarDeclarationNode.class,       PRE_VISIT,  analysis::varDecl);
+        walker.register(ArrayDeclarationNode.class,     PRE_VISIT,  analysis::arrayDecl);
         walker.register(FieldDeclarationNode.class,     PRE_VISIT,  analysis::fieldDecl);
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
@@ -764,6 +765,19 @@ public final class SemanticAnalysis
                     node.name, expected, actual),
                     node.initializer);
         });
+    }
+
+    private void arrayDecl (ArrayDeclarationNode node)
+    {
+        this.inferenceContext = node;
+
+        scope.declare(node.name, node);
+        R.set(node, "scope", scope);
+
+        R.rule(node, "type")
+            .using(node.type, "value")
+            .by(Rule::copyFirst);
+
     }
 
     // ---------------------------------------------------------------------------------------------

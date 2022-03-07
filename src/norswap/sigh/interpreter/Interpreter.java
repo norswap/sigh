@@ -80,6 +80,7 @@ public final class Interpreter
         visitor.register(RootNode.class,                 this::root);
         visitor.register(BlockNode.class,                this::block);
         visitor.register(VarDeclarationNode.class,       this::varDecl);
+        visitor.register(ArrayDeclarationNode.class,     this::arrayDecl);
         // no need to visitor other declarations! (use fallback)
 
         // statements
@@ -636,6 +637,7 @@ public final class Interpreter
 
         if (decl instanceof VarDeclarationNode
         || decl instanceof ParameterNode
+        || decl instanceof ArrayDeclarationNode
         || decl instanceof SyntheticDeclarationNode
                 && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
             return scope == rootScope
@@ -657,6 +659,13 @@ public final class Interpreter
     {
         Scope scope = reactor.get(node, "scope");
         assign(scope, node.name, get(node.initializer), reactor.get(node, "type"));
+        return null;
+    }
+
+    private Void arrayDecl (ArrayDeclarationNode node)
+    {
+        Scope scope = reactor.get(node, "scope");
+        assign(scope, node.name, node.createArray(0), reactor.get(node, "type"));
         return null;
     }
 

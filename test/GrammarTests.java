@@ -87,6 +87,11 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("p.x", new FieldAccessNode(null, new ReferenceNode(null, "p"), "x"));
     }
 
+    @Test public void testArrayDeclaration(){
+        rule=grammar.var_decl;
+        success("var x:Int [][][] {1,2,3}");
+    }
+
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testDeclarations() {

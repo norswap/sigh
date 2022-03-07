@@ -213,7 +213,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [1, 1]*[2, 2]");
         successInput("return [[1, 2, 3], [4, 5, 6]]");
         successInput("return [[[1], [2], [3]], [[4], [5], [6]]]");
-        successInput("var x: Int[][][]; return x");
+
 
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
 
@@ -267,6 +267,14 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "struct P { var x: Int; var y: Int }" +
             "return $P(1, 2).z",
             "Trying to access missing field z on struct P");
+    }
+
+    @Test public void testArrayDeclaration(){
+        successInput("var x: Int[][][]{1,2,3}; return x");
+        successInput("var x: Int[][][]{1,2,3}; return x[0]");
+        successInput("var x: Int[][][]{1,2,3}; return x[0][0]");
+        successInput("var x: Int[][][]{1,2,3}; return x[0][0][0]");
+        successInput("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]");
     }
 
     // ---------------------------------------------------------------------------------------------

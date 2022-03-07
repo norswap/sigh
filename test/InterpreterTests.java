@@ -15,6 +15,7 @@ import norswap.utils.TestFixture;
 import norswap.utils.data.wrappers.Pair;
 import norswap.utils.visitors.Walker;
 import org.testng.annotations.Test;
+import javax.lang.model.type.NullType;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -323,6 +324,14 @@ public final class InterpreterTests extends TestFixture {
                 "var p: P = null;" +
                 "p.y = 42",
             NullPointerException.class);
+    }
+
+    @Test public void testArrayDeclaration(){
+        rule = grammar.root;
+        check("var x:Int=3; return x", 3L);
+        check("var x: Int[][][]{1,2,3}; return x[0][0][0]", null);
+        check("var x: Int[][][]{1,2,3}; return x", null);
+        check("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]", 3L);
     }
 
     // ---------------------------------------------------------------------------------------------
