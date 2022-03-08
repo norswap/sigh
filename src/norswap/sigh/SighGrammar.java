@@ -2,6 +2,8 @@ package norswap.sigh;
 
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.TemplateDeclarationNode;
+import norswap.sigh.ast.base.TupleLiteralNode;
 
 import static norswap.sigh.ast.UnaryOperator.NOT;
 
@@ -53,6 +55,7 @@ public class SighGrammar extends Grammar
     public rule COMMA           = word(",");
 
     public rule _var            = reserved("var");
+    public rule _template       = reserved("template");
     public rule _fun            = reserved("fun");
     public rule _struct         = reserved("struct");
     public rule _if             = reserved("if");
@@ -89,7 +92,11 @@ public class SighGrammar extends Grammar
     public rule identifier =
         identifier(seq(choice(alpha, '_'), id_part.at_least(0)))
         .push($ -> $.str());
-    
+
+    public rule identifiers =
+        identifier.sep(1, COMMA)
+        .as_list(String.class);
+
     // ==== SYNTACTIC =========================================================
     
     public rule reference =
@@ -116,6 +123,10 @@ public class SighGrammar extends Grammar
         seq(LSQUARE, expressions, RSQUARE)
         .push($ -> new ArrayLiteralNode($.span(), $.$[0]));
 
+    public rule tuple =
+        seq(LPAREN, expressions, RPAREN)
+            .push($ -> new TupleLiteralNode($.span(), $.$[0]));
+
     public rule basic_expression = choice(
         constructor,
         reference,
@@ -123,7 +134,9 @@ public class SighGrammar extends Grammar
         integer,
         string,
         paren_expression,
-        array);
+        array,
+        tuple
+    );
 
     public rule function_args =
         seq(LPAREN, expressions, RPAREN);
@@ -189,8 +202,7 @@ public class SighGrammar extends Grammar
         .infix(EQUALS,
             $ -> new AssignmentNode($.span(), $.$[0], $.$[1]));
 
-    public rule expression =
-        seq(assignment_expression);
+    public rule expression = seq(assignment_expression);
 
     public rule expression_stmt =
         expression
@@ -212,12 +224,14 @@ public class SighGrammar extends Grammar
     public rule statement = lazy(() -> choice(
         this.block,
         this.var_decl,
+        this.template_decl,
         this.fun_decl,
         this.struct_decl,
         this.if_stmt,
         this.while_stmt,
         this.return_stmt,
-        this.expression_stmt));
+        this.expression_stmt
+    ));
 
     public rule statements =
         statement.at_least(0)
@@ -241,6 +255,10 @@ public class SighGrammar extends Grammar
 
     public rule maybe_return_type =
         seq(COLON, type).or_push_null();
+
+    public rule template_decl =
+        seq(_template, LANGLE, identifiers, RANGLE)
+            .push($ -> new TemplateDeclarationNode($.span(), $.$[0]));
 
     public rule fun_decl =
         seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)

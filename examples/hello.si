@@ -2,3 +2,5 @@ template<R,T1,T2>
 fun sum(a:T1, b:T1):R {
     return a + b
 }
+
+var tuple:Tuple = (1, 5)

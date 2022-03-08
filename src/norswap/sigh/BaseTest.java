@@ -24,7 +24,7 @@ public final class BaseTest
         String path = Paths.get("examples/", file).toAbsolutePath().toString();
         String src = IO.slurp(path);
 
-        BaseGrammar grammar = new BaseGrammar();
+        SighGrammar grammar = new SighGrammar();
         ParseOptions options = ParseOptions.builder().recordCallStack(true).get();
         ParseResult result = Autumn.parse(grammar.root, src, options);
         LineMap lineMap = new LineMapString(path, src);

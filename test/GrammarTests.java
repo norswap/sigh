@@ -1,9 +1,11 @@
 import norswap.autumn.AutumnTestFixture;
-import norswap.sigh.BaseGrammar;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import norswap.sigh.ast.base.TemplateDeclarationNode;
+import norswap.sigh.ast.base.TupleLiteralNode;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
 
 import static java.util.Arrays.asList;
 import static norswap.sigh.ast.BinaryOperator.*;
@@ -11,7 +13,7 @@ import static norswap.sigh.ast.BinaryOperator.*;
 public class GrammarTests extends AutumnTestFixture {
     // ---------------------------------------------------------------------------------------------
 
-    private final BaseGrammar grammar = new BaseGrammar();
+    private final SighGrammar grammar = new SighGrammar();
     private final Class<?> grammarClass = grammar.getClass();
 
     // ---------------------------------------------------------------------------------------------
@@ -141,10 +143,67 @@ public class GrammarTests extends AutumnTestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
+    @Test public void testHelloStatements() {
+        rule = grammar.statement;
+
+        successExpect("hello()", new ExpressionStatementNode(null,
+            new FunCallNode(null, new ReferenceNode(null, "hello"), asList())));
+    }
+
     @Test public void testTemplateDeclaration() {
         rule = grammar.template_decl;
 
         successExpect("template<T1>", new TemplateDeclarationNode(null, asList("T1")));
         successExpect("template<R,T1,T2,T3>", new TemplateDeclarationNode(null, asList("R","T1","T2","T3")));
+    }
+
+    @Test public void testTupleVarDeclaration() {
+        rule = grammar.statement;
+
+        successExpect("var t:Tuple = (5, 6)",
+            new VarDeclarationNode(null, "t", new SimpleTypeNode(null, "Tuple"),
+                new TupleLiteralNode(null,
+                    asList(
+                        intlit(5),
+                        intlit(6)
+                    )
+                )
+            )
+        );
+        successExpect("var t:Tuple = (\"hello\", \"world\")",
+            new VarDeclarationNode(null, "t", new SimpleTypeNode(null, "Tuple"),
+                new TupleLiteralNode(null,
+                    asList(
+                        new StringLiteralNode(null, "hello"),
+                        new StringLiteralNode(null, "world")
+                    )
+                )
+            )
+        );
+        successExpect("var t:Tuple = (\"hello\", \"world\", 5)",
+            new VarDeclarationNode(null, "t", new SimpleTypeNode(null, "Tuple"),
+                new TupleLiteralNode(null,
+                    asList(
+                        new StringLiteralNode(null, "hello"),
+                        new StringLiteralNode(null, "world"),
+                        intlit(5)
+                    )
+                )
+            )
+        );
+        successExpect("var t:Tuple = (5.0, -5, \"pizza\", (5==6))",
+            new VarDeclarationNode(null, "t", new SimpleTypeNode(null, "Tuple"),
+                new TupleLiteralNode(null,
+                    asList(
+                        floatlit(5.0f),
+                        intlit(-5),
+                        new StringLiteralNode(null, "pizza"),
+                        new ParenthesizedNode(null,
+                            new BinaryExpressionNode(null, intlit(5), EQUALITY, intlit(6))
+                        )
+                    )
+                )
+            )
+        );
     }
 }
