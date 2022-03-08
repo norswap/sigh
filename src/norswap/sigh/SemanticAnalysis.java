@@ -122,10 +122,12 @@ public final class SemanticAnalysis
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
         walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analysis::binaryExpression);
         walker.register(AssignmentNode.class,           PRE_VISIT,  analysis::assignment);
+        walker.register(BornNode.class,                 PRE_VISIT,  analysis::bornExpression);
 
         // types
         walker.register(SimpleTypeNode.class,           PRE_VISIT,  analysis::simpleType);
         walker.register(ArrayTypeNode.class,            PRE_VISIT,  analysis::arrayType);
+        walker.register(UnbornTypeNode.class,           PRE_VISIT,  analysis::unbornType);
 
         // declarations & scopes
         walker.register(RootNode.class,                 PRE_VISIT,  analysis::root);
@@ -456,6 +458,22 @@ public final class SemanticAnalysis
         });
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    private void bornExpression (BornNode node) {
+        
+        // Check if the variable we are trying to born is of type Unborn
+        R.rule(node.attr("type"))
+        .using(node.reference.attr("type"))
+        .by(r -> {
+            if (!(r.get(0) instanceof UnbornType))
+                r.error("Trying to Born a non-Unborn variable.", node);
+            else {
+                r.set(0, ((UnbornType) r.get(0)).componentType);
+            }
+        });
+    }
+
     // endregion
     // =============================================================================================
     // region [Binary Expressions]
@@ -633,6 +651,15 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void unbornType (UnbornTypeNode node)
+    {
+        R.rule(node, "value")
+        .using(node.componentType, "value")
+        .by(r -> r.set(0, new UnbornType(r.get(0))));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private static boolean isTypeDecl (DeclarationNode decl)
     {
         if (decl instanceof StructDeclarationNode) return true;
@@ -658,6 +685,10 @@ public final class SemanticAnalysis
         if (a instanceof ArrayType)
             return b instanceof ArrayType
                 && isAssignableTo(((ArrayType)a).componentType, ((ArrayType)b).componentType);
+
+        if (a instanceof UnbornType)
+            return b instanceof UnbornType
+                && isAssignableTo(((UnbornType)a).componentType, ((UnbornType)b).componentType);
 
         return a instanceof NullType && b.isReference() || a.equals(b);
     }
@@ -980,6 +1011,11 @@ public final class SemanticAnalysis
             .using(function.returnType.attr("value"), node.expression.attr("type"))
             .by(r -> {
                 Type formal = r.get(0);
+                
+                // Special case: function of which return type is Unborn => return type must match the type of Unborn
+                if (formal instanceof UnbornType)
+                    formal = ((UnbornType) formal).componentType;
+
                 Type actual = r.get(1);
                 if (formal instanceof VoidType)
                     r.error("Return with value in a Void function.", node);

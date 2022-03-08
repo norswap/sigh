@@ -13,7 +13,7 @@ public final class UnbornTypeNode extends TypeNode
     }
 
     @Override public String contents() {
-        return componentType.contents() + "<>";
+        return "Unborn<" + componentType.contents() + ">";
     }
 }
 

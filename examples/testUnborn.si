@@ -1,0 +1,26 @@
+var a: Int = 3
+var b: Int = a
+
+fun myFunc() : Unborn<Int> {
+	var myVar : Int = 0
+	// ...
+	// Some time-taking treatment
+	// ...
+	return myVar
+} 
+var aNiceVar : Unborn<Int> = myFunc()
+// ...
+// Some treatment that doesn't require the variable aNiceVar
+// ...
+
+var myNewNiceVar: Int = aNiceVar.born({
+	myNewNiceVar = 0
+})
+
+var mySecondNewNiceVar : Int = 12
+
+mySecondNewNiceVar = aNiceVar.born({
+	mySecondNewNiceVar = 14
+})
+
+myNewNiceVar = myNewNiceVar + 1
