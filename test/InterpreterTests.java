@@ -338,6 +338,7 @@ public final class InterpreterTests extends TestFixture {
         rule = grammar.root;
         //check("var x:Int=3; return x", 3L);
         check("var x: Int[]{2}; return x[0]",0L);
+        check("var x: String[][]{2,2}; return x[0][1]", null);
         check("var x: Int[][][]{1,2,3}; return x[0][0][0]", 0L);
         check("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]", 3L);
         check("var x: Int[]{2}; var y: Int[]{2};" +
