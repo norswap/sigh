@@ -487,7 +487,7 @@ public final class Interpreter
     {
         HashMap<String, Object> classs = new HashMap<>();
         for (int i = 0; i < node.functions.size(); ++i)
-            classs.put(node.functions.get(i).name, args[i]);
+            classs.put(node.functions.get(i).name, node.functions.get(i));
         return classs;
     }
 

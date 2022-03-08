@@ -284,9 +284,13 @@ public final class SemanticAnalysis
                     .by(rr -> {
                         Type classType = rr.get(0);
                         System.out.println("class is the following: " + classType);
+                        /* TODO: ici il faudra demander en argument du créateur les variables de la classe
+                           Note: le code ici dans la fonction fait ce qu'il faut actuellement pour des
+                            fonctions donc il faut changer pour avoir des variables à la place
+
                         Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
-                            .toArray(Type[]::new);
-                        rr.set(0, new FunType(classType, params));
+                            .toArray(Type[]::new);*/
+                        rr.set(0, new FunType(classType));
                     });
             });
     }
