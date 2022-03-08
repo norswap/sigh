@@ -5,6 +5,10 @@ var type: Type = Pair
 print("" + type)
 
 class Car {
+    fun brand (name: String): String { return name }
+    fun speed (): Int { return 350 }
 }
-var type: Type = Car
-print("" + type)
+
+var car: Car = create Car()
+print(car.brand("Porsche"))
+print("" + car.speed())
