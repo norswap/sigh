@@ -432,10 +432,22 @@ public final class Interpreter
 
     private Object builtin (String name, Object[] args)
     {
-        assert name.equals("print"); // only one at the moment
-        String out = convertToString(args[0]);
-        System.out.println(out);
-        return out;
+        switch (name) {
+            case "print": {
+                String out = convertToString(args[0]);
+                System.out.println(out);
+
+                return out;
+            }
+            case "hello": {
+                System.out.println("Hello world !");
+
+                return convertToString(Null.INSTANCE);
+            }
+            default: {
+                return convertToString(Null.INSTANCE);
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

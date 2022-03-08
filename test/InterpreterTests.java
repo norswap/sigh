@@ -350,5 +350,9 @@ public final class InterpreterTests extends TestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
+    @Test public void testBuiltInFunctions() {
+        checkThrows("hello('test')", AssertionError.class);
+    }
+
     // NOTE(norswap): Not incredibly complete, but should cover the basics.
 }

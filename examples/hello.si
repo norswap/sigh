@@ -1,0 +1,2 @@
+print("After this one, we should have something interesting.")
+hello("test")
