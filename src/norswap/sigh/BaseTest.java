@@ -33,6 +33,11 @@ public final class BaseTest
         if (!result.fullMatch)
             return;
 
+        //walk(result, lineMap);
+    }
+
+    public static void walk(ParseResult result, LineMap lineMap) {
+
         // Walking the code
         SighNode tree = cast(result.topValue());
         Reactor reactor = new Reactor();
@@ -52,10 +57,18 @@ public final class BaseTest
         }
 
         // Interpreting
+        //interpret(result, reactor);
+    }
+
+    public static void interpret(ParseResult result, Reactor reactor) {
+
+        // Getting tree
+        SighNode tree = cast(result.topValue());
+
+        // Interpreting
         Interpreter interpreter = new Interpreter(reactor);
         interpreter.interpret(tree);
         System.out.println();
         System.out.println("[INTERPRETER] Successfully ran the code.");
-
     }
 }

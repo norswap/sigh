@@ -1,2 +1,4 @@
-print("After this one, we should have something interesting.")
-hello("test")
+template<R,T1,T2>
+fun sum(a:T1, b:T1):R {
+    return a + b
+}

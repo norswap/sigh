@@ -1,6 +1,8 @@
 import norswap.autumn.AutumnTestFixture;
+import norswap.sigh.BaseGrammar;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.TemplateDeclarationNode;
 import org.testng.annotations.Test;
 
 import static java.util.Arrays.asList;
@@ -9,7 +11,7 @@ import static norswap.sigh.ast.BinaryOperator.*;
 public class GrammarTests extends AutumnTestFixture {
     // ---------------------------------------------------------------------------------------------
 
-    private final SighGrammar grammar = new SighGrammar();
+    private final BaseGrammar grammar = new BaseGrammar();
     private final Class<?> grammarClass = grammar.getClass();
 
     // ---------------------------------------------------------------------------------------------
@@ -138,4 +140,11 @@ public class GrammarTests extends AutumnTestFixture {
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    @Test public void testTemplateDeclaration() {
+        rule = grammar.template_decl;
+
+        successExpect("template<T1>", new TemplateDeclarationNode(null, asList("T1")));
+        successExpect("template<R,T1,T2,T3>", new TemplateDeclarationNode(null, asList("R","T1","T2","T3")));
+    }
 }
