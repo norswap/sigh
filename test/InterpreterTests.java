@@ -347,6 +347,21 @@ public final class InterpreterTests extends TestFixture {
     {
         check("fun f(): Int { if (true) return 1 else return 2 } ; return f()", 1L);
     }
+    
+    // ---------------------------------------------------------------------------------------------
+    
+    @Test public void testHigherOrder()
+    {
+        check("fun f(): Int : return(1) {} ; return f()", 1L);
+        
+        check("fun add(a: Int, b: Int): Int : return(a + b) {}; fun f(): Int : return(add(1, 2)) {}; return f()", 3L);
+        
+        check("fun add(a: Int, b: Int): Int : return(a + b); fun f(): Int : return(add(1, 2)); return f()", 3L);
+        
+        check("fun inc(a: Int): Int : return(a + 1) {}; fun f(a: Int, f: Any): Int : return(f(a)) {}; return f(0, inc)", 1L);
+        
+        check("fun add(a: Int, b:Int): Int : return(a + b) {}; fun f(a: Int, b: Int, f: Any): Int : return(f(a, b)) {}; return f(1, 1, add)", 2L);
+    }
 
     // ---------------------------------------------------------------------------------------------
 

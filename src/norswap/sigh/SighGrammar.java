@@ -241,10 +241,15 @@ public class SighGrammar extends Grammar
 
     public rule maybe_return_type =
         seq(COLON, type).or_push_null();
+    
+    public rule maybe_return_value =
+        seq(COLON, _return, LPAREN, expression, RPAREN).or_push_null();
 
+    public rule maybe_block = block.or_push_null();
+    
     public rule fun_decl =
-        seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
-        .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+        seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, maybe_return_value, maybe_block)
+        .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3], $.$[4]));
 
     public rule field_decl =
         seq(_var, identifier, COLON, type)

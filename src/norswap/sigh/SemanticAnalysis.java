@@ -408,32 +408,35 @@ public final class SemanticAnalysis
         .by(r -> {
             Type maybeFunType = r.get(0);
 
-            if (!(maybeFunType instanceof FunType)) {
-                r.error("trying to call a non-function expression: " + node.function, node.function);
+            if (maybeFunType instanceof FunType) {
+            	FunType funType = cast(maybeFunType);
+                r.set(0, funType.returnType);
+
+                Type[] params = funType.paramTypes;
+                List<ExpressionNode> args = node.arguments;
+
+                if (params.length != args.size())
+                    r.errorFor(format("wrong number of arguments, expected %d but got %d",
+                            params.length, args.size()),
+                        node);
+
+                int checkedArgs = Math.min(params.length, args.size());
+
+                for (int i = 0; i < checkedArgs; ++i) {
+                    Type argType = r.get(i + 1);
+                    Type paramType = funType.paramTypes[i];
+                    if (!isAssignableTo(argType, paramType))
+                        r.errorFor(format(
+                                "incompatible argument provided for argument %d: expected %s but got %s",
+                                i, paramType, argType),
+                            node.arguments.get(i));
+                }
+            } else if(maybeFunType instanceof AnyType) {
+                r.set(0, AnyType.INSTANCE);
+            } else
+            {
+            	r.error("trying to call a non-function expression: " + node.function, node.function);
                 return;
-            }
-
-            FunType funType = cast(maybeFunType);
-            r.set(0, funType.returnType);
-
-            Type[] params = funType.paramTypes;
-            List<ExpressionNode> args = node.arguments;
-
-            if (params.length != args.size())
-                r.errorFor(format("wrong number of arguments, expected %d but got %d",
-                        params.length, args.size()),
-                    node);
-
-            int checkedArgs = Math.min(params.length, args.size());
-
-            for (int i = 0; i < checkedArgs; ++i) {
-                Type argType = r.get(i + 1);
-                Type paramType = funType.paramTypes[i];
-                if (!isAssignableTo(argType, paramType))
-                    r.errorFor(format(
-                            "incompatible argument provided for argument %d: expected %s but got %s",
-                            i, paramType, argType),
-                        node.arguments.get(i));
             }
         });
     }
@@ -647,6 +650,8 @@ public final class SemanticAnalysis
      */
     private static boolean isAssignableTo (Type a, Type b)
     {
+    	if (a instanceof AnyType || b instanceof AnyType) return true; 
+    	
         if (a instanceof VoidType || b instanceof VoidType)
             return false;
 
@@ -792,16 +797,25 @@ public final class SemanticAnalysis
                 paramTypes[i] = r.get(i + 1);
             r.set(0, new FunType(r.get(0), paramTypes));
         });
-
-        R.rule()
-        .using(node.block.attr("returns"), node.returnType.attr("value"))
-        .by(r -> {
-            boolean returns = r.get(0);
-            Type returnType = r.get(1);
-            if (!returns && !(returnType instanceof VoidType))
-                r.error("Missing return in function.", node);
-            // NOTE: The returned value presence & type is checked in returnStmt().
-        });
+                
+        if(node.block != null)
+        {
+        	R.rule()
+            .using(node.block.attr("returns"), node.returnType.attr("value"))
+            .by(r -> {
+                boolean returns = r.get(0);
+                returns |= node.returnValue != null;
+                Type returnType = r.get(1);
+                
+                if (!returns && !(returnType instanceof VoidType))
+                    r.error("Missing return in function.", node);
+                // NOTE: The returned value presence & type is checked in returnStmt().
+            });
+        }
+        
+        // TODO
+        //if (!returns && !(returnType instanceof VoidType))
+        //    r.error("Missing return in function.", node);
     }
 
     // ---------------------------------------------------------------------------------------------

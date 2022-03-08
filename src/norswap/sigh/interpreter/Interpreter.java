@@ -415,17 +415,22 @@ public final class Interpreter
         storage = new ScopeStorage(scope, storage);
 
         FunDeclarationNode funDecl = (FunDeclarationNode) decl;
+        assert (args.length == funDecl.parameters.size());
         coIterate(args, funDecl.parameters,
                 (arg, param) -> storage.set(scope, param.name, arg));
 
+        Object ret = null;
+        
         try {
-            get(funDecl.block);
+        	if (funDecl.returnValue != null) ret = get(funDecl.returnValue);
+            if (funDecl.block != null) get(funDecl.block);
         } catch (Return r) {
             return r.value;
         } finally {
             storage = oldStorage;
         }
-        return null;
+        
+        return ret;
     }
 
     // ---------------------------------------------------------------------------------------------

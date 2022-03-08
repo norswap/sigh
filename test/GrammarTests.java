@@ -106,7 +106,45 @@ public class GrammarTests extends AutumnTestFixture {
             new FunDeclarationNode(null, "f",
                 asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
                 new SimpleTypeNode(null, "Int"),
+                null,
                 new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
+        
+        successExpect("fun f (x: Int): Int { return 1 }",
+                new FunDeclarationNode(null, "f",
+                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                    new SimpleTypeNode(null, "Int"),
+                    null,
+                    new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
+        
+        // Added
+         
+        successExpect("fun f (x: Int): Int : return(9) { }",
+                new FunDeclarationNode(null, "f",
+                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                    new SimpleTypeNode(null, "Int"),
+                    intlit(9),
+                    new BlockNode(null, asList())));
+        
+        successExpect("fun f (x: Int): Int : return(9)",
+                new FunDeclarationNode(null, "f",
+                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                    new SimpleTypeNode(null, "Int"),
+                    intlit(9),
+                    null));
+        
+        successExpect("fun f (x: Int): Int : return(x + 4) { }",
+                new FunDeclarationNode(null, "f",
+                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                    new SimpleTypeNode(null, "Int"),
+                    new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(4)),
+                    new BlockNode(null, asList())));
+        
+        successExpect("fun f (x: Any): Int { return 1 }",
+                new FunDeclarationNode(null, "f",
+                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Any"))),
+                    new SimpleTypeNode(null, "Int"),
+                    null,
+                    new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
     }
 
     // ---------------------------------------------------------------------------------------------
