@@ -270,6 +270,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     }
 
     @Test public void testArrayDeclaration(){
+        successInput("var x: Int[]{2}; return x[0]");
         successInput("var x: Int[][][]{1,2,3}; return x");
         successInput("var x: Int[][][]{1,2,3}; return x[0]");
         successInput("var x: Int[][][]{1,2,3}; return x[0][0]");

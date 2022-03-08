@@ -336,15 +336,16 @@ public final class InterpreterTests extends TestFixture {
 
     @Test public void testArrayDeclaration(){
         rule = grammar.root;
-        check("var x:Int=3; return x", 3L);
-        check("var x: Int[][][]{1,2,3}; return x[0][0][0]", null);
+        //check("var x:Int=3; return x", 3L);
+        check("var x: Int[]{2}; return x[0]",0L);
+        check("var x: Int[][][]{1,2,3}; return x[0][0][0]", 0L);
         check("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]", 3L);
         check("var x: Int[]{2}; var y: Int[]{2};" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[0]", 5L);
-        check("var x: Int[]{2}; var y: Float[]{2};" +
+        check("var x: Int[]{2}; var y: Int[]{2};" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
@@ -354,6 +355,25 @@ public final class InterpreterTests extends TestFixture {
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Int[]=x+y;" +
             "return z[1]", InterpreterException.class);
+
+        check("var x: Int[]{2}; x[0]=2;x[1]=4;" +
+            "return x.sum", 6L);
+
+        check("var x: Int[]{2}; x[0]=2;x[1]=4;" +
+            "return x.avg", 3L);
+
+        check("var x: Int[]{2}; x[0]=2;x[1]=4;" +
+            "return x.count", 2L);
+
+        check("var x: Int[]=[2,4]" +
+            "return x.sum", 6L);
+
+        check("var x: Int[]=[2,4]" +
+            "return x.avg", 3L);
+
+        check("var x: Int[]=[2,4]" +
+            "return x.count", 2L);
+
     }
 
     // ---------------------------------------------------------------------------------------------

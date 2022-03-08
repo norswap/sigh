@@ -426,7 +426,7 @@ public final class Interpreter
             Object[] array = getNonNullArray(arrayAccess.array);
             int index = getIndex(arrayAccess.index);
             try {
-                return array[index] = get(node.right);
+                return array[index] =(Object) get(node.right);
             } catch (ArrayIndexOutOfBoundsException e) {
                 throw new PassthroughException(e);
             }
@@ -713,7 +713,7 @@ public final class Interpreter
     private Void arrayDecl (ArrayDeclarationNode node)
     {
         Scope scope = reactor.get(node, "scope");
-        assign(scope, node.name, node.createArray(0), reactor.get(node, "type"));
+        assign(scope, node.name, node.thisArray, reactor.get(node, "type"));
         return null;
     }
 

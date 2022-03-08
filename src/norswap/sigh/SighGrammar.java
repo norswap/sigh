@@ -228,9 +228,10 @@ public class SighGrammar extends Grammar
         seq(LBRACE, statements, RBRACE)
         .push($ -> new BlockNode($.span(), $.$[0]));
 
-    public rule array_shape=seq(integer).push($->new IntLiteralNode($.span(),Long.parseLong($.str())));
+    public rule array_shape=integer.push($->new IntLiteralNode($.span(),Long.parseLong($.str())));
 
     public rule array_shapes=seq(LBRACE,array_shape.sep(1,COMMA),RBRACE).as_list(IntLiteralNode.class);
+
     public rule var_decl =choice(
         seq(_var, identifier, COLON, type, EQUALS, expression)
         .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2])),
