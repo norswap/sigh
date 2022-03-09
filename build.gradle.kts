@@ -8,7 +8,7 @@ plugins {
 // === MAIN BUILD DETAILS ==========================================================================
 
 group = "com.norswap"
-version = "1.0.1-ALPHA"
+version = "1.0.2-ALPHA"
 description = "Language implementation demo"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
@@ -65,9 +65,10 @@ repositories {
 dependencies {
     implementation("com.norswap:utils:2.1.12")
     implementation("com.norswap:autumn:1.2.0")
-    implementation("com.norswap:uranium:1.0.9-ALPHA")
+    implementation("com.norswap:uranium:1.0.11-ALPHA")
     implementation("org.ow2.asm:asm-all:5.2")
-    testImplementation("org.testng:testng:6.14.3")
+    testImplementation("org.testng:testng:7.5")
+    testImplementation("org.slf4j:slf4j-simple:1.7.36")
 }
 
 // =================================================================================================
