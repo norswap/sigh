@@ -528,7 +528,7 @@ public final class SemanticAnalysis
             //TODO : new rule
         else if (left instanceof ArrayType)
             if(right instanceof ArrayType)
-                r.set(0, ArrayType.INSTANCE);
+                r.set(0, new ArrayType(((ArrayType) left).componentType));
             else
                 r.error(arithmeticError(node, left, right), node);
         else
