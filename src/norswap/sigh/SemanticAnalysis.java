@@ -346,6 +346,9 @@ public final class SemanticAnalysis
                         else if(node.fieldName.equals("sum"))
                             R.rule(node, "type")
                                     .by(rr -> rr.set(0, IntType.INSTANCE));
+                        else if(node.fieldName.equals("nDim"))
+                            R.rule(node, "type")
+                                .by(rr -> rr.set(0, IntType.INSTANCE));
                         else
                             r.errorFor("Trying to access a non-length field on an array", node,
                                     node.attr("type"));

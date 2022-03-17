@@ -284,6 +284,18 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("[4, 2].avg", 3L);
         checkExpr("[1, 3, 4, 2].count", 4L);
         checkExpr("[4, 2].sum", 6L);
+        checkExpr("[4, 2].nDim", 1L);
+        checkExpr("[1, 3, 4, 2].nDim",1L);
+        checkExpr("[[4, 2],[1,3]].nDim", 2L);
+        checkExpr("[[4, 2],[1,3]].sum", 10L);
+        checkExpr("[[4, 2],[1,3]].avg", 2L);
+        checkExpr("[[4, 2],[1,3]].count", 4L);
+        checkExpr("[[4, 2],[3]].count", 3L);
+        checkExpr("[[[4, 2],[1,3]],[[1,1],[2,2]]].nDim", 3L);
+        checkExpr("[[[4, 2],[1,3]],[[1,1],[2,2]]].sum", 16L);
+        checkExpr("[[[4, 2],[1,3]],[[1,1],[2,2]]].avg", 2L);
+        checkExpr("[[[4, 2],[1,3]],[[1,1],[2,2]]].count", 8L);
+        checkExpr("[[[4, 2],[1,3]],[[1,1]]].count", 6L);
 
         checkExpr("([4, 2]+[1, 1])[0]", 5L );
         checkExpr("([4, 2]+[1, 1])[1]", 3L );

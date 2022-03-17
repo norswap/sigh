@@ -226,6 +226,14 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [4, 2].avg");
         successInput("return [1, 3, 4, 2].count");
         successInput("return [4, 2].sum");
+        successInput("return [4, 2].nDim");
+        successInput("return [[4, 2],[1,3]].nDim");
+        successInput("return [[4, 2],[1,3]].sum");
+        successInput("return [[4, 2],[1,3]].avg");
+        successInput("return [[4, 2],[1,3]].count");
+        successInput("return [[4, 2],[3]].count");
+        successInput("return [1, 3, 4, 2].count");
+        successInput("return [4, 2].sum");
         successInput("return ([4, 2]+[1, 1])[0]");
         successInput("return ([4, 2]+[1, 1])[1]");
         successInput("return ([4, 2]*[2, 3])[0]");

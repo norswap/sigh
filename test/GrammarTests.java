@@ -84,6 +84,16 @@ public class GrammarTests extends AutumnTestFixture {
             new ArrayLiteralNode(null, asList(intlit(1))), intlit(0)));
         successExpect("[1].length", new FieldAccessNode(null,
             new ArrayLiteralNode(null, asList(intlit(1))), "length"));
+        successExpect("[1].sum", new FieldAccessNode(null,
+            new ArrayLiteralNode(null, asList(intlit(1))), "sum"));
+        successExpect("[1].avg", new FieldAccessNode(null,
+            new ArrayLiteralNode(null, asList(intlit(1))), "avg"));
+        successExpect("[1].count", new FieldAccessNode(null,
+            new ArrayLiteralNode(null, asList(intlit(1))), "count"));
+        successExpect("[1].dim", new FieldAccessNode(null,
+            new ArrayLiteralNode(null, asList(intlit(1))), "dim"));
+        successExpect("[1].nDim", new FieldAccessNode(null,
+            new ArrayLiteralNode(null, asList(intlit(1))), "nDim"));
         successExpect("p.x", new FieldAccessNode(null, new ReferenceNode(null, "p"), "x"));
     }
 

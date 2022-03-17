@@ -15,8 +15,10 @@ import norswap.utils.Util;
 import norswap.utils.exceptions.Exceptions;
 import norswap.utils.exceptions.NoStackException;
 import norswap.utils.visitors.ValuedVisitor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static norswap.utils.Util.cast;
@@ -505,28 +507,39 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
     private long average(Object[] tab){
-        long a=0;
-        for(Object o:tab){
-            a=a+(long)o;
-        }
-        return (a=a/tab.length);
+        long a=sum(tab);
+        long n=count(tab);
+        return a/n;
     }
 
     private long sum(Object[] tab){
         long a=0;
         for(Object o:tab){
-            a=a+(long)o;
+            if(o instanceof Object[]){
+                a+=sum((Object[])o);
+            }
+            else a=a+(long)o;
         }
         return a;
     }
 
     private long count(Object[] tab){
         long n=0;
-        for(Object o:tab){
-            n+=1;
+        if(tab[0] instanceof Object[]){
+            for(Object o:tab)
+                n+=count((Object[])o);
+        }
+        else n+=tab.length;
+        return n;
+    }
+
+    private long nDim(Object[] tab, long n){
+        if (tab[0] instanceof Object[]){
+            return nDim((Object[])tab[0],n+1);
         }
         return n;
     }
+
 
     private Object fieldAccess (FieldAccessNode node)
     {
@@ -544,6 +557,8 @@ public final class Interpreter
                 return (long) count((Object[]) stem);
             else if(fieldName.equals("sum"))
                 return (long) sum((Object[]) stem);
+            else if(fieldName.equals("nDim"))
+                return (long) nDim((Object[]) stem,1);
         }
         return Util.<Map<String, Object>>cast(stem).get(node.fieldName);
         /*return stem instanceof Map
