@@ -2,6 +2,7 @@ package norswap.sigh;
 
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.FunTemplateCallNode;
 import norswap.sigh.ast.base.TemplateDeclarationNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
 
@@ -111,6 +112,10 @@ public class SighGrammar extends Grammar
         identifier
         .push($ -> new SimpleTypeNode($.span(), $.$[0]));
 
+    public rule simple_types =
+        simple_type.sep(1, COMMA)
+        .as_list(SimpleTypeNode.class);
+
     public rule paren_expression = lazy(() ->
         seq(LPAREN, this.expression, RPAREN)
         .push($ -> new ParenthesizedNode($.span(), $.$[0])));
@@ -138,8 +143,11 @@ public class SighGrammar extends Grammar
         tuple
     );
 
+    public rule function_template_args =
+        seq(LANGLE, simple_types, RANGLE);
+
     public rule function_args =
-        seq(LPAREN, expressions, RPAREN);
+        seq(opt(function_template_args), LPAREN, expressions, RPAREN);
 
     public rule suffix_expression = left_expression()
         .left(basic_expression)
@@ -148,7 +156,7 @@ public class SighGrammar extends Grammar
         .suffix(seq(LSQUARE, lazy(() -> this.expression), RSQUARE),
             $ -> new ArrayAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(function_args,
-            $ -> new FunCallNode($.span(), $.$[0], $.$[1]));
+            $ -> ($.$.length > 2) ? new FunTemplateCallNode($.span(), $.$[0], $.$[2], $.$[1]) : new FunCallNode($.span(), $.$[0], $.$[1]));
 
     public rule prefix_expression = right_expression()
         .operand(suffix_expression)

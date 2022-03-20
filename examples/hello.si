@@ -3,4 +3,4 @@ fun sum(a:T1, b:T1):R {
     return a + b
 }
 
-var tuple:Tuple = (1, 5)
+var result:Int = sum<Int, Int, Int>(5, 5)

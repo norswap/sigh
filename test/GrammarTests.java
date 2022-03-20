@@ -1,6 +1,7 @@
 import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.FunTemplateCallNode;
 import norswap.sigh.ast.base.TemplateDeclarationNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
 import org.testng.annotations.Test;
@@ -155,6 +156,31 @@ public class GrammarTests extends AutumnTestFixture {
 
         successExpect("template<T1>", new TemplateDeclarationNode(null, asList("T1")));
         successExpect("template<R,T1,T2,T3>", new TemplateDeclarationNode(null, asList("R","T1","T2","T3")));
+    }
+
+    @Test public void testTemplateFunctionCall() {
+        rule = grammar.suffix_expression;
+
+        successExpect("myFunction<Int, Int>(5, 5)",
+            new FunTemplateCallNode(null,
+                new ReferenceNode(null, "myFunction"),
+                asList(intlit(5), intlit(5)),
+                asList(new SimpleTypeNode(null, "Int"), new SimpleTypeNode(null, "Int"))
+            )
+        );
+        successExpect("myFunction(5, 5)",
+            new FunCallNode(null,
+                new ReferenceNode(null, "myFunction"),
+                asList(intlit(5), intlit(5))
+            )
+        );
+        successExpect("myFunction<MyCustomTypeMaybeForLater>(5, 5)",
+            new FunTemplateCallNode(null,
+                new ReferenceNode(null, "myFunction"),
+                asList(intlit(5), intlit(5)),
+                asList(new SimpleTypeNode(null, "MyCustomTypeMaybeForLater"))
+            )
+        );
     }
 
     @Test public void testTupleVarDeclaration() {
