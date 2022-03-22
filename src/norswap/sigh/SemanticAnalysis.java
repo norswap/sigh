@@ -1,6 +1,7 @@
 package norswap.sigh;
 
 import norswap.sigh.ast.*;
+import norswap.sigh.interpreter.Null;
 import norswap.sigh.scopes.DeclarationContext;
 import norswap.sigh.scopes.DeclarationKind;
 import norswap.sigh.scopes.RootScope;
@@ -274,6 +275,11 @@ public final class SemanticAnalysis
                     FunType funType = r.get(0);
                     r.set(0, funType.paramTypes[(int) r.get(1)]);
                 });
+            }else{
+                R.rule(node, "type")
+                    .by(r -> {
+                        r.set(0, NullType.INSTANCE);
+                    });
             }
             return;
         }
@@ -329,56 +335,56 @@ public final class SemanticAnalysis
     private void fieldAccess (FieldAccessNode node)
     {
         R.rule()
-                .using(node.stem, "type")
-                .by(r -> {
-                    Type type = r.get(0);
+        .using(node.stem, "type")
+        .by(r -> {
+            Type type = r.get(0);
 
-                    if (type instanceof ArrayType) {
-                        if (node.fieldName.equals("length"))
-                            R.rule(node, "type")
-                                    .by(rr -> rr.set(0, IntType.INSTANCE));
-                        else if(node.fieldName.equals("avg"))
-                            R.rule(node, "type")
-                                    .by(rr -> rr.set(0, IntType.INSTANCE));
-                        else if(node.fieldName.equals("count"))
-                            R.rule(node, "type")
-                                    .by(rr -> rr.set(0, IntType.INSTANCE));
-                        else if(node.fieldName.equals("sum"))
-                            R.rule(node, "type")
-                                    .by(rr -> rr.set(0, IntType.INSTANCE));
-                        else if(node.fieldName.equals("nDim"))
-                            R.rule(node, "type")
-                                .by(rr -> rr.set(0, IntType.INSTANCE));
-                        else
-                            r.errorFor("Trying to access a non-length field on an array", node,
-                                    node.attr("type"));
-                        return;
-                    }
+            if (type instanceof ArrayType || type instanceof NullType) {
+                if (node.fieldName.equals("length"))
+                    R.rule(node, "type")
+                            .by(rr -> rr.set(0, IntType.INSTANCE));
+                else if(node.fieldName.equals("avg"))
+                    R.rule(node, "type")
+                            .by(rr -> rr.set(0, IntType.INSTANCE));
+                else if(node.fieldName.equals("count"))
+                    R.rule(node, "type")
+                            .by(rr -> rr.set(0, IntType.INSTANCE));
+                else if(node.fieldName.equals("sum"))
+                    R.rule(node, "type")
+                            .by(rr -> rr.set(0, IntType.INSTANCE));
+                else if(node.fieldName.equals("nDim"))
+                    R.rule(node, "type")
+                        .by(rr -> rr.set(0, IntType.INSTANCE));
+                else
+                    r.errorFor("Trying to access a non-length field on an array", node,
+                            node.attr("type"));
+                return;
+            }
 
-                    if (!(type instanceof StructType)) {
-                        r.errorFor("Trying to access a field on an expression of type " + type,
-                                node,
-                                node.attr("type"));
-                        return;
-                    }
+            if (!(type instanceof StructType)) {
+                r.errorFor("Trying to access a field on an expression of type " + type,
+                        node,
+                        node.attr("type"));
+                return;
+            }
 
-                    StructDeclarationNode decl = ((StructType) type).node;
+            StructDeclarationNode decl = ((StructType) type).node;
 
-                    for (DeclarationNode field: decl.fields)
-                    {
-                        if (!field.name().equals(node.fieldName)) continue;
+            for (DeclarationNode field: decl.fields)
+            {
+                if (!field.name().equals(node.fieldName)) continue;
 
-                        R.rule(node, "type")
-                                .using(field, "type")
-                                .by(Rule::copyFirst);
+                R.rule(node, "type")
+                        .using(field, "type")
+                        .by(Rule::copyFirst);
 
-                        return;
-                    }
+                return;
+            }
 
-                    String description = format("Trying to access missing field %s on struct %s",
-                            node.fieldName, decl.name);
-                    r.errorFor(description, node, node.attr("type"));
-                });
+            String description = format("Trying to access missing field %s on struct %s",
+                    node.fieldName, decl.name);
+            r.errorFor(description, node, node.attr("type"));
+        });
     }
 
     // ---------------------------------------------------------------------------------------------

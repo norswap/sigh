@@ -218,7 +218,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
 
         // TODO make this legal?
-        // successInput("[].length", 0L);
+        successInput("return [].length");
 
         successInput("return [1].length");
         successInput("return [1, 2].length");

@@ -267,6 +267,14 @@ public final class InterpreterTests extends TestFixture {
     }
 
     // ---------------------------------------------------------------------------------------------
+    @Test public void testNullArray(){
+        rule=grammar.root;
+        check("return [].length", 0L);
+        check("return [].avg", 0L);
+        check("return [].count", 0L);
+        check("return [].sum", 0L);
+        check("return [].nDim", 1L);
+    }
 
     @Test
     public void testArrayStructAccess () {
@@ -277,7 +285,6 @@ public final class InterpreterTests extends TestFixture {
         // TODO check that this fails (& maybe improve so that it generates a better message?)
         // or change to make it legal (introduce a top type, and make it a top type array if thre
         // is no inference context available)
-        // checkExpr("[].length", 0L);
         checkExpr("[1].length", 1L);
         checkExpr("[1, 2].length", 2L);
 

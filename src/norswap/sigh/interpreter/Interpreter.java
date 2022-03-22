@@ -507,12 +507,14 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
     private long average(Object[] tab){
+        if(tab.length==0) return 0;
         long a=sum(tab);
         long n=count(tab);
         return a/n;
     }
 
     private long sum(Object[] tab){
+        if(tab.length==0)return 0;
         long a=0;
         for(Object o:tab){
             if(o instanceof Object[]){
@@ -524,6 +526,7 @@ public final class Interpreter
     }
 
     private long count(Object[] tab){
+        if(tab.length==0)return 0;
         long n=0;
         if(tab[0] instanceof Object[]){
             for(Object o:tab)
@@ -534,6 +537,7 @@ public final class Interpreter
     }
 
     private long nDim(Object[] tab, long n){
+        if(tab.length==0)return 1;
         if (tab[0] instanceof Object[]){
             return nDim((Object[])tab[0],n+1);
         }

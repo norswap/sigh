@@ -1,7 +1,12 @@
 import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.interpreter.Interpreter;
+import norswap.sigh.types.IntType;
+import norswap.sigh.types.NullType;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
 
 import static java.util.Arrays.asList;
 import static norswap.sigh.ast.BinaryOperator.*;
@@ -95,12 +100,24 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("[1].nDim", new FieldAccessNode(null,
             new ArrayLiteralNode(null, asList(intlit(1))), "nDim"));
         successExpect("p.x", new FieldAccessNode(null, new ReferenceNode(null, "p"), "x"));
+        successExpect("[].length", new FieldAccessNode(null,new ArrayLiteralNode(null,new ArrayList<>()),"length"));
     }
 
     @Test public void testArrayDeclaration(){
         rule=grammar.var_decl;
         success("var x:Int [][][] {1,2,3}");
         success("var x: Int[]{2}");
+    }
+
+    @Test public void testArrayOperations(){
+        rule=grammar.expression;
+        ArrayList toGet=new ArrayList<>();
+        toGet.add(new IntLiteralNode(null,0));toGet.add(new IntLiteralNode(null,2));toGet.add(new IntLiteralNode(null,1));
+        successExpect("[0, 2, 1][0]", new ArrayAccessNode(null, new ArrayLiteralNode(null, toGet),new IntLiteralNode(null,0)));
+        successExpect("([0, 2, 1])[0]", new ArrayAccessNode(null, new ParenthesizedNode(null,new ArrayLiteralNode(null, toGet)),new IntLiteralNode(null,0)));
+        successExpect("([0, 2, 1]*2)[0]", new ArrayAccessNode(null, new ParenthesizedNode(
+            null,new BinaryExpressionNode(null,new ArrayLiteralNode(null, toGet),BinaryOperator.MULTIPLY,new IntLiteralNode(null, 2))),
+            new IntLiteralNode(null,0)));
     }
 
     // ---------------------------------------------------------------------------------------------
