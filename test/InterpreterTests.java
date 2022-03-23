@@ -356,137 +356,137 @@ public final class InterpreterTests extends TestFixture {
     @Test public void testArrayDeclaration(){
         rule = grammar.root;
         //check("var x:Int=3; return x", 3L);
-        check("var x: Int[]{2}; return x[0]",0L);
-        check("var x: String[][]{2,2}; return x[0][1]", null);
-        check("var x: Int[][][]{1,2,3}; return x[0][0][0]", 0L);
-        check("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]", 3L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[2]; return x[0]",0L);
+        check("var x: String[2][2]; return x[0][1]", null);
+        check("var x: Int[1][2][3]; return x[0][0][0]", 0L);
+        check("var x: Int[1][2][3]; x[0][0][0]=3; return x[0][0][0]", 3L);
+        check("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[0]", 5L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[1]", 6L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x-y;" +
             "return z[0]", -3L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x-y;" +
             "return z[1]", -4L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=2;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x*y;" +
             "return z[0]", 4L);
-        check("var x: Int[]{2}; var y: Int[]{2};" +
+        check("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=2;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x*y;" +
             "return z[1]", 10L);
-        checkThrows("var x: Int[]{2}; var y: Int[]{2};" +
+        checkThrows("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=0;" +
             "var z:Int[]=x/y;", InterpreterException.class);
-        checkThrows("var x: Int[]{2}; var y: Float[]{2};" +
+        checkThrows("var x: Int[2]; var y: Float[2];" +
         "x[0]=1;x[1]=1;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Int[]=x+y;" +
             "return z[1]", InterpreterException.class);
 
-        check("var x: Float[]{2}; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=1.4;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x+y;" +
             "return z[0]", 5.5D);
-        check("var x: Float[]{2}; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=1.4;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x+y;" +
             "return z[1]", 6.4D);
-        check("var x: Float[]{2}; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[]{2};" +
             "x[0]=1.5;x[1]=1.4;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x-y;" +
             "return z[0]", -2.5D);
-        check("var x: Float[]{2}; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=1.4;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x-y;" +
             "return z[1]", -3.6D);
-        check("var x: Float[]{2}; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=2.3;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x*y;" +
             "return z[0]", 6D);
-        check("var x: Float[]{2}; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=2.3;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x*y;" +
             "return z[1]", 11.5D);
-        checkThrows("var x: Float[]{2}; var y: Float[]{2};" +
+        checkThrows("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=1.4;" +
             "y[0]=4.0;y[1]=0.0;" +
             "var z:Float[]=x/y;", InterpreterException.class);
 
-        check("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+        check("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=1;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x+y;" +
             "return z[0][0]", 5L);
-        check("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+        check("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=1;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x+y;" +
             "return z[1][0]", 6L);
-       check("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+       check("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=1;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x-y;" +
             "return z[0][0]", -3L);
-        check("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+        check("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=1;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x-y;" +
             "return z[1][0]", -4L);
-        check("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+        check("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=1;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x*y;" +
             "return z[0][0]", 4L);
-        check("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+        check("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=2;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x*y;" +
             "return z[1][0]", 10L);
-        check("var x: Int[][][]{2,2,2}; var y: Int[][][]{2,2,2};" +
+        check("var x: Int[2][2][2]; var y: Int[2][2][2];" +
             "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
             "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
             "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
             "y[0][1][0]=9;y[1][1][0]=11;y[0][1][1]=13;y[1][1][1]=15;"+
             "var z:Int[][][]=x*y;" +
             "return z[0][0][0]", 1L);
-        check("var x: Int[][][]{2,2,2}; var y: Int[][][]{2,2,2};" +
+        check("var x: Int[2][2][2]; var y: Int[2][2][2];" +
             "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
             "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
             "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
             "y[0][1][0]=9;y[1][1][0]=11;y[0][1][1]=13;y[1][1][1]=15;"+
             "var z:Int[][][]=x*y;" +
             "return z[0][0][1]", 15L);
-        check("var x: Int[][][]{2,2,2}; var y: Int[][][]{2,2,2};" +
+        check("var x: Int[2][2][2]; var y: Int[2][2][2];" +
             "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
             "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
             "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
             "y[0][1][0]=9;y[1][1][0]=11;y[0][1][1]=13;y[1][1][1]=15;"+
             "var z:Int[][][]=x*y;" +
             "return z[0][1][1]", 91L);
-        check("var x: Int[][][]{2,2,2}; var y: Int[][][]{2,2,2};" +
+        check("var x: Int[2][2][2]; var y: Int[2][2][2];" +
             "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
             "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
             "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
@@ -494,7 +494,7 @@ public final class InterpreterTests extends TestFixture {
             "var z:Int[][][]=x+y;" +
             "return z[0][1][1]", 20L);
 
-        check("var x: Int[][][]{2,2,2}; var y: Int[][][]{2,2,2};" +
+        check("var x: Int[2][2][2]; var y: Int[2][2][2];" +
             "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
             "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
             "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
@@ -502,7 +502,7 @@ public final class InterpreterTests extends TestFixture {
             "var z:Int[][][]=x-y;" +
             "return z[0][1][1]", -6L);
 
-        check("var x: Int[][][]{2,2,2}; var y: Int[][][]{2,2,2};" +
+        check("var x: Int[2][2][2]; var y: Int[2][2][2];" +
             "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
             "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
             "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
@@ -510,13 +510,13 @@ public final class InterpreterTests extends TestFixture {
             "var z:Int[][][]=y/x;" +
             "return z[0][1][1]", 1L);
 
-        check("var x: Int[]{2}; x[0]=2;x[1]=4;" +
+        check("var x: Int[2]; x[0]=2;x[1]=4;" +
             "return x.sum", 6L);
 
-        check("var x: Int[]{2}; x[0]=2;x[1]=4;" +
+        check("var x: Int[2]; x[0]=2;x[1]=4;" +
             "return x.avg", 3L);
 
-        check("var x: Int[]{2}; x[0]=2;x[1]=4;" +
+        check("var x: Int[2]; x[0]=2;x[1]=4;" +
             "return x.count", 2L);
 
         check("var x: Int[]=[2,4]" +
