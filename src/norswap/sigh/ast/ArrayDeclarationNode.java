@@ -21,6 +21,7 @@ public final class ArrayDeclarationNode extends DeclarationNode
         thisArray=createArray(0);
     }
 
+
     @Override public String name () {
         return name;
     }

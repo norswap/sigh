@@ -277,25 +277,26 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "Trying to access missing field z on struct P");
     }
 
+
     @Test public void testArrayDeclaration(){
-        successInput("var x: Int[]{2}; return x[0]");
-        successInput("var x: Int[][][]{1,2,3}; return x");
-        successInput("var x: Int[][][]{1,2,3}; return x[0]");
-        successInput("var x: Int[][][]{1,2,3}; return x[0][0]");
-        successInput("var x: Int[][][]{1,2,3}; return x[0][0][0]");
-        successInput("var x: Int[][][]{1,2,3}; x[0][0][0]=3; return x[0][0][0]");
-        successInput("var x: Int[]{2}; var y: Int[]{2};" +
+        successInput("var x: Int[2]; return x[0]");
+        successInput("var x: Int[1][2][3]; return x");
+        successInput("var x: Int[1][2][3]; return x[0]");
+        successInput("var x: Int[1][2][3]; return x[0][0]");
+        successInput("var x: Int[1][2][3]; return x[0][0][0]");
+        successInput("var x: Int[1][2][3]; x[0][0][0]=3; return x[0][0][0]");
+        successInput("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[0]");
-        successInput("var x: Int[]{2}; var y: Int[]{2};" +
+        successInput("var x: Int[2]; var y: Int[2];" +
             "x[0]=1;x[1]=1;" +
             "y[0]=4;y[1]=5;" +
             "var z:Int[]=x+y;" +
             "return z[1]");
 
-        successInput("var x: Int[][]{2,1}; var y: Int[][]{2,1};" +
+        successInput("var x: Int[2][1]; var y: Int[2][1];" +
             "x[0][0]=1;x[1][0]=1;" +
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x+y;" +

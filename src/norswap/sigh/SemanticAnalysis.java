@@ -316,7 +316,7 @@ public final class SemanticAnalysis
                     "Could not find common supertype in array literal: all members have Void type.",
                     node);
             else
-                r.set(0, new ArrayType(supertype));
+                r.set(0, new ArrayType(supertype, node.dimensions));
         });
     }
 
@@ -537,7 +537,7 @@ public final class SemanticAnalysis
             //TODO : new rule
         else if (left instanceof ArrayType)
             if(right instanceof ArrayType)
-                r.set(0, new ArrayType(((ArrayType) left).componentType));
+                r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
             else
                 r.error(arithmeticError(node, left, right), node);
         else
@@ -652,7 +652,7 @@ public final class SemanticAnalysis
     {
         R.rule(node, "value")
         .using(node.componentType, "value")
-        .by(r -> r.set(0, new ArrayType(r.get(0))));
+        .by(r -> r.set(0, new ArrayType(r.get(0),node.dimensions)));
     }
 
     // ---------------------------------------------------------------------------------------------

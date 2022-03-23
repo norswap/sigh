@@ -1,15 +1,18 @@
 package norswap.sigh.types;
 
 import norswap.sigh.ast.ArrayDeclarationNode;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ArrayType extends Type
 {
     public final Type componentType;
-    public static final ArrayType INSTANCE = new ArrayType(IntType.INSTANCE);
-    public ArrayDeclarationNode node;
 
-    public ArrayType (Type componentType) {
+    public List dimensions;
+
+    public ArrayType (Type componentType, List dimensions) {
         this.componentType = componentType;
+        this.dimensions=dimensions;
     }
 
     @Override public String name() {
@@ -22,5 +25,9 @@ public final class ArrayType extends Type
 
     @Override public int hashCode () {
         return componentType.hashCode();
+    }
+
+    private void computeDimension(){
+
     }
 }

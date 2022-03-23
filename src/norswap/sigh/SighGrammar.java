@@ -201,11 +201,17 @@ public class SighGrammar extends Grammar
             return true;
         });
 
+    public rule array_shape=integer.push($->new IntLiteralNode($.span(),Long.parseLong($.str())));
+
+    public rule array_shapes=choice(
+                            seq(LSQUARE,array_shape.sep(0,"]["),RSQUARE).as_list(IntLiteralNode.class),
+                            seq(LSQUARE,RSQUARE));
 
     public rule array_type = left_expression()
         .left(simple_type)
-        .suffix(seq(LSQUARE, RSQUARE),
-            $ -> new ArrayTypeNode($.span(), $.$[0]));
+        .suffix(seq(array_shapes).at_least(1),
+            $ -> new ArrayTypeNode($.span(), $.$[0], $.$[1]));
+
 
     public rule type =
         seq(array_type);
@@ -228,15 +234,13 @@ public class SighGrammar extends Grammar
         seq(LBRACE, statements, RBRACE)
         .push($ -> new BlockNode($.span(), $.$[0]));
 
-    public rule array_shape=integer.push($->new IntLiteralNode($.span(),Long.parseLong($.str())));
 
-    public rule array_shapes=seq(LBRACE,array_shape.sep(1,COMMA),RBRACE).as_list(IntLiteralNode.class);
 
     public rule var_decl =choice(
         seq(_var, identifier, COLON, type, EQUALS, expression)
         .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2])),
-        seq(_var, identifier, COLON, type, array_shapes)
-            .push($ -> new ArrayDeclarationNode($.span(), $.$[0], $.$[1], $.$[2])));
+            seq(_var, identifier, COLON, array_type)
+            .push($ -> new ArrayDeclarationNode($.span(), $.$[0],$.$[1], ((ArrayTypeNode) $.$[1]).dimensions)));
 
 
 

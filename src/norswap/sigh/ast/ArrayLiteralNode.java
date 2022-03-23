@@ -2,16 +2,26 @@ package norswap.sigh.ast;
 
 import norswap.autumn.positions.Span;
 import norswap.utils.Util;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayLiteralNode extends ExpressionNode
 {
     public final List<ExpressionNode> components;
+    public List<Integer> dimensions=new ArrayList<Integer>();
 
     @SuppressWarnings("unchecked")
     public ArrayLiteralNode (Span span, Object components) {
         super(span);
         this.components = Util.cast(components, List.class);
+        dimension(this.components);
+    }
+
+    private void dimension(List compo){
+        dimensions.add(compo.size());
+        if(compo.size()>0 && compo.get(0) instanceof ArrayLiteralNode){
+            dimension(((ArrayLiteralNode)compo.get(0)).components);
+        }
     }
 
     @Override public String contents ()
