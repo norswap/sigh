@@ -7,25 +7,25 @@ import java.util.List;
 
 public final class ArrayTypeNode extends TypeNode
 {
-    public final TypeNode componentType;
-    public List dimensions=new ArrayList();
+    public TypeNode componentType;
+    public List dimensions;
 
     public ArrayTypeNode (Span span, Object componentType, Object dims) {
         super(span);
         this.componentType = Util.cast(componentType, TypeNode.class);
         this.dimensions=Util.cast(dims,List.class);
-        //dimension(this.componentType);
+        init();
     }
 
     @Override public String contents() {
         return componentType.contents() + "[]";
     }
 
-    private void dimension(TypeNode compo){
-        String[] comp=compo.contents().split(",");
-        dimensions.add(comp.length);
-        if(compo instanceof ArrayTypeNode){
-            dimension(((ArrayTypeNode)compo).componentType);
-        }
+
+    private void init(){
+        if(dimensions.size()<=1) return;
+        List subDimensions=dimensions.subList(1,dimensions.size());
+        ArrayTypeNode subArray=new ArrayTypeNode(this.span,componentType,subDimensions);
+        componentType=subArray;
     }
 }

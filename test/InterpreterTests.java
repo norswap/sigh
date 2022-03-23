@@ -410,7 +410,7 @@ public final class InterpreterTests extends TestFixture {
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x+y;" +
             "return z[1]", 6.4D);
-        check("var x: Float[2]; var y: Float[]{2};" +
+        check("var x: Float[2]; var y: Float[2];" +
             "x[0]=1.5;x[1]=1.4;" +
             "y[0]=4.0;y[1]=5.0;" +
             "var z:Float[]=x-y;" +

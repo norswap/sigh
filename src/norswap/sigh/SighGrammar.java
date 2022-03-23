@@ -209,7 +209,7 @@ public class SighGrammar extends Grammar
 
     public rule array_type = left_expression()
         .left(simple_type)
-        .suffix(seq(array_shapes).at_least(1),
+        .suffix(seq(array_shapes),
             $ -> new ArrayTypeNode($.span(), $.$[0], $.$[1]));
 
 

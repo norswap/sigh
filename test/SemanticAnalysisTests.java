@@ -277,7 +277,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "Trying to access missing field z on struct P");
     }
 
-
+    @Test public void dummyTests(){
+        successInput("var x: Int[1][2][3]; x[0][0][0]=3; return x[0][0][0]");
+    }
     @Test public void testArrayDeclaration(){
         successInput("var x: Int[2]; return x[0]");
         successInput("var x: Int[1][2][3]; return x");
