@@ -82,7 +82,16 @@ public class GrammarTests extends AutumnTestFixture {
     }
 
     // ---------------------------------------------------------------------------------------------
-
+    @Test public void testClass () {
+        rule = grammar.class_decl;
+        success(
+            "class P { var num: Int; var den: Int "
+                +
+                "fun toNumber() : Float{ return num/den}"
+                +
+                "}"
+        );
+    }
     @Test public void testArrayStructAccess () {
         rule = grammar.expression;
         successExpect("[1][0]", new ArrayAccessNode(null,
