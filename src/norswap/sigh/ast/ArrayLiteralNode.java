@@ -8,7 +8,7 @@ import java.util.List;
 public class ArrayLiteralNode extends ExpressionNode
 {
     public final List<ExpressionNode> components;
-    public List<Integer> dimensions=new ArrayList<Integer>();
+    public List<StringLiteralNode> dimensions=new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     public ArrayLiteralNode (Span span, Object components) {
@@ -18,7 +18,7 @@ public class ArrayLiteralNode extends ExpressionNode
     }
 
     private void dimension(List compo){
-        dimensions.add(compo.size());
+        dimensions.add(new StringLiteralNode(span,Integer.toString(compo.size())));
         if(compo.size()>0 && compo.get(0) instanceof ArrayLiteralNode){
             dimension(((ArrayLiteralNode)compo.get(0)).components);
         }

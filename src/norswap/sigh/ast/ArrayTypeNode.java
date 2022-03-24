@@ -27,7 +27,6 @@ public final class ArrayTypeNode extends TypeNode
 
     private void init(){
         if(dimensions.size()<=1) return;
-
         List subDimensions=dimensions.subList(1,dimensions.size());
         ArrayTypeNode subArray=new ArrayTypeNode(this.span,componentType,subDimensions);
         componentType=subArray;

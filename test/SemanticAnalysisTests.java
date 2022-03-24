@@ -216,7 +216,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
 
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
-
+        failureInputWith("return [1,2,3]*[1,2]", "Trying to operate on arrays with different dimensions: [3] and [2]");
+        failureInputWith("return [1,2,3]*[[1],[2],[3]]", "Trying to operate on arrays with different dimensions: [3] and [3, 1]");
+        failureInputWith("return [[1,3],[2,4],[3,5]]+[[1],[2],[3]]", "Trying to operate on arrays with different dimensions: [3, 2] and [3, 1]");
         // TODO make this legal?
         successInput("return [].length");
 

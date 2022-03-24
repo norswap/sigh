@@ -519,7 +519,25 @@ public final class SemanticAnalysis
     }
 
     // ---------------------------------------------------------------------------------------------
+    private boolean equal(List a,List b){
+        if(a.size()!=b.size()) return false;
+        for(int i=0;i< a.size();i++){
+            String aValue=((StringLiteralNode)a.get(i)).value;
+            String bValue=((StringLiteralNode)b.get(i)).value;
+            if(!aValue.equals(bValue)) return false;
+        }
+        return true;
+    }
 
+    private String conversionDimension(List<StringLiteralNode> dimensions){
+        String result="[";
+        for(int i=0;i<dimensions.size();i++){
+            if(i!=0) result+=", ";
+            result+= dimensions.get(i).value;
+        }
+        result+="]";
+        return result;
+    }
     private void binaryArithmetic (Rule r, BinaryExpressionNode node, Type left, Type right)
     {
         if (left instanceof IntType)
@@ -536,8 +554,14 @@ public final class SemanticAnalysis
                 r.error(arithmeticError(node, "Float", right), node);
             //TODO : new rule
         else if (left instanceof ArrayType)
-            if(right instanceof ArrayType)
+            if(right instanceof ArrayType){
+
+                if(!equal(((ArrayType) left).dimensions,(((ArrayType) right).dimensions))){
+                    r.error(format("Trying to operate on arrays with different dimensions: %s and %s", conversionDimension(((ArrayType) left).dimensions),conversionDimension(((ArrayType) right).dimensions)),node);
+                    return;
+                }
                 r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
+            }
             else
                 r.error(arithmeticError(node, left, right), node);
         else
