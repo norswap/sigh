@@ -196,7 +196,8 @@ public final class Interpreter
                 }
                 return result;
             }else{
-                throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
+                throw new InterpreterException("Try to operate on two arrays with different types: "+leftArray.getClass()+
+                    " and "+rightArray.getClass(),new ArithmeticException());
             }
         }
         else if(leftArray[0] instanceof Long ){
@@ -226,7 +227,8 @@ public final class Interpreter
                 return result;
             }
             else{
-                throw new InterpreterException("Try to operate on two arrays with different types",new Exception());
+                throw new InterpreterException("Try to operate on two arrays with different types: "+leftArray.getClass()+
+                    " and "+rightArray.getClass(),new ArithmeticException());
             }
         }
         else if(leftArray[0] instanceof Object[]){
@@ -242,6 +244,104 @@ public final class Interpreter
             throw new InterpreterException("Operation not implemented",new Exception());
         }
         return null;
+    }
+
+    private Object matrixOperate(Object lArray, Object rArray, int op){
+        if(!(lArray instanceof Object[]) || !(rArray instanceof  Object[]))
+            throw new InterpreterException("Trying to operate on non-array type", new Exception());
+        Object[] leftArray=(Object[]) lArray;
+        Object[] rightArray=(Object[]) rArray;
+        if(leftArray[0] instanceof Long && rightArray[0] instanceof Long){
+            if(leftArray.length!=rightArray.length){
+                throw new InterpreterException("Trying to operate on arrays with different dimensions", new Exception());
+            }
+            Long result=Long.valueOf(0);
+            for(int i=0;i<leftArray.length;i++){
+                result+=(Long)leftArray[i]*(Long)rightArray[i];
+            }
+            return result;
+        }
+        if(leftArray[0] instanceof Long && (rightArray[0] instanceof Object[]) ){
+            if(rightArray.length>1 && ((Object[])rightArray).length!=leftArray.length){
+                throw new InterpreterException("Trying to operate on arrays with different dimensions", new Exception());
+            }
+            Long result=Long.valueOf(0);
+            for(int i=0;i<leftArray.length;i++){
+                result+=(Long)leftArray[i]*(Long)((Object[])rightArray[i])[0];
+            }
+            return result;
+        }
+        if(!(leftArray[0] instanceof Object[])||!(rightArray[0] instanceof Object[])
+            ||(((Object[])leftArray[0])[0] instanceof Object[]) ||(((Object[])rightArray[0])[0] instanceof Object[]))
+            throw new InterpreterException("Trying to operate on non-array type", new Exception());
+
+        switch (op) {
+            case 0:
+                if (((Object[]) leftArray[0])[0] instanceof Long && (((Object[]) rightArray[0])[0] instanceof Long)) {
+                    Long[][] lA = new Long[leftArray.length][((Object[]) leftArray[0]).length];
+                    Long[][] rA = new Long[rightArray.length][((Object[]) rightArray[0]).length];
+                    for (int i = 0; i < lA.length; i++) {
+                        Object[] line=(Object[])leftArray[i];
+                        for(int j=0;j<line.length;j++){
+                            lA[i][j]=(Long)line[j];
+                        }
+
+                    }
+                    for (int i = 0; i < rA.length; i++) {
+                        Object[] line=(Object[])rightArray[i];
+                        for(int j=0;j<line.length;j++){
+                            rA[i][j]=(Long)line[j];
+                        }
+                    }
+                    if (lA[0].length != rA.length)
+                    throw new InterpreterException("Trying to use @ operation on matrix with uncompatible sizes:" +
+                        "[" + lA.length + ", " + lA[0].length + "] and [" + rA.length + ", " + rA[0].length + "]", new Exception());
+                    Long[][] result = new Long[lA.length][rA[0].length];
+                    for (int i = 0; i < lA.length; i++) {
+                        for (int j = 0; j < rA.length; j++) {
+                            result[i][j]=Long.valueOf(0);
+                            for (int k = 0; k < lA[0].length; k++) {
+                                result[i][j] += lA[i][k] * rA[k][j];
+                            }
+                        }
+                    }
+                    return result;
+
+                }
+
+                if (((Object[]) leftArray[0])[0] instanceof Long && (((Object[]) rightArray[0])[0] instanceof Long)) {
+                    Double[][] lA = new Double[leftArray.length][];
+                    Double[][] rA = new Double[rightArray.length][];
+                    for (int i = 0; i < lA.length; i++) {
+                        Object[] line=(Object[])leftArray[i];
+                        for(int j=0;j<line.length;j++){
+                            lA[i][j]=(Double)line[j];
+                        }
+
+                    }
+                    for (int i = 0; i < rA.length; i++) {
+                        Object[] line=(Object[])rightArray[i];
+                        for(int j=0;j<line.length;j++){
+                            rA[i][j]=(Double)line[j];
+                        }
+                    }
+                    Double[][] result = new Double[lA.length][rA[0].length];
+
+                    for (int i = 0; i < lA.length; i++) {
+                        for (int j = 0; j < rA.length; j++) {
+                            result[i][j]=Double.valueOf(0);
+                            for(int k=0;k<lA[0].length;k++){
+                                result[i][j]+=lA[i][k]*rA[k][j];
+                            }
+                        }
+                    }
+                    return result;
+                }
+                else
+                    throw new InterpreterException("Operation @ not defined for this type",new Exception());
+            default:
+                return new Object[leftArray.length][rightArray.length];
+        }
     }
 
     private Object arrayExpression( BinaryExpressionNode node){
@@ -270,6 +370,11 @@ public final class Interpreter
             Object[] leftArray=(Object[])left;
             Object[] rightArray=(Object[])right;
             return arrayOperate(leftArray,rightArray,3);
+        }
+        else if (node.operator==BinaryOperator.DOTPRODUCT){
+            Object[] rightArray=(Object[])right;
+            Object[] leftArray=(Object[])left;
+            return matrixOperate(leftArray,rightArray,0);
         }
         switch (node.operator) {
             case EQUALITY:

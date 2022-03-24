@@ -353,6 +353,14 @@ public final class InterpreterTests extends TestFixture {
             NullPointerException.class);
     }
 
+    @Test public void dummyTest(){
+        rule = grammar.root;
+        check("return ([[1,2],[2,3]]@[[2,2],[4,4]])[0][0]",10L);
+        check("return ([[1,2],[2,3]]@[[2,4],[2,4]])[0][1]",12L);
+        check("return ([1,2]@[2,4])",10L);
+        check("return [1,2]@[[2],[4]]",10L);
+    }
+
     @Test public void testArrayDeclaration(){
         rule = grammar.root;
         //check("var x:Int=3; return x", 3L);

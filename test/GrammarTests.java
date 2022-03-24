@@ -130,6 +130,7 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("([0, 2, 1]*2)[0]", new ArrayAccessNode(null, new ParenthesizedNode(
             null,new BinaryExpressionNode(null,new ArrayLiteralNode(null, toGet),BinaryOperator.MULTIPLY,new IntLiteralNode(null, 2))),
             new IntLiteralNode(null,0)));
+        success("([[0,1],[2,3]] @ [[1,1],[2,2]])");
     }
 
     // ---------------------------------------------------------------------------------------------
