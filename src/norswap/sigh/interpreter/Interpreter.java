@@ -701,7 +701,7 @@ public final class Interpreter
     private Void arrayDecl (ArrayDeclarationNode node)
     {
         Scope scope = reactor.get(node, "scope");
-        assign(scope, node.name, node.thisArray, reactor.get(node, "type"));
+        assign(scope, node.name, node.createArray(0), reactor.get(node, "type"));
         return null;
     }
 

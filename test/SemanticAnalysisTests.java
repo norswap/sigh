@@ -277,9 +277,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "Trying to access missing field z on struct P");
     }
 
-    @Test public void dummyTests(){
-        successInput("var x: Int[1][2][3]; x[0][0][0]=3; return x[0][0][0]");
-    }
+
     @Test public void testArrayDeclaration(){
         successInput("var x: Int[2]; return x[0]");
         successInput("var x: Int[1][2][3]; return x");
@@ -303,6 +301,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "y[0][0]=4;y[1][0]=5;" +
             "var z:Int[][]=x+y;" +
             "return z[0][0]");
+        failureInputWith("var x: Int[2][\"size\"]","Illegal size for array declaration: \"size\"");
+        failureInputWith("var x: Int[2][2.3]","Illegal size for array declaration: 2.3");
+        failureInputWith("var x: Int[2][-3]","Illegal size for array declaration: -3");
     }
 
     // ---------------------------------------------------------------------------------------------

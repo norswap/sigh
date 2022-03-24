@@ -787,6 +787,20 @@ public final class SemanticAnalysis
             .using(node.type, "value")
             .by(Rule::copyFirst);
 
+        R.rule()
+            .using(node.type, "value")
+            .by(r->{
+                List dims=node.initializer;
+                for(int i=0;i<dims.size();i++){
+                    try{
+                        int size=Integer.parseInt(((StringLiteralNode)(dims.get(i))).value);
+                        if(size<=0) throw new NumberFormatException();
+                    }catch (NumberFormatException e){
+                        r.error(format("Illegal size for array declaration: %s",((StringLiteralNode)(dims.get(i))).value),node.initializer);
+                    }
+                }
+            });
+
     }
 
     // ---------------------------------------------------------------------------------------------

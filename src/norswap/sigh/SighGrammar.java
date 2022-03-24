@@ -201,11 +201,12 @@ public class SighGrammar extends Grammar
             return true;
         });
 
-    public rule array_shape=integer.push($->new IntLiteralNode($.span(),Long.parseLong($.str())));
+    public rule array_shape=
+        basic_expression.push($->new StringLiteralNode($.span(),$.str()));
 
     public rule array_shapes=choice(
-                            seq(LSQUARE,array_shape.sep(0,"]["),RSQUARE).as_list(IntLiteralNode.class),
-                            seq(LSQUARE,RSQUARE));
+                            seq(LSQUARE,array_shape.sep(0,"]["),RSQUARE).as_list(ExpressionNode.class),
+                            seq(LSQUARE,RSQUARE).as_list(ExpressionNode.class));
 
     public rule array_type = left_expression()
         .left(simple_type)
@@ -240,7 +241,7 @@ public class SighGrammar extends Grammar
         seq(_var, identifier, COLON, type, EQUALS, expression)
         .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2])),
             seq(_var, identifier, COLON, array_type)
-            .push($ -> new ArrayDeclarationNode($.span(), $.$[0],$.$[1], ((ArrayTypeNode) $.$[1]).dimensions)));
+            .push($ -> new ArrayDeclarationNode($.span(), $.$[0],$.$[1])));
 
 
 

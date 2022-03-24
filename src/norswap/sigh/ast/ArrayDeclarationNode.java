@@ -1,6 +1,7 @@
 package norswap.sigh.ast;
 
 import norswap.autumn.positions.Span;
+import norswap.sigh.types.ArrayType;
 import norswap.utils.Util;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,14 +12,14 @@ public final class ArrayDeclarationNode extends DeclarationNode
     public final String name;
     public final TypeNode type;
     public final List initializer;
-    public final Object[] thisArray;
+    //public final Object[] thisArray;
 
-    public ArrayDeclarationNode (Span span, Object name, Object type, Object initializer) {
+    public ArrayDeclarationNode (Span span, Object name, Object type) {
         super(span);
         this.name = Util.cast(name, String.class);
         this.type = Util.cast(type, TypeNode.class);
-        this.initializer = Util.cast(initializer, List.class);
-        thisArray=createArray(0);
+        this.initializer = Util.cast(((ArrayTypeNode)type).dimensions, List.class);
+        //thisArray=createArray(0);
     }
 
 
@@ -34,29 +35,30 @@ public final class ArrayDeclarationNode extends DeclarationNode
         return "variable";
     }
 
-    public Object[] createArray(int index){
-        String contents=type.contents();
-        String t=contents.replace("[]","");
-        int size=Integer.parseInt(((IntLiteralNode)initializer.get(index)).contents());
+    public Object[] createArray(int index) {
+            String contents = type.contents();
+            String t = contents.replace("[]", "");
+            int size = Integer.parseInt(((StringLiteralNode) initializer.get(index)).value);
 
-        if(index==initializer.size()-1){
-            if(t.equals("Int") || t.equals("Long")){
-                Long[] array= new Long[size];
-                Arrays.fill(array,new Long(0));
-                return array;
-            }else if(t.equals("Float") || t.equals("Double")){
-                Double[] array= new Double[size];
-                Arrays.fill(array,new Double(0));
-                return array;
-            }else{
-                return new Object[size];
+            if (index == initializer.size() - 1) {
+                if (t.equals("Int") || t.equals("Long")) {
+                    Long[] array = new Long[size];
+                    Arrays.fill(array, new Long(0));
+                    return array;
+                } else if (t.equals("Float") || t.equals("Double")) {
+                    Double[] array = new Double[size];
+                    Arrays.fill(array, new Double(0));
+                    return array;
+                } else {
+                    return new Object[size];
+                }
             }
-        }
-        Object[] array=new Object[size];
-        for(int i=0;i<size;i++){
-            array[i]=createArray(index+1);
-        }
-        return array;
+            Object[] array = new Object[size];
+            for (int i = 0; i < size; i++) {
+                array[i] = createArray(index + 1);
+            }
+            return array;
+
 
     }
 }

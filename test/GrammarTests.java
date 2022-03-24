@@ -102,11 +102,14 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("p.x", new FieldAccessNode(null, new ReferenceNode(null, "p"), "x"));
         successExpect("[].length", new FieldAccessNode(null,new ArrayLiteralNode(null,new ArrayList<>()),"length"));
     }
-
     @Test public void testArrayDeclaration(){
         rule=grammar.var_decl;
         success("var x:Int [1][2][3]");
         success("var x: Int[2]");
+        success("var x: Int[-2]");
+        success("var x: Int[2.5]");
+        success("var x: Int[2.5][1]");
+        success("var x: Int[2][\"string\"]");
     }
 
     @Test public void testArrayOperations(){
