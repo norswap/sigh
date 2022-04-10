@@ -3,6 +3,7 @@ import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import norswap.sigh.ast.base.FunTemplateCallNode;
 import norswap.sigh.ast.base.TemplateDeclarationNode;
+import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
 import norswap.sigh.types.IntType;
 import org.testng.annotations.Test;
@@ -155,10 +156,11 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testTemplateDeclaration() {
         rule = grammar.fun_decl;
 
+        // No template parameters involved
         successExpect("template<T1>" +
-            "fun myFunction(a:Int):Int {" +
+                "fun myFunction(a:Int):Int {" +
                 "return a" +
-            "}", new FunDeclarationNode(
+                "}", new FunDeclarationNode(
                 null,
                 "myFunction",
                 asList(new ParameterNode(null,"a", new SimpleTypeNode(null, "Int"))),
@@ -167,18 +169,33 @@ public class GrammarTests extends AutumnTestFixture {
                 asList("T1")
             )
         );
+        // Testing only template parameters
+        successExpect("template<T1>" +
+            "fun myFunction(a:T1):Int {" +
+                "return a" +
+            "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new TemplateTypeNode(null, "T1"))),
+                new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
+        // Testing with template return
         successExpect("template<T1>" +
                 "fun myFunction(a:T1):T1 {" +
                 "return a" +
                 "}", new FunDeclarationNode(
                 null,
                 "myFunction",
-                asList(new ParameterNode(null,"a", new SimpleTypeNode(null, "T1"))),
-                new SimpleTypeNode(null, "T1"),
+                asList(new ParameterNode(null,"a", new TemplateTypeNode(null, "T1"))),
+                new TemplateTypeNode(null, "T1"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
                 asList("T1")
             )
         );
+
     }
 
     @Test public void testTemplateFunctionCall() {

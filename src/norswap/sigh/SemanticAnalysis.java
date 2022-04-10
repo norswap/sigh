@@ -2,6 +2,8 @@ package norswap.sigh;
 
 import norswap.sigh.ast.*;
 import norswap.sigh.ast.base.TemplateDeclarationNode;
+import norswap.sigh.ast.base.TemplateTypeDeclaration;
+import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.sigh.scopes.DeclarationContext;
 import norswap.sigh.scopes.DeclarationKind;
 import norswap.sigh.scopes.RootScope;
@@ -788,7 +790,9 @@ public final class SemanticAnalysis
         List<String> templateTypes = node.templateParameters;
 
         // Adding template types to scope as TemplateParameters
-
+        for (String templateType : templateTypes) {
+            scope.declare(templateType, new TemplateTypeDeclaration(null, templateType));
+        }
 
         // Filtering parameters to check at runtime
         boolean is_template_return_type = templateTypes.contains(node.returnType.attr("value"));
@@ -816,16 +820,29 @@ public final class SemanticAnalysis
             r.set(0, new FunType(r.get(0), paramTypes));
         });
 
-        // Checking return type
-        R.rule()
-        .using(node.block.attr("returns"), node.returnType.attr("value"))
-        .by(r -> {
-            boolean returns = r.get(0);
-            Type returnType = r.get(1);
-            if (!returns && !(returnType instanceof VoidType))
-                r.error("Missing return in function.", node);
-            // NOTE: The returned value presence & type is checked in returnStmt().
-        });
+        // Checking return type based on whether we're using a template identifier
+        if (is_template_return_type) {
+            R.rule()
+            .using(node.block.attr("returns"), node.returnType.attr("value"))
+            .by(r -> {
+                boolean returns = r.get(0);
+                Type returnType = r.get(1);
+                if (!returns && !(returnType instanceof VoidType))
+                    r.error("Missing return in function.", node);
+                // NOTE: The returned value presence & type is checked in returnStmt().
+            });
+        } else {
+            R.rule()
+            .using(node.block.attr("returns"), node.returnType.attr("value"))
+            .by(r -> {
+                boolean returns = r.get(0);
+                Type returnType = r.get(1);
+                if (!returns && !(returnType instanceof VoidType))
+                    r.error("Missing return in function.", node);
+                // NOTE: The returned value presence & type is checked in returnStmt().
+            });
+        }
+
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -206,8 +206,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     @Test public void testTemplateCalls() {
         successInput(
             "template<T>" +
-            "fun add (a: T, b: T): T { return a + b } " +
-            "return add(4, 7)"
+            "fun add (a: T, b: T): T { return a + b } "
         );
 
         //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
