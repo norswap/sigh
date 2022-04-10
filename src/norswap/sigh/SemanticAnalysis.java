@@ -16,6 +16,7 @@ import norswap.utils.visitors.Walker;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
@@ -776,24 +777,46 @@ public final class SemanticAnalysis
 
     private void funDecl (FunDeclarationNode node)
     {
+        // Preparing scope
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
+
+        // Setting scope
         R.set(node, "scope", scope);
 
-        Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
-        dependencies[0] = node.returnType.attr("value");
-        forEachIndexed(node.parameters, (i, param) ->
-            dependencies[i + 1] = param.attr("type"));
+        // Getting template types
+        List<String> templateTypes = node.templateParameters;
 
+        // Adding template types to scope as TemplateParameters
+
+
+        // Filtering parameters to check at runtime
+        boolean is_template_return_type = templateTypes.contains(node.returnType.attr("value"));
+        List<ParameterNode> parameterNodesFiltered = node.parameters.stream().filter((param) -> !templateTypes.contains(param.attr("type"))).collect(Collectors.toList());
+
+        // Checking parameters type
+        Attribute[] dependencies = new Attribute[parameterNodesFiltered.size() + (is_template_return_type ? 0 : 1)];
+
+        // Checking if return type is in template
+        if (!is_template_return_type)
+            dependencies[0] = node.returnType.attr("value");
+
+        forEachIndexed(parameterNodesFiltered, (i, param) ->
+            dependencies[i + (is_template_return_type ? 0 : 1)] = param.attr("type"));
+
+        // Applying rule
         R.rule(node, "type")
         .using(dependencies)
         .by (r -> {
-            Type[] paramTypes = new Type[node.parameters.size()];
+            Type[] paramTypes = new Type[parameterNodesFiltered.size()];
             for (int i = 0; i < paramTypes.length; ++i)
-                paramTypes[i] = r.get(i + 1);
+                paramTypes[i] = r.get(i + (is_template_return_type ? 0 : 1));
+
+
             r.set(0, new FunType(r.get(0), paramTypes));
         });
 
+        // Checking return type
         R.rule()
         .using(node.block.attr("returns"), node.returnType.attr("value"))
         .by(r -> {
