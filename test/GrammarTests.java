@@ -1,14 +1,9 @@
 import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
-import norswap.sigh.ast.base.FunTemplateCallNode;
-import norswap.sigh.ast.base.TemplateDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
-import norswap.sigh.types.IntType;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
 
 import static java.util.Arrays.asList;
 import static norswap.sigh.ast.BinaryOperator.*;
@@ -283,9 +278,8 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testTemplateFunctionCall() {
         rule = grammar.suffix_expression;
 
-        // TODO again because changed
-        /*successExpect("myFunction<Int, Int>(5, 5)",
-            new FunTemplateCallNode(null,
+        successExpect("myFunction<Int, Int>(5, 5)",
+            new FunCallNode(null,
                 new ReferenceNode(null, "myFunction"),
                 asList(intlit(5), intlit(5)),
                 asList(new SimpleTypeNode(null, "Int"), new SimpleTypeNode(null, "Int"))
@@ -298,12 +292,12 @@ public class GrammarTests extends AutumnTestFixture {
             )
         );
         successExpect("myFunction<MyCustomTypeMaybeForLater>(5, 5)",
-            new FunTemplateCallNode(null,
+            new FunCallNode(null,
                 new ReferenceNode(null, "myFunction"),
                 asList(intlit(5), intlit(5)),
                 asList(new SimpleTypeNode(null, "MyCustomTypeMaybeForLater"))
             )
-        );*/
+        );
     }
 
     @Test public void testTupleVarDeclaration() {

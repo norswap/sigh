@@ -2,8 +2,6 @@ package norswap.sigh;
 
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
-import norswap.sigh.ast.base.FunTemplateCallNode;
-import norswap.sigh.ast.base.TemplateDeclarationNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
 
 import static norswap.sigh.ast.UnaryOperator.NOT;
@@ -156,7 +154,7 @@ public class SighGrammar extends Grammar
         .suffix(seq(LSQUARE, lazy(() -> this.expression), RSQUARE),
             $ -> new ArrayAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(function_args,
-            $ -> ($.$.length > 2) ? new FunTemplateCallNode($.span(), $.$[0], $.$[2], $.$[1]) : new FunCallNode($.span(), $.$[0], $.$[1]));
+            $ -> ($.$.length > 2) ? new FunCallNode($.span(), $.$[0], $.$[2], $.$[1]) : new FunCallNode($.span(), $.$[0], $.$[1]));
 
     public rule prefix_expression = right_expression()
         .operand(suffix_expression)
