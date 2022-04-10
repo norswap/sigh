@@ -232,7 +232,6 @@ public class SighGrammar extends Grammar
     public rule statement = lazy(() -> choice(
         this.block,
         this.var_decl,
-        this.template_decl,
         this.fun_decl,
         this.struct_decl,
         this.if_stmt,
@@ -265,12 +264,13 @@ public class SighGrammar extends Grammar
         seq(COLON, type).or_push_null();
 
     public rule template_decl =
-        seq(_template, LANGLE, identifiers, RANGLE)
-            .push($ -> new TemplateDeclarationNode($.span(), $.$[0]));
+        seq(_template, LANGLE, identifiers, RANGLE);
 
     public rule fun_decl =
-        seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
-        .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+        seq(template_decl.opt(), _fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
+        .push($ -> $.$.length > 4 ? new FunDeclarationNode($.span(), $.$[1], $.$[2], $.$[3], $.$[4], $.$[0])
+                        : new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3])
+        );
 
     public rule field_decl =
         seq(_var, identifier, COLON, type)

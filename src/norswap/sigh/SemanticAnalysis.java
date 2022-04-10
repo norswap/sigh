@@ -1,6 +1,7 @@
 package norswap.sigh;
 
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.TemplateDeclarationNode;
 import norswap.sigh.scopes.DeclarationContext;
 import norswap.sigh.scopes.DeclarationKind;
 import norswap.sigh.scopes.RootScope;
