@@ -153,7 +153,7 @@ public class GrammarTests extends AutumnTestFixture {
             new FunCallNode(null, new ReferenceNode(null, "hello"), asList())));
     }
 
-    @Test public void testTemplateDeclaration() {
+    @Test public void testTemplateSimpleDeclaration() {
         rule = grammar.fun_decl;
 
         // No template parameters involved
@@ -195,7 +195,89 @@ public class GrammarTests extends AutumnTestFixture {
                 asList("T1")
             )
         );
+    }
 
+    @Test public void testTemplateComplexDeclaration() {
+        rule = grammar.fun_decl;
+
+        // Simple array parameters vanilla
+        successExpect("template<T1>" +
+                "fun myFunction(a:Int[]):Int {" +
+                "return a" +
+                "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new SimpleTypeNode(null, "Int")))),
+                new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
+        // Nested array parameters vanilla
+        successExpect("template<T1>" +
+                "fun myFunction(a:Int[][]):Int {" +
+                "return a" +
+                "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new SimpleTypeNode(null, "Int"))))),
+                new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
+        // Simple array template parameters
+        successExpect("template<T1>" +
+                "fun myFunction(a:T1[]):Int {" +
+                "return a" +
+                "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new TemplateTypeNode(null, "T1")))),
+                new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
+        // Nested array template parameters
+        successExpect("template<T1>" +
+                "fun myFunction(a:T1[][]):Int {" +
+                "return a" +
+                "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))))),
+                new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
+        // Nested array template parameters with return array template type
+        successExpect("template<T1>" +
+                "fun myFunction(a:T1[][]):Int[] {" +
+                "return a" +
+                "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))))),
+                new ArrayTypeNode(null, new SimpleTypeNode(null, "Int")),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
+        // Nested array template parameters with return nested template type
+        successExpect("template<T1>" +
+                "fun myFunction(a:T1[][]):T1[][] {" +
+                "return a" +
+                "}", new FunDeclarationNode(
+                null,
+                "myFunction",
+                asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))))),
+                new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
+                asList("T1")
+            )
+        );
     }
 
     @Test public void testTemplateFunctionCall() {

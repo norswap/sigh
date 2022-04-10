@@ -1,10 +1,8 @@
 package norswap.sigh.ast;
 
-import com.sun.org.apache.bcel.internal.generic.SIPUSH;
 import norswap.autumn.positions.Span;
 import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.utils.Util;
-import org.graalvm.compiler.lir.LIRInstruction.Temp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,55 +35,93 @@ public class FunDeclarationNode extends DeclarationNode
         (Span span, Object name, Object parameters, Object returnType, Object block, Object templateParameters) {
         super(span);
 
-        // Casting to template parameters list
-        List<String> templateParametersList = Util.cast(templateParameters, List.class);
-
+        // Setting data
         this.name = Util.cast(name, String.class);
+        this.block = Util.cast(block, BlockNode.class);
+        this.templateParameters = Util.cast(templateParameters, List.class);
 
         // Checking parameters if they have to be recast to template parameter type
         List<ParameterNode> parametersList = Util.cast(parameters, List.class);
 
-        int parameterIndex = 0;
         for (ParameterNode parameterNode : parametersList) {
 
-            // Checking if parameter type is a template parameter
-            // TODO handle array return types?
+            // Checking if parameter type is a template parameter (simple)
             if (parameterNode.type instanceof SimpleTypeNode) {
+
+                // Getting type node
                 SimpleTypeNode typeNode = Util.cast(parameterNode.type, SimpleTypeNode.class);
 
-                // Preparing new template parameter
-                ParameterNode newTemplateParameter = new ParameterNode(parameterNode.span, parameterNode.name, new TemplateTypeNode(typeNode));
+                // Updating parameter type
+                parameterNode.type = convertSimpleTypeToTemplateType(typeNode);
 
-                // Updating parameter as template parameter
-                parametersList.set(parameterIndex, newTemplateParameter);
+            } else if (parameterNode.type instanceof ArrayTypeNode) { // (array)
+
+                // Getting array base type
+                ArrayTypeNode typeNode = Util.cast(parameterNode.type, ArrayTypeNode.class);
+
+                convertBaseArrayTypeToTemplateType(typeNode);
             }
-
-            parameterIndex++;
         }
         this.parameters = Util.cast(parameters, List.class);
 
         // Checking if return type is a template parameter
-        // TODO handle array return types?
         if (returnType == null) {
             this.returnType = new SimpleTypeNode(new Span(span.start, span.start), "Void");
         } else if (returnType instanceof TemplateTypeNode) { // Corner case when providing a template type nod
             this.returnType = Util.cast(returnType, TemplateTypeNode.class);
+        } else if (returnType instanceof ArrayTypeNode) {
+
+            // Casting
+            ArrayTypeNode returnTypeNode = Util.cast(returnType, ArrayTypeNode.class);
+
+            // Converting base type to template type (if necessary)
+            convertBaseArrayTypeToTemplateType(returnTypeNode);
+
+            // Setting return type
+            this.returnType = Util.cast(returnTypeNode, TypeNode.class);
+
         } else {
             // Casting to simple type node
             SimpleTypeNode returnTypeNode = Util.cast(returnType, SimpleTypeNode.class);
 
-            // Checking if return type is actually a template type
-            if (templateParameters != null && templateParametersList.contains(returnTypeNode.name)) {
-                this.returnType = new TemplateTypeNode(null, returnTypeNode.name);
-            } else {
-                this.returnType = Util.cast(returnType, TypeNode.class);
-            }
+            this.returnType = Util.cast(convertSimpleTypeToTemplateType(returnTypeNode), TypeNode.class);
         }
 
-        this.block = Util.cast(block, BlockNode.class);
-        this.templateParameters = Util.cast(templateParameters, List.class);
 
         return;
+    }
+
+    /**
+     * Updates the base type of the nested array to the template type matching
+     * the template parameter
+     * @param typeNode
+     */
+    private void convertBaseArrayTypeToTemplateType(ArrayTypeNode typeNode) {
+        ArrayTypeNode parentTypeNode = typeNode;
+        TypeNode typeIterator = typeNode.componentType;
+
+        while (typeIterator instanceof ArrayTypeNode) {
+            parentTypeNode = (ArrayTypeNode) typeIterator;
+            typeIterator = ((ArrayTypeNode) typeIterator).componentType;
+        }
+
+        // Skip base type already instance of template type node
+        if (typeIterator instanceof TemplateTypeNode) return;
+
+        // Updating base type
+        SimpleTypeNode baseTypeNode = Util.cast(typeIterator, SimpleTypeNode.class);
+        parentTypeNode.componentType = convertSimpleTypeToTemplateType(baseTypeNode);
+
+        return;
+    }
+
+    /**
+     * Returns the template type node associated to the simple type node if template parameter found
+     * @param node
+     * @return
+     */
+    private TypeNode convertSimpleTypeToTemplateType(SimpleTypeNode node) {
+        return (templateParameters.contains(node.name)) ? new TemplateTypeNode(node) : node;
     }
 
     @Override public String name () {

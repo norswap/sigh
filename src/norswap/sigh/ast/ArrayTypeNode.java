@@ -5,7 +5,7 @@ import norswap.utils.Util;
 
 public final class ArrayTypeNode extends TypeNode
 {
-    public final TypeNode componentType;
+    public TypeNode componentType;
 
     public ArrayTypeNode (Span span, Object componentType) {
         super(span);
