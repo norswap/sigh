@@ -1,6 +1,7 @@
 package norswap.sigh.ast;
 
 import norswap.autumn.positions.Span;
+import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.utils.Util;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class FunDeclarationNode extends DeclarationNode
     public final List<ParameterNode> parameters;
     public final TypeNode returnType;
     public final BlockNode block;
-    public final List<String> templateParameters;
+    public final List<TemplateTypeDeclarationNode> templateParameters;
 
     @SuppressWarnings("unchecked")
     public FunDeclarationNode
@@ -116,12 +117,21 @@ public class FunDeclarationNode extends DeclarationNode
     }
 
     /**
+     * Returns whether the given type node is actually a template type
+     * @param node
+     * @return
+     */
+    private boolean isTemplateType(SimpleTypeNode node) {
+        return templateParameters.stream().filter((elem) -> elem.name.equals(node.name)).findFirst().isPresent();
+    }
+
+    /**
      * Returns the template type node associated to the simple type node if template parameter found
      * @param node
      * @return
      */
     private TypeNode convertSimpleTypeToTemplateType(SimpleTypeNode node) {
-        return (templateParameters.contains(node.name)) ? new TemplateTypeNode(node) : node;
+        return (isTemplateType(node)) ? new TemplateTypeNode(node) : node;
     }
 
     @Override public String name () {

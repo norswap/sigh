@@ -2,6 +2,7 @@ package norswap.sigh;
 
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
 
 import static norswap.sigh.ast.UnaryOperator.NOT;
@@ -261,8 +262,14 @@ public class SighGrammar extends Grammar
     public rule maybe_return_type =
         seq(COLON, type).or_push_null();
 
+    public rule template_parameter = seq(identifier)
+        .push($ -> new TemplateTypeDeclarationNode($.span(), $.$[0]));
+
+    public rule template_parameters = template_parameter.sep(1, COMMA)
+        .as_list(TemplateTypeDeclarationNode.class);
+
     public rule template_decl =
-        seq(_template, LANGLE, identifiers, RANGLE);
+        seq(_template, LANGLE, template_parameters, RANGLE);
 
     public rule fun_decl =
         seq(template_decl.opt(), _fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)

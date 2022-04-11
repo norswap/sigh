@@ -1,8 +1,7 @@
 package norswap.sigh;
 
 import norswap.sigh.ast.*;
-import norswap.sigh.ast.base.TemplateDeclarationNode;
-import norswap.sigh.ast.base.TemplateTypeDeclaration;
+import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.sigh.scopes.DeclarationContext;
 import norswap.sigh.scopes.DeclarationKind;
@@ -130,6 +129,7 @@ public final class SemanticAnalysis
         // types
         walker.register(SimpleTypeNode.class,           PRE_VISIT,  analysis::simpleType);
         walker.register(ArrayTypeNode.class,            PRE_VISIT,  analysis::arrayType);
+        walker.register(TemplateTypeNode.class,         PRE_VISIT,  analysis::templateType);
 
         // declarations & scopes
         walker.register(RootNode.class,                 PRE_VISIT,  analysis::root);
@@ -635,8 +635,41 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void templateType(TemplateTypeNode node) {
+        final Scope scope = this.scope;
+
+        R.rule()
+        .by(r -> {
+            // type declarations may occur after use
+            DeclarationContext ctx = scope.lookup(node.name);
+            DeclarationNode decl = ctx == null ? null : ctx.declaration;
+
+            if (ctx == null)
+                r.errorFor("could not resolve: " + node.name,
+                    node,
+                    node.attr("value"));
+
+            else if (!isTypeDecl(decl))
+                r.errorFor(format(
+                        "[Template] %s did not resolve to a type declaration but to a %s declaration",
+                        node.name, decl.declaredThing()),
+                    node,
+                    node.attr("value"));
+
+            else
+                R.rule(node, "value")
+                    .using(decl, "declared")
+                    .by(Rule::copyFirst);
+        });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private static boolean isTypeDecl (DeclarationNode decl)
     {
+        // Taking into account template type nodes
+        if (decl instanceof TemplateTypeDeclarationNode) return true;
+
         if (decl instanceof StructDeclarationNode) return true;
         if (!(decl instanceof SyntheticDeclarationNode)) return false;
         SyntheticDeclarationNode synthetic = cast(decl);
@@ -787,11 +820,11 @@ public final class SemanticAnalysis
         R.set(node, "scope", scope);
 
         // Getting template types
-        List<String> templateTypes = node.templateParameters;
+        List<TemplateTypeDeclarationNode> templateTypes = node.templateParameters;
 
         // Adding template types to scope as TemplateParameters
-        for (String templateType : templateTypes) {
-            scope.declare(templateType, new TemplateTypeDeclaration(null, templateType));
+        for (TemplateTypeDeclarationNode templateType : templateTypes) {
+            scope.declare(templateType.name, templateType);
         }
 
         // Filtering parameters to check at runtime

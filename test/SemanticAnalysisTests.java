@@ -203,11 +203,24 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         failureInputWith("return print(1)", "argument 0: expected String but got Int");
     }
 
-    @Test public void testTemplateCalls() {
+    @Test public void testTemplateDefinitions() {
         successInput(
             "template<T>" +
             "fun add (a: T, b: T): T { return a + b } "
         );
+
+        //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
+
+        //successInput("var str: String = null; return print(str + 1)");
+
+        //failureInputWith("return print(1)", "argument 0: expected String but got Int");
+    }
+
+    @Test public void testTemplateCalls() {
+        /*successInput(
+            "template<T>" +
+                "fun add (a: T, b: T): T { return a + b } "
+        );*/
 
         //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
 

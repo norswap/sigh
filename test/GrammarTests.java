@@ -1,6 +1,7 @@
 import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
+import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
 import org.testng.annotations.Test;
@@ -161,7 +162,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new SimpleTypeNode(null, "Int"))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Testing only template parameters
@@ -174,7 +175,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new TemplateTypeNode(null, "T1"))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Testing with template return
@@ -187,7 +188,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new TemplateTypeNode(null, "T1"))),
                 new TemplateTypeNode(null, "T1"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
     }
@@ -205,7 +206,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new SimpleTypeNode(null, "Int")))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Nested array parameters vanilla
@@ -218,7 +219,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new SimpleTypeNode(null, "Int"))))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Simple array template parameters
@@ -231,7 +232,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new TemplateTypeNode(null, "T1")))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Nested array template parameters
@@ -244,7 +245,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Nested array template parameters with return array template type
@@ -257,7 +258,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))))),
                 new ArrayTypeNode(null, new SimpleTypeNode(null, "Int")),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
         // Nested array template parameters with return nested template type
@@ -270,7 +271,7 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null,"a", new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))))),
                 new ArrayTypeNode(null, new ArrayTypeNode(null, new TemplateTypeNode(null, "T1"))),
                 new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "a")))),
-                asList("T1")
+                asList(new TemplateTypeDeclarationNode(null, "T1"))
             )
         );
     }

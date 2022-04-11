@@ -5,12 +5,12 @@ import norswap.sigh.ast.DeclarationNode;
 import norswap.sigh.ast.SimpleTypeNode;
 import norswap.utils.Util;
 
-public final class TemplateTypeDeclaration extends DeclarationNode
+public final class TemplateTypeDeclarationNode extends DeclarationNode
 {
     public final String name;
     public SimpleTypeNode value;
 
-    public TemplateTypeDeclaration (Span span, Object name) {
+    public TemplateTypeDeclarationNode(Span span, Object name) {
         super(span);
         this.name = Util.cast(name, String.class);
         this.value = null;
