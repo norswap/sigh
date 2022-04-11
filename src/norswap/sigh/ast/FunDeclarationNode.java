@@ -3,7 +3,9 @@ package norswap.sigh.ast;
 import norswap.autumn.positions.Span;
 import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
+import norswap.sigh.types.TemplateType;
 import norswap.utils.Util;
+import sun.java2d.pipe.SpanShapeRenderer.Simple;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,8 +123,27 @@ public class FunDeclarationNode extends DeclarationNode
      * @param node
      * @return
      */
-    private boolean isTemplateType(SimpleTypeNode node) {
+    public boolean isTemplateType(SimpleTypeNode node) {
         return templateParameters.stream().filter((elem) -> elem.name.equals(node.name)).findFirst().isPresent();
+    }
+
+    public boolean isTemplateType(TypeNode node) {
+
+        if (node instanceof TemplateTypeNode) return true;
+        if (node instanceof SimpleTypeNode) return isTemplateType(node);
+        if (node instanceof ArrayTypeNode) return isTemplateType(getBaseTypeNode((ArrayTypeNode) node));
+
+        return false;
+    }
+
+    public TypeNode getBaseTypeNode(ArrayTypeNode node) {
+        TypeNode typeIterator = node.componentType;
+
+        while (typeIterator instanceof ArrayTypeNode) {
+            typeIterator = ((ArrayTypeNode) typeIterator).componentType;
+        }
+
+        return typeIterator;
     }
 
     /**

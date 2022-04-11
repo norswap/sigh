@@ -2,13 +2,13 @@ package norswap.sigh.ast.base;
 
 import norswap.autumn.positions.Span;
 import norswap.sigh.ast.DeclarationNode;
-import norswap.sigh.ast.SimpleTypeNode;
+import norswap.sigh.types.Type;
 import norswap.utils.Util;
 
 public final class TemplateTypeDeclarationNode extends DeclarationNode
 {
     public final String name;
-    public SimpleTypeNode value;
+    public Type value;
 
     public TemplateTypeDeclarationNode(Span span, Object name) {
         super(span);

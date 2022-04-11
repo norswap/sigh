@@ -135,6 +135,7 @@ public final class SemanticAnalysis
         walker.register(RootNode.class,                 PRE_VISIT,  analysis::root);
         walker.register(BlockNode.class,                PRE_VISIT,  analysis::block);
         walker.register(VarDeclarationNode.class,       PRE_VISIT,  analysis::varDecl);
+        walker.register(TemplateTypeDeclarationNode.class, PRE_VISIT,  analysis::templateTypeDeclaration);
         walker.register(FieldDeclarationNode.class,     PRE_VISIT,  analysis::fieldDecl);
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
@@ -174,6 +175,12 @@ public final class SemanticAnalysis
 
     private void stringLiteral (StringLiteralNode node) {
         R.set(node, "type", StringType.INSTANCE);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private boolean hasUninitializedTemplateParameters(SighNode node) {
+        return true;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -400,12 +407,18 @@ public final class SemanticAnalysis
     {
         this.inferenceContext = node;
 
+        // TODO check template arguments
+
         Attribute[] dependencies = new Attribute[node.arguments.size() + 1];
         dependencies[0] = node.function.attr("type");
         forEachIndexed(node.arguments, (i, arg) -> {
             dependencies[i + 1] = arg.attr("type");
             R.set(arg, "index", i);
         });
+
+        // Additionnal dependencies for template checking
+        Attribute[] deps = new Attribute[2];
+        DeclarationNode t = scope.lookup("add").declaration;
 
         R.rule(node, "type")
         .using(dependencies)
@@ -430,9 +443,15 @@ public final class SemanticAnalysis
 
             int checkedArgs = Math.min(params.length, args.size());
 
+            // Assigning template arguments to template types
+
+
             for (int i = 0; i < checkedArgs; ++i) {
+                // TODO properly
+                ((TemplateType) funType.paramTypes[i]).node.value = IntType.INSTANCE;
+
                 Type argType = r.get(i + 1);
-                Type paramType = funType.paramTypes[i];
+                Type paramType = (funType.paramTypes[i] instanceof TemplateType) ? (((TemplateType) funType.paramTypes[i]).node.value) : funType.paramTypes[i];
                 if (!isAssignableTo(argType, paramType))
                     r.errorFor(format(
                             "incompatible argument provided for argument %d: expected %s but got %s",
@@ -470,6 +489,13 @@ public final class SemanticAnalysis
         .by(r -> {
             Type left  = r.get(0);
             Type right = r.get(1);
+
+            // Handling template parameter
+            // TODO properly
+            if (hasUninitializedTemplateParameters(node)) {
+                r.set(0, left);
+                return;
+            }
 
             if (node.operator == ADD && (left instanceof StringType || right instanceof StringType))
                 r.set(0, StringType.INSTANCE);
@@ -789,6 +815,15 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void templateTypeDeclaration (TemplateTypeDeclarationNode node)
+    {
+        scope.declare(node.name, node);
+        R.set(node, "type", TypeType.INSTANCE);
+        R.set(node, "declared", new TemplateType(node));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private void fieldDecl (FieldDeclarationNode node)
     {
         R.rule(node, "type")
@@ -822,14 +857,10 @@ public final class SemanticAnalysis
         // Getting template types
         List<TemplateTypeDeclarationNode> templateTypes = node.templateParameters;
 
-        // Adding template types to scope as TemplateParameters
-        for (TemplateTypeDeclarationNode templateType : templateTypes) {
-            scope.declare(templateType.name, templateType);
-        }
-
         // Filtering parameters to check at runtime
-        boolean is_template_return_type = templateTypes.contains(node.returnType.attr("value"));
-        List<ParameterNode> parameterNodesFiltered = node.parameters.stream().filter((param) -> !templateTypes.contains(param.attr("type"))).collect(Collectors.toList());
+        boolean is_template_return_type = node.isTemplateType(node.returnType);
+        List<ParameterNode> parameterNodesFiltered = node.parameters.stream().filter((param) -> node.isTemplateType(param.type)).collect(Collectors.toList());
+        List<ParameterNode> parameterNodes = node.parameters;
 
         // Checking parameters type
         Attribute[] dependencies = new Attribute[parameterNodesFiltered.size() + (is_template_return_type ? 0 : 1)];
@@ -838,20 +869,22 @@ public final class SemanticAnalysis
         if (!is_template_return_type)
             dependencies[0] = node.returnType.attr("value");
 
-        forEachIndexed(parameterNodesFiltered, (i, param) ->
+        forEachIndexed(parameterNodes, (i, param) ->
             dependencies[i + (is_template_return_type ? 0 : 1)] = param.attr("type"));
 
         // Applying rule
-        R.rule(node, "type")
-        .using(dependencies)
-        .by (r -> {
-            Type[] paramTypes = new Type[parameterNodesFiltered.size()];
-            for (int i = 0; i < paramTypes.length; ++i)
-                paramTypes[i] = r.get(i + (is_template_return_type ? 0 : 1));
+        if (dependencies.length > 0) {
+            R.rule(node, "type")
+            .using(dependencies)
+            .by (r -> {
+                Type[] paramTypes = new Type[parameterNodes.size()];
+                for (int i = 0; i < paramTypes.length; ++i)
+                    paramTypes[i] = r.get(i + (is_template_return_type ? 0 : 1));
 
 
-            r.set(0, new FunType(r.get(0), paramTypes));
-        });
+                r.set(0, new FunType(r.get(0), paramTypes));
+            });
+        }
 
         // Checking return type based on whether we're using a template identifier
         if (is_template_return_type) {

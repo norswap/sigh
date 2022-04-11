@@ -204,11 +204,18 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     }
 
     @Test public void testTemplateDefinitions() {
+        /*
+        // Basic return
         successInput(
             "template<T>" +
-            "fun add (a: T, b: T): T { return a + b } "
+            "fun add (a: T, b: T): T { return a } "
         );
-
+        */
+        // Binary return
+        successInput(
+            "template<T>" +
+            "fun add (a: T, b: T): T { return a+b } "
+        );
         //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
 
         //successInput("var str: String = null; return print(str + 1)");
@@ -217,10 +224,13 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     }
 
     @Test public void testTemplateCalls() {
-        /*successInput(
+
+        // Unary return
+        successInput(
             "template<T>" +
-                "fun add (a: T, b: T): T { return a + b } "
-        );*/
+            "fun add (a: T, b: T): T { return a + b * 2 } " +
+            "return add<Int>(2, 2)"
+        );
 
         //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
 
