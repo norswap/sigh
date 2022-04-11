@@ -408,17 +408,28 @@ public final class SemanticAnalysis
         this.inferenceContext = node;
 
         // TODO check template arguments
-
-        Attribute[] dependencies = new Attribute[node.arguments.size() + 1];
+        int depsSize = node.arguments.size() + 1 + 1 + (node.template_arguments != null ? node.template_arguments.size() : 0);
+        Attribute[] dependencies = new Attribute[depsSize];
         dependencies[0] = node.function.attr("type");
         forEachIndexed(node.arguments, (i, arg) -> {
-            dependencies[i + 1] = arg.attr("type");
+            dependencies[i+1] = arg.attr("type");
             R.set(arg, "index", i);
         });
 
-        // Additionnal dependencies for template checking
-        Attribute[] deps = new Attribute[2];
-        DeclarationNode t = scope.lookup("add").declaration;
+        // Adding template arguments to dependencies
+        int offset = node.arguments.size() + 1;
+        int finalOffset = offset;
+
+        if (node.template_arguments != null) {
+            forEachIndexed(node.template_arguments, (i, arg) -> {
+                dependencies[finalOffset+i] = arg.attr("value");
+                R.set(arg, "index", i);
+            });
+        }
+
+        offset += node.template_arguments != null ? node.template_arguments.size() : 0;
+        DeclarationNode functionDeclarationNode = scope.lookupLocal("add");
+        dependencies[offset] = new Attribute(functionDeclarationNode, "type");
 
         R.rule(node, "type")
         .using(dependencies)
@@ -444,12 +455,12 @@ public final class SemanticAnalysis
             int checkedArgs = Math.min(params.length, args.size());
 
             // Assigning template arguments to template types
-
+            Object t = r.get(1);
+            int dependenciesSize = r.dependencies.length;
+            FunDeclarationNode funDeclarationNode = (FunDeclarationNode) r.dependencies[dependenciesSize-1].node;
+            funDeclarationNode.setTemplateParametersValue(node.template_arguments);
 
             for (int i = 0; i < checkedArgs; ++i) {
-                // TODO properly
-                ((TemplateType) funType.paramTypes[i]).node.value = IntType.INSTANCE;
-
                 Type argType = r.get(i + 1);
                 Type paramType = (funType.paramTypes[i] instanceof TemplateType) ? (((TemplateType) funType.paramTypes[i]).node.value) : funType.paramTypes[i];
                 if (!isAssignableTo(argType, paramType))
@@ -859,11 +870,11 @@ public final class SemanticAnalysis
 
         // Filtering parameters to check at runtime
         boolean is_template_return_type = node.isTemplateType(node.returnType);
-        List<ParameterNode> parameterNodesFiltered = node.parameters.stream().filter((param) -> node.isTemplateType(param.type)).collect(Collectors.toList());
+        //List<ParameterNode> parameterNodesFiltered = node.parameters.stream().filter((param) -> node.isTemplateType(param.type)).collect(Collectors.toList());
         List<ParameterNode> parameterNodes = node.parameters;
 
         // Checking parameters type
-        Attribute[] dependencies = new Attribute[parameterNodesFiltered.size() + (is_template_return_type ? 0 : 1)];
+        Attribute[] dependencies = new Attribute[parameterNodes.size() + (is_template_return_type ? 0 : 1)];
 
         // Checking if return type is in template
         if (!is_template_return_type)

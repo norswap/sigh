@@ -204,39 +204,86 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     }
 
     @Test public void testTemplateDefinitions() {
-        /*
-        // Basic return
+
+        // Unary return
         successInput(
             "template<T>" +
             "fun add (a: T, b: T): T { return a } "
         );
-        */
+
         // Binary return
         successInput(
             "template<T>" +
             "fun add (a: T, b: T): T { return a+b } "
         );
-        //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
 
-        //successInput("var str: String = null; return print(str + 1)");
-
-        //failureInputWith("return print(1)", "argument 0: expected String but got Int");
-    }
-
-    @Test public void testTemplateCalls() {
-
-        // Unary return
+        // Combining operators
         successInput(
             "template<T>" +
-            "fun add (a: T, b: T): T { return a + b * 2 } " +
-            "return add<Int>(2, 2)"
+                "fun add (a: T, b: T): T { return a+b+b*3 } "
         );
 
-        //successInput("struct Point { var x: Int; var y: Int }" + "return $Point(1, 2)");
+        // TODO? Other cases ?
+    }
 
-        //successInput("var str: String = null; return print(str + 1)");
+    @Test public void testTemplateSimpleTypes() {
 
-        //failureInputWith("return print(1)", "argument 0: expected String but got Int");
+        // Bool
+        successInput(
+            "template<T>" +
+            "fun add (a: T, b: T): T { return a + b } " +
+            "return add<Bool>(true, false)"
+        );
+        // Float
+        successInput(
+            "template<T>" +
+            "fun add (a: T, b: T): T { return a + b } " +
+            "return add<Float>(2, 2)"
+        );
+        // Int
+        successInput(
+            "template<T>" +
+            "fun add (a: T, b: T): T { return a + b } " +
+            "return add<Int>(2, 2)"
+        );
+        // String
+        successInput(
+            "template<T>" +
+            "fun add (a: T, b: T): T { return a + b } " +
+            "return add<String>(\"2\", \"2\")"
+        );
+
+        // ---------------------- Errors
+
+        // Wrong argument type
+        failureInputWith(
+            "template<T>" +
+            "fun add (a: T, b: T): T { return a + b } " +
+            "return add<String>(2, 2)",
+"incompatible argument provided for argument 0: expected String but got Int",
+            "incompatible argument provided for argument 1: expected String but got Int");
+
+        // Wrong number of arguments
+        failureInputWith(
+            "template<T>" +
+                "fun add (a: T, b: T): T { return a + b } " +
+                "return add<Int>(2)",
+            "wrong number of arguments, expected 2 but got 1"
+        );
+
+        // Wrong number of arguments and incompatible argument
+        failureInputWith(
+            "template<T>" +
+                "fun add (a: T, b: T): T { return a + b } " +
+                "return add<String>(2)",
+            "wrong number of arguments, expected 2 but got 1",
+            "incompatible argument provided for argument 0: expected String but got Int"
+        );
+
+    }
+
+    @Test public void testTemplateComplexTypes() {
+        // TODO ? Are we gonna implement this?
     }
 
     // ---------------------------------------------------------------------------------------------

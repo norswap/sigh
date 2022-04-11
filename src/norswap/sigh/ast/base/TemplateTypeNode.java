@@ -3,6 +3,7 @@ package norswap.sigh.ast.base;
 import norswap.autumn.positions.Span;
 import norswap.sigh.ast.SimpleTypeNode;
 import norswap.sigh.ast.TypeNode;
+import norswap.sigh.types.Type;
 import norswap.utils.Util;
 
 public final class TemplateTypeNode extends TypeNode
@@ -12,6 +13,11 @@ public final class TemplateTypeNode extends TypeNode
     public TemplateTypeNode (Span span, Object name) {
         super(span);
         this.name = Util.cast(name, String.class);
+    }
+
+    @Override
+    public Type getType () {
+        return null;
     }
 
     /**

@@ -3,7 +3,9 @@ package norswap.sigh.ast;
 import norswap.autumn.positions.Span;
 import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
+import norswap.sigh.types.IntType;
 import norswap.sigh.types.TemplateType;
+import norswap.sigh.types.Type;
 import norswap.utils.Util;
 import sun.java2d.pipe.SpanShapeRenderer.Simple;
 import java.util.ArrayList;
@@ -123,15 +125,27 @@ public class FunDeclarationNode extends DeclarationNode
      * @param node
      * @return
      */
-    public boolean isTemplateType(SimpleTypeNode node) {
-        return templateParameters.stream().filter((elem) -> elem.name.equals(node.name)).findFirst().isPresent();
-    }
-
     public boolean isTemplateType(TypeNode node) {
 
         if (node instanceof TemplateTypeNode) return true;
-        if (node instanceof SimpleTypeNode) return isTemplateType(node);
+        if (node instanceof SimpleTypeNode) return isTemplateType((SimpleTypeNode) node);
         if (node instanceof ArrayTypeNode) return isTemplateType(getBaseTypeNode((ArrayTypeNode) node));
+
+        return false;
+    }
+
+    /**
+     * Returns whether the given type node is actually a template type
+     * @param node
+     * @return
+     */
+    public boolean isTemplateType(SimpleTypeNode node) {
+
+        // Iterating through all template parameters
+        for (TemplateTypeDeclarationNode templateParameter : templateParameters) {
+            if (templateParameter.name.equals(node.name))
+                return true;
+        }
 
         return false;
     }
@@ -153,6 +167,40 @@ public class FunDeclarationNode extends DeclarationNode
      */
     private TypeNode convertSimpleTypeToTemplateType(SimpleTypeNode node) {
         return (isTemplateType(node)) ? new TemplateTypeNode(node) : node;
+    }
+
+    /**
+     * Assigns a type to each template parameter
+     * @param templateArgs
+     */
+    public void setTemplateParametersValue(List<TypeNode> templateArgs) {
+
+        // Clearing up template parameters
+        clearTemplateParametersValue();
+
+        // Assigning the type to each template parameter
+        int index = 0;
+        for (TypeNode templateArg : templateArgs) {
+
+            templateParameters.get(index).value = templateArg.getType();
+
+            index++;
+        }
+
+        return;
+    }
+
+    /**
+     * Clears all types assigned to template parameters
+     */
+    public void clearTemplateParametersValue() {
+
+        // Resetting type to null
+        templateParameters.forEach($ -> {
+            $.value = null;
+        });
+
+        return;
     }
 
     @Override public String name () {
