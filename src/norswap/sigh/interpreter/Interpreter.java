@@ -576,6 +576,13 @@ public final class Interpreter
     private Object funCall (FunCallNode node)
     {
         Object decl = get(node.function);
+        if (node.function instanceof FieldAccessNode){
+            ReferenceNode n = (ReferenceNode) ((FieldAccessNode)(node.function)).stem;
+            Scope scope = reactor.get(n, "scope");
+            decl = scope.lookupLocal(((FieldAccessNode)(node.function)).fieldName);
+
+        }
+
         node.arguments.forEach(this::run);
         Object[] args = map(node.arguments, new Object[0], visitor);
 

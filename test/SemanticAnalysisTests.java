@@ -279,7 +279,33 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "Trying to access missing field z on struct P");
     }
 
+    @Test public void testClassDeclaration(){
 
+        successInput(
+            "class Fraction { var num: Int; var den: Int " +
+                "}"+
+                " var p: Fraction = $Fraction(1, 2)" +
+                "return p.num");
+
+
+
+
+        successInput(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number( num : Int, den : Int): Float { return num/den } }"+
+                " var p: Fraction = $Fraction(1, 2)" +
+                "return p.den");
+
+
+
+        successInput(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(num : Int, den : Int): Float { return num/den } }"+
+                " var p: Fraction = $Fraction(1, 2)" +
+                "return p.to_Number(p.num,p.den)");
+
+
+    }
     @Test public void testArrayDeclaration(){
         successInput("var x: Int[2]; return x[0]");
         successInput("var x: Int[1][2][3]; return x");

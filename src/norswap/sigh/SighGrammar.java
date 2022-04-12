@@ -55,6 +55,7 @@ public class SighGrammar extends Grammar
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
     public rule _struct         = reserved("struct");
+    public rule _class         = reserved("class");
     public rule _if             = reserved("if");
     public rule _else           = reserved("else");
     public rule _while          = reserved("while");
@@ -265,11 +266,11 @@ public class SighGrammar extends Grammar
         .push($ -> new FieldDeclarationNode($.span(), $.$[0], $.$[1]));
 
     public rule struct_body =
-        seq(LBRACE, field_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
+        seq(LBRACE, seq(field_decl.at_least(0)).as_list(DeclarationNode.class),seq(fun_decl.at_least(0)).as_list(DeclarationNode.class), RBRACE);
 
     public rule struct_decl =
-        seq(_struct, identifier, struct_body)
-        .push($ -> new StructDeclarationNode($.span(), $.$[0], $.$[1]));
+        seq(choice(_struct,_class), identifier, struct_body)
+        .push($ -> new StructDeclarationNode($.span(), $.$[0], $.$[1],$.$[2]));
 
     public rule if_stmt =
         seq(_if, expression, statement, seq(_else, statement).or_push_null())

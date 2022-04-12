@@ -13,6 +13,7 @@ import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -377,6 +378,16 @@ public final class SemanticAnalysis
                 R.rule(node, "type")
                         .using(field, "type")
                         .by(Rule::copyFirst);
+
+                return;
+            }
+            for (DeclarationNode fun: decl.fun)
+            {
+                if (!fun.name().equals(node.fieldName)) continue;
+
+                R.rule(node, "type")
+                    .using(fun, "type")
+                    .by(Rule::copyFirst);
 
                 return;
             }

@@ -4,6 +4,7 @@ import norswap.sigh.ast.*;
 import norswap.sigh.interpreter.Interpreter;
 import norswap.sigh.types.IntType;
 import norswap.sigh.types.NullType;
+import org.testng.DependencyMap;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -82,7 +83,13 @@ public class GrammarTests extends AutumnTestFixture {
     }
 
     // ---------------------------------------------------------------------------------------------
+    @Test public void testClassDeclaration(){
+        rule = grammar.struct_decl;
+        success("struct Point { var x: Int; var y: Int }");
+        success("class Fraction { var num: Int; var den: Int " +
+            " fun to_Number (): Float { return num/den } }");
 
+    }
     @Test public void testArrayStructAccess () {
         rule = grammar.expression;
         successExpect("[1][0]", new ArrayAccessNode(null,
@@ -131,12 +138,12 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("var x: Int = 1", new VarDeclarationNode(null,
             "x", new SimpleTypeNode(null, "Int"), intlit(1)));
 
-        successExpect("struct P {}", new StructDeclarationNode(null, "P", asList()));
+        successExpect("struct P {}", new StructDeclarationNode(null, "P", asList(),asList()));
 
         successExpect("struct P { var x: Int; var y: Int }",
             new StructDeclarationNode(null, "P", asList(
                 new FieldDeclarationNode(null, "x", new SimpleTypeNode(null, "Int")),
-                new FieldDeclarationNode(null, "y", new SimpleTypeNode(null, "Int")))));
+                new FieldDeclarationNode(null, "y", new SimpleTypeNode(null, "Int"))),asList()));
 
         successExpect("fun f (x: Int): Int { return 1 }",
             new FunDeclarationNode(null, "f",

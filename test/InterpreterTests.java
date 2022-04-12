@@ -276,6 +276,37 @@ public final class InterpreterTests extends TestFixture {
         check("return [].nDim", 1L);
     }
 
+    @Test public void testClassDeclaration(){
+        rule = grammar.root;
+
+        check(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(num : Int, den : Int): Float { return num/den } }"+
+                " var p: Fraction = $Fraction(1, 2)" +
+                "return p.num",
+            1L);
+
+        check(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(num : Int, den : Int): Float { return num/den } }"+
+                " var p: Fraction = $Fraction(1, 2)" +
+                "return p.den",
+            2L);
+
+
+
+        check(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(num : Int, den : Int): Float { return num/den } }"+
+                " var p: Fraction = $Fraction(2, 2)" +
+                "return p.to_Number(p.num,p.den)",
+            1L);
+
+
+
+
+
+    }
     @Test
     public void testArrayStructAccess () {
         checkExpr("[1][0]", 1L);
@@ -563,6 +594,7 @@ public final class InterpreterTests extends TestFixture {
 
     @Test public void testUnconditionalReturn()
     {
+        rule = grammar.root;
         check("fun f(): Int { if (true) return 1 else return 2 } ; return f()", 1L);
     }
 
