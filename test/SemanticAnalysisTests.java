@@ -198,6 +198,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "struct Point { var x: Int; var y: Int }" +
             "return $Point(1, 2)");
 
+
         successInput("var str: String = null; return print(str + 1)");
 
         failureInputWith("return print(1)", "argument 0: expected String but got Int");

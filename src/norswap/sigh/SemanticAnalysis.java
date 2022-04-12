@@ -14,9 +14,7 @@ import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -179,8 +177,108 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
-    private boolean hasUninitializedTemplateParameters(SighNode node) {
-        return true;
+    // TODO ------------------------------------------------------------------------------
+    // TODO take into account other types of expressions (not only binary expression node)
+    // TODO ------------------------------------------------------------------------------
+    private boolean involvesUninitializedTemplateParameter(SighNode node, Scope scope) {
+
+        // Preparing nodes to check
+        Deque<SighNode> referencesToCheck = new ArrayDeque<>();
+
+        // Adding first element
+        referencesToCheck.add(node);
+
+        // Doing a DFS to find first uninitialized template parameter
+        while (!referencesToCheck.isEmpty()) {
+
+            // Poping node
+            SighNode n = referencesToCheck.remove();
+
+            if (n instanceof ReturnNode) {
+                referencesToCheck.add(((ReturnNode) n).expression);
+            }
+
+            // BinaryExpressionNode
+            if (n instanceof BinaryExpressionNode) {
+                referencesToCheck.add(((BinaryExpressionNode) n).left);
+                referencesToCheck.add(((BinaryExpressionNode) n).right);
+
+                continue;
+            }
+
+            // ReferenceNode
+            if (n instanceof ReferenceNode) {
+
+                // Looking for nodes
+                DeclarationContext context = scope.lookup(((ReferenceNode) n).name);
+
+                // There is another rule handling this case
+                if (context == null) continue;
+                DeclarationNode declarationNode = context.declaration;
+
+                // Adding to nodes to check
+                referencesToCheck.add(declarationNode);
+
+                continue;
+            }
+
+            // ParameterNode
+            if (n instanceof ParameterNode) {
+                TypeNode t = ((ParameterNode) n).type;
+
+                // TemplateTypeNode
+                if (t instanceof TemplateTypeNode) {
+
+                    // Getting node declaration
+                    DeclarationContext context = scope.lookup(((ParameterNode) n).name);
+
+                    // There is another rule handling this case
+                    if (context == null) return false;
+                    SighNode declarationNode = context.scope.node;
+
+                    // Checking if parameter has been defined in a templated function
+                    if (declarationNode instanceof FunDeclarationNode) {
+
+                        // Checking if actually a template parameter of given function declaration
+                        if (((FunDeclarationNode) declarationNode).isTemplateType(t)) {
+
+                            // Getting entry
+                            TemplateTypeDeclarationNode typeDeclarationNode = null;
+                            for (TemplateTypeDeclarationNode templateParameter : ((FunDeclarationNode) declarationNode).templateParameters) {
+                                if (!templateParameter.name.equals(((TemplateTypeNode) t).name)) continue;
+
+                                // Assigning entry
+                                typeDeclarationNode = templateParameter;
+                            }
+
+                            // Skip if not found actually
+                            if (typeDeclarationNode == null) continue;
+
+                            // Adding to nodes to check
+                            referencesToCheck.add(typeDeclarationNode);
+                        }
+
+                    }
+
+                }
+
+                continue;
+            }
+
+            // --------------------
+            // Checking if template type
+            // --------------------
+            if (n instanceof TemplateTypeDeclarationNode) {
+
+                // Continue if not initialized
+                if (((TemplateTypeDeclarationNode) n).value != null) continue;
+
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -428,7 +526,22 @@ public final class SemanticAnalysis
         }
 
         offset += node.template_arguments != null ? node.template_arguments.size() : 0;
-        DeclarationNode functionDeclarationNode = scope.lookupLocal("add");
+        DeclarationContext functionDeclarationContext = null;
+        DeclarationNode functionDeclarationNode = null;
+        String funName = "";
+
+        // Getting proper function reference
+        if (node.function instanceof ReferenceNode) {
+            funName = ((ReferenceNode) node.function).name;
+        }
+        if (node.function instanceof ConstructorNode) {
+            funName = ((ConstructorNode) node.function).ref.name;
+        }
+
+        functionDeclarationContext = scope.lookup(funName);
+        functionDeclarationNode = functionDeclarationContext.declaration;
+
+        // Setting dependencie
         dependencies[offset] = new Attribute(functionDeclarationNode, "type");
 
         R.rule(node, "type")
@@ -455,10 +568,12 @@ public final class SemanticAnalysis
             int checkedArgs = Math.min(params.length, args.size());
 
             // Assigning template arguments to template types
-            Object t = r.get(1);
             int dependenciesSize = r.dependencies.length;
-            FunDeclarationNode funDeclarationNode = (FunDeclarationNode) r.dependencies[dependenciesSize-1].node;
-            funDeclarationNode.setTemplateParametersValue(node.template_arguments);
+            Object funNode = r.dependencies[dependenciesSize-1].node;
+            if (funNode instanceof FunDeclarationNode) {
+                FunDeclarationNode funDeclarationNode = (FunDeclarationNode) r.dependencies[dependenciesSize-1].node;
+                funDeclarationNode.setTemplateParametersValue(node.template_arguments);
+            }
 
             for (int i = 0; i < checkedArgs; ++i) {
                 Type argType = r.get(i + 1);
@@ -495,18 +610,20 @@ public final class SemanticAnalysis
 
     private void binaryExpression (BinaryExpressionNode node)
     {
+        // Checking if any template parameters involved here
+        boolean check = involvesUninitializedTemplateParameter(node, scope);
+
         R.rule(node, "type")
         .using(node.left.attr("type"), node.right.attr("type"))
-        .by(r -> {
+        .by(check ? (r -> {
+            // If template type, just push the template type
+            // TODO actually, I think this might not behave as expected if the two template types are different we'll see in walker
             Type left  = r.get(0);
             Type right = r.get(1);
-
-            // Handling template parameter
-            // TODO properly
-            if (hasUninitializedTemplateParameters(node)) {
-                r.set(0, left);
-                return;
-            }
+            r.set(0, (left instanceof TemplateType) ? left : right);
+        }) : (r -> {
+            Type left  = r.get(0);
+            Type right = r.get(1);
 
             if (node.operator == ADD && (left instanceof StringType || right instanceof StringType))
                 r.set(0, StringType.INSTANCE);
@@ -518,7 +635,7 @@ public final class SemanticAnalysis
                 binaryLogic(r, node, left, right);
             else if (isEquality(node.operator))
                 binaryEquality(r, node, left, right);
-        });
+        }));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -877,8 +994,9 @@ public final class SemanticAnalysis
         Attribute[] dependencies = new Attribute[parameterNodes.size() + (is_template_return_type ? 0 : 1)];
 
         // Checking if return type is in template
-        if (!is_template_return_type)
+        if (!is_template_return_type) {
             dependencies[0] = node.returnType.attr("value");
+        }
 
         forEachIndexed(parameterNodes, (i, param) ->
             dependencies[i + (is_template_return_type ? 0 : 1)] = param.attr("type"));
@@ -976,6 +1094,9 @@ public final class SemanticAnalysis
         if (function == null) // top-level return
             return;
 
+        // Checking if any template parameters involved here
+        boolean check = involvesUninitializedTemplateParameter(node, scope);
+
         if (node.expression == null)
             R.rule()
             .using(function.returnType, "value")
@@ -992,7 +1113,9 @@ public final class SemanticAnalysis
                 Type actual = r.get(1);
                 if (formal instanceof VoidType)
                     r.error("Return with value in a Void function.", node);
-                else if (!isAssignableTo(actual, formal)) {
+                else if (check) { // Assignment can only be checked whilst walking
+                    return;
+                } else if (!isAssignableTo(actual, formal)) {
                     r.errorFor(format(
                         "Incompatible return type, expected %s but got %s", formal, actual),
                         node.expression);

@@ -121,13 +121,13 @@ public class FunDeclarationNode extends DeclarationNode
     }
 
     /**
-     * Returns whether the given type node is actually a template type
+     * Returns whether the given type node is actually a template type of this function
      * @param node
      * @return
      */
     public boolean isTemplateType(TypeNode node) {
 
-        if (node instanceof TemplateTypeNode) return true;
+        if (node instanceof TemplateTypeNode) return isTemplateType((TemplateTypeNode) node);
         if (node instanceof SimpleTypeNode) return isTemplateType((SimpleTypeNode) node);
         if (node instanceof ArrayTypeNode) return isTemplateType(getBaseTypeNode((ArrayTypeNode) node));
 
@@ -140,10 +140,28 @@ public class FunDeclarationNode extends DeclarationNode
      * @return
      */
     public boolean isTemplateType(SimpleTypeNode node) {
+        return isTemplateType(node.name);
+    }
+
+    /**
+     * Returns whether the given type node is actually a template type
+     * @param node
+     * @return
+     */
+    public boolean isTemplateType(TemplateTypeNode node) {
+        return isTemplateType(node.name);
+    }
+
+    /**
+     * Returns whether the given type is actually a template type
+     * @param typeNodeName
+     * @return
+     */
+    public boolean isTemplateType(String typeNodeName) {
 
         // Iterating through all template parameters
         for (TemplateTypeDeclarationNode templateParameter : templateParameters) {
-            if (templateParameter.name.equals(node.name))
+            if (templateParameter.name.equals(typeNodeName))
                 return true;
         }
 
@@ -177,6 +195,9 @@ public class FunDeclarationNode extends DeclarationNode
 
         // Clearing up template parameters
         clearTemplateParametersValue();
+
+        // Skip if no template args
+        if (templateArgs == null) return;
 
         // Assigning the type to each template parameter
         int index = 0;
