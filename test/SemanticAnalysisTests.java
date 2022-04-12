@@ -213,12 +213,17 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return [1, 1]*[2, 2]");
         successInput("return [[1, 2, 3], [4, 5, 6]]");
         successInput("return [[[1], [2], [3]], [[4], [5], [6]]]");
+        successInput("return ([[0,1],[2,3]] @ [[1,1],[2,2]])[0][0]");
+        successInput("return ([[0,1],[2,3]] @ [[1],[2]])[0]");
+        successInput("return ([0,1] @ [[1],[2]])");
 
 
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
         failureInputWith("return [1,2,3]*[1,2]", "Trying to operate on arrays with different dimensions: [3] and [2]");
         failureInputWith("return [1,2,3]*[[1],[2],[3]]", "Trying to operate on arrays with different dimensions: [3] and [3, 1]");
         failureInputWith("return [[1,3],[2,4],[3,5]]+[[1],[2],[3]]", "Trying to operate on arrays with different dimensions: [3, 2] and [3, 1]");
+
+        failureInputWith("return (1 @ [[1],[2]])[0][0]","Trying to use @ operation on non-array type");;
         // TODO make this legal?
         successInput("return [].length");
 

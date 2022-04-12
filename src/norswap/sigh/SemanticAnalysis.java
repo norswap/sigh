@@ -508,6 +508,8 @@ public final class SemanticAnalysis
                 binaryLogic(r, node, left, right);
             else if (isEquality(node.operator))
                 binaryEquality(r, node, left, right);
+            else if(isMatrix(node.operator))
+                 binaryMatrix(r,node.operator,left,right);
         });
     }
 
@@ -529,6 +531,8 @@ public final class SemanticAnalysis
         return op == EQUALITY || op == NOT_EQUALS;
     }
 
+    private boolean isMatrix(BinaryOperator op){return op==DOTPRODUCT;}
+
     // ---------------------------------------------------------------------------------------------
     private boolean equal(List a,List b){
         if(a.size()!=b.size()) return false;
@@ -540,6 +544,11 @@ public final class SemanticAnalysis
         return true;
     }
 
+    private boolean compatible(List<StringLiteralNode> a, List<StringLiteralNode> b){
+        if(a.size()>2 ||b.size()>2||a.size()==0||b.size()==0) return false;
+        if(b.get(0).value.equals(a.get(0).value)||b.get(1).value.equals(a.get(0).value)) return true;
+        return false;
+    }
     private String conversionDimension(List<StringLiteralNode> dimensions){
         String result="[";
         for(int i=0;i<dimensions.size();i++){
@@ -566,9 +575,11 @@ public final class SemanticAnalysis
             //TODO : new rule
         else if (left instanceof ArrayType)
             if(right instanceof ArrayType){
-
-                if(!equal(((ArrayType) left).dimensions,(((ArrayType) right).dimensions))){
+                if(node.operator== DOTPRODUCT&&!compatible(((ArrayType) left).dimensions,(((ArrayType) right).dimensions))){
                     r.error(format("Trying to operate on arrays with different dimensions: %s and %s", conversionDimension(((ArrayType) left).dimensions),conversionDimension(((ArrayType) right).dimensions)),node);
+                    return;
+                }else if(node.operator!=DOTPRODUCT&& !equal(((ArrayType) left).dimensions,(((ArrayType) right).dimensions))) {
+                    r.error(format("Trying to operate on arrays with different dimensions: %s and %s", conversionDimension(((ArrayType) left).dimensions), conversionDimension(((ArrayType) right).dimensions)), node);
                     return;
                 }
                 r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
@@ -577,6 +588,25 @@ public final class SemanticAnalysis
                 r.error(arithmeticError(node, left, right), node);
         else
             r.error(arithmeticError(node, left, right), node);
+    }
+
+    private void binaryMatrix(Rule r,BinaryOperator node, Object left, Object right){
+        if(!(left instanceof ArrayType) || !(right instanceof ArrayType)) {
+            r.error(format("Trying to use %s operation on non-array type", node.string), node);
+            return;
+        }
+        ArrayType lArray=(ArrayType) left;
+        ArrayType rArray=(ArrayType) right;
+        /*if(lArray.dimensions.size()!=2 || rArray.dimensions.size()!=2) {
+            r.error(format("Trying to use %s operation on non-matrix type", node.string), node);
+            return;
+        }*/
+        if(!compatible(lArray.dimensions,rArray.dimensions)) {
+            r.error(format("Trying to operate on arrays with different dimensions: %s and %s",
+                conversionDimension(((ArrayType) left).dimensions), conversionDimension(((ArrayType) right).dimensions)), node);
+            return;
+        }
+        r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -831,7 +861,8 @@ public final class SemanticAnalysis
                         int size=Integer.parseInt(((StringLiteralNode)(dims.get(i))).value);
                         if(size<=0) throw new NumberFormatException();
                     }catch (NumberFormatException e){
-                        r.error(format("Illegal size for array declaration: %s",((StringLiteralNode)(dims.get(i))).value),node.initializer);
+                        r.error(format("Illegal size for array declaration: %s",
+                            ((StringLiteralNode)(dims.get(i))).value),node.initializer);
                     }
                 }
             });

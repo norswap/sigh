@@ -51,6 +51,7 @@ public class SighGrammar extends Grammar
     public rule DOT             = word(".");
     public rule DOLLAR          = word("$");
     public rule COMMA           = word(",");
+    public rule DOTPRODUCT      = word("@");
 
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
@@ -146,7 +147,8 @@ public class SighGrammar extends Grammar
     public rule mult_op = choice(
         STAR        .as_val(BinaryOperator.MULTIPLY),
         SLASH       .as_val(BinaryOperator.DIVIDE),
-        PERCENT     .as_val(BinaryOperator.REMAINDER));
+        PERCENT     .as_val(BinaryOperator.REMAINDER),
+        DOTPRODUCT  .as_val(BinaryOperator.DOTPRODUCT));
 
     public rule add_op = choice(
         PLUS        .as_val(BinaryOperator.ADD),

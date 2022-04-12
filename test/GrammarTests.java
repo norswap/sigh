@@ -4,7 +4,6 @@ import norswap.sigh.ast.*;
 import norswap.sigh.interpreter.Interpreter;
 import norswap.sigh.types.IntType;
 import norswap.sigh.types.NullType;
-import org.testng.DependencyMap;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -90,6 +89,16 @@ public class GrammarTests extends AutumnTestFixture {
             " fun to_Number (): Float { return num/den } }");
 
     }
+    @Test public void testClass () {
+        rule = grammar.class_decl;
+        success(
+            "class P { var num: Int; var den: Int "
+                +
+                "fun toNumber() : Float{ return num/den}"
+                +
+                "}"
+        );
+    }
     @Test public void testArrayStructAccess () {
         rule = grammar.expression;
         successExpect("[1][0]", new ArrayAccessNode(null,
@@ -128,6 +137,7 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("([0, 2, 1]*2)[0]", new ArrayAccessNode(null, new ParenthesizedNode(
             null,new BinaryExpressionNode(null,new ArrayLiteralNode(null, toGet),BinaryOperator.MULTIPLY,new IntLiteralNode(null, 2))),
             new IntLiteralNode(null,0)));
+        success("([[0,1],[2,3]] @ [[1,1],[2,2]])");
     }
 
     // ---------------------------------------------------------------------------------------------
