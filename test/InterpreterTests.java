@@ -357,5 +357,81 @@ public final class InterpreterTests extends TestFixture {
         checkThrows("hello('test')", AssertionError.class);
     }
 
+    // ---------------------------------------------------------------------------------------------
+
+    @Test
+    public void testSimpleTemplateDeclarations () {
+        rule = grammar.root;
+
+        // No template parameters usage
+        check(
+            "template<A, B>" +
+                "fun add (a: Int, b: Int): Int { return a + b } ",
+            null
+            );
+
+        // Template params
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): Int { return a + b } ",
+            null
+        );
+
+        // Template return
+        // TODO fix this not passing currently
+        check(
+            "template<A, B>" +
+                "fun add (a: Int, b: Int): A { return a + b } ",
+            null
+        );
+
+        // All
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: A): B { return a + b } ",
+            null
+        );
+    }
+
+    @Test
+    public void TestSimpleTemplateCalls () {
+        rule = grammar.root;
+
+        // No template parameters usage
+        check(
+            "template<A, B> fun add (a: Int, b: Int): Int { return a + b }; " +
+                "return add<Int, Int>(1, 1);",
+            2L
+        );
+
+        // No template parameters usage
+        /*check(
+            "template<A, B>" +
+                "fun add (a: Int, b: Int): Int { return a + b } ",
+            null
+        );
+
+        // Template params
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): Int { return a + b } ",
+            null
+        );
+
+        // Template return
+        check(
+            "template<A, B>" +
+                "fun add (a: Int, b: Int): A { return a + b } ",
+            null
+        );
+
+        // All
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: A): B { return a + b } ",
+            null
+        ); */
+    }
+
     // NOTE(norswap): Not incredibly complete, but should cover the basics.
 }
