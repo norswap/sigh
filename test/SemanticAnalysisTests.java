@@ -283,8 +283,13 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     }
 
-    @Test public void testTemplateComplexTypes() {
-        // TODO ? Are we gonna implement this?
+    @Test public void testTemplateSimpleUsageTypes() {
+        successInput("template<R,T1,T2>" +
+            "fun sum(a:T1, b:T1):R {" +
+            "    return a + b" +
+            "}" +
+            "" +
+            "var result:Int = sum<Int, Int, Int>(5, 5)");
     }
 
     // ---------------------------------------------------------------------------------------------

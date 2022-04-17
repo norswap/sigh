@@ -33,7 +33,7 @@ public final class BaseTest
         if (!result.fullMatch)
             return;
 
-        //walk(result, lineMap);
+        walk(result, lineMap);
     }
 
     public static void walk(ParseResult result, LineMap lineMap) {

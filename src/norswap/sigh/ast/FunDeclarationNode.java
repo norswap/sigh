@@ -168,6 +168,11 @@ public class FunDeclarationNode extends DeclarationNode
         return false;
     }
 
+    /**
+     * Returns the base type node of an array type node
+     * @param node
+     * @return
+     */
     public TypeNode getBaseTypeNode(ArrayTypeNode node) {
         TypeNode typeIterator = node.componentType;
 
@@ -222,6 +227,92 @@ public class FunDeclarationNode extends DeclarationNode
         });
 
         return;
+    }
+
+    /**
+     * Returns the type inferred for the given template parameter on a potential function call
+     * @param templateParameter
+     * @param templateArguments
+     * @return
+     */
+    public TypeNode getInferredTemplateParameterTypeNode(TemplateTypeDeclarationNode templateParameter, List<TypeNode> templateArguments) {
+
+        // Template parameters
+        TemplateTypeDeclarationNode foundTemplateType;
+        int index = 0;
+
+        // Finding corresponding template parameter
+        for (TemplateTypeDeclarationNode parameter : templateParameters) {
+
+            if (parameter == templateParameter) {
+                break;
+            }
+
+            index++;
+        }
+
+        return templateArguments.get(index);
+    }
+
+    /**
+     * Returns the type inferred for the given template parameter on a potential function call
+     * @param parameterName
+     * @param templateArguments
+     * @return
+     */
+    public TypeNode getInferredTemplateParameterTypeNode(String parameterName, List<TypeNode> templateArguments) {
+
+        // Finding parameter
+        for (TemplateTypeDeclarationNode parameter : templateParameters) {
+            if (parameter.name.equals(parameterName)) {
+                return getInferredTemplateParameterTypeNode(parameter, templateArguments);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the type inferred for the given template parameter on a potential function call
+     * @param templateParameter
+     * @param templateArguments
+     * @return
+     */
+    public Type getInferredTemplateParameterType(TemplateTypeDeclarationNode templateParameter, List<Type> templateArguments) {
+
+        // Template parameters
+        TemplateTypeDeclarationNode foundTemplateType;
+        int index = 0;
+
+        // Finding corresponding template parameter
+        for (TemplateTypeDeclarationNode parameter : templateParameters) {
+
+            if (parameter == templateParameter) {
+                break;
+            }
+
+            index++;
+        }
+
+        return templateArguments.get(index);
+    }
+
+    /**
+     * Returns the type inferred for the given template parameter on a potential function call
+     * @param parameterName
+     * @param templateArguments
+     * @return
+     */
+    public Type getInferredTemplateParameterType(String parameterName, List<Type> templateArguments) {
+
+        // Finding parameter
+        for (TemplateTypeDeclarationNode parameter : templateParameters) {
+            if (parameter.name.equals(parameterName)) {
+                return getInferredTemplateParameterType(parameter, templateArguments);
+            }
+        }
+
+        return null;
     }
 
     @Override public String name () {

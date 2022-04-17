@@ -14,6 +14,7 @@ import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
+import org.w3c.dom.Attr;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -927,8 +928,53 @@ public final class SemanticAnalysis
         .using(node.type, "value")
         .by(Rule::copyFirst);
 
+        // Types
+        Attribute expectedAttribute = node.type.attr("value");
+        Attribute actualAttribute = node.initializer.attr("type");
+
+        // Fixing tests in @testTemplateSimpleUsageTypes
+        Object n = node.initializer;
+        if (n instanceof FunCallNode) {
+
+            // Casting
+            FunCallNode funCallNode = (FunCallNode) n;
+
+            // Reference to function
+            if (funCallNode.function instanceof ReferenceNode) {
+
+                ReferenceNode referenceNode = ((ReferenceNode) funCallNode.function);
+
+                // Getting function node
+                DeclarationContext declarationContext = scope.lookup(referenceNode.name);
+
+                // Function not found
+                if (declarationContext == null) {
+                    // TODO throw error
+                    return;
+                }
+
+                // Getting return type
+                FunDeclarationNode funDeclarationNode = (FunDeclarationNode) declarationContext.declaration;
+                TypeNode returnType = funDeclarationNode.returnType;
+                boolean isReturnTemplateType = funDeclarationNode.isTemplateType(returnType);
+
+                // Skip if not template type
+                if (isReturnTemplateType) {
+
+                    // Getting inferred return type in this context
+                    TypeNode typeNode = funDeclarationNode.getInferredTemplateParameterTypeNode(returnType.contents(), funCallNode.template_arguments);
+
+                    if (typeNode != null) {
+                        actualAttribute = new Attribute(typeNode, "value");
+                    }
+                }
+
+            }
+
+        }
+
         R.rule()
-        .using(node.type.attr("value"), node.initializer.attr("type"))
+        .using(expectedAttribute, actualAttribute)
         .by(r -> {
             Type expected = r.get(0);
             Type actual = r.get(1);
@@ -1157,5 +1203,12 @@ public final class SemanticAnalysis
     }
 
     // endregion
+    // =============================================================================================
+
+    private List<Type> getTypes(List<TypeNode> typeNodes) {
+        return typeNodes.stream().map($ -> $.getType()).collect(Collectors.toList());
+    }
+
+
     // =============================================================================================
 }
