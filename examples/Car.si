@@ -1,20 +1,31 @@
 class Car {
-    attr {
-        brand: String
-        max_speed: Int
+    var brand: String
+    var max_speed: Int
+
+    fun set_max_speed(speed: Int) {
+        max_speed = speed
     }
 
-    creator Car(brand: String, max_speed: Int) {
-        this.brand = brand
-        this.max_speed = max_speed
+    fun get_max_speed(): String {
+        return max_speed
     }
 
-    meth set_max_speed(speed: Int) {
-        max_speed: Int
+    fun set_brand(name: String) {
+        brand = name
+    }
+
+    fun get_brand(): String {
+        return brand
     }
 }
 
 var brand: String = "Ferrari"
-var speed: Int = 350
+var max_speed: Int = 350
 
-create Car(brand, speed)
+var my_car: Car = create Car()
+
+my_car.set_brand(brand)
+my_car.set_max_speed(max_speed)
+
+print(my_car.get_brand())
+print("" + my_car.get_max_speed())
