@@ -1,0 +1,8 @@
+struct Pair {
+    var a: Int
+    var b: Int
+}
+
+var pair: Pair = $Pair(2, 3)
+
+pair.a = 5
