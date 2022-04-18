@@ -898,7 +898,7 @@ public class BytecodeCompiler
             org.objectweb.asm.Type type = nodeAsmType(fun);
             init.visitVarInsn(type.getOpcode(ILOAD), i);
             i += type.getSize();
-            init.visitFieldInsn(PUTFIELD, binaryName, fun.name, type.getDescriptor());
+            init.visitMethodInsn(INVOKESTATIC, binaryName, fun.name, type.getDescriptor(), false);
         }
         init.visitInsn(RETURN);
         init.visitMaxs(-1,-1);
