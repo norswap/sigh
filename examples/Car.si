@@ -6,7 +6,7 @@ class Car {
         max_speed = speed
     }
 
-    fun get_max_speed(): String {
+    fun get_max_speed(): Int {
         return max_speed
     }
 
