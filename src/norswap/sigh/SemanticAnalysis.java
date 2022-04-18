@@ -274,16 +274,18 @@ public final class SemanticAnalysis
 
                 ClassDeclarationNode classDecl = (ClassDeclarationNode) decl;
 
-                Attribute[] dependencies = new Attribute[classDecl.functions.size() + 1];
+                Attribute[] dependencies = new Attribute[classDecl.attributes.size() +
+                                                            classDecl.functions.size() + 1];
                 dependencies[0] = decl.attr("declared");
-                forEachIndexed(classDecl.functions, (i, field) ->
-                    dependencies[i + 1] = field.attr("type"));
+                forEachIndexed(classDecl.attributes, (i, attribute) ->
+                    dependencies[i + 1] = attribute.attr("type"));
+                forEachIndexed(classDecl.functions, (i, function) ->
+                    dependencies[i + classDecl.attributes.size() + 1] = function.attr("type"));
 
                 R.rule(node, "type")
                     .using(dependencies)
                     .by(rr -> {
                         Type classType = rr.get(0);
-                        System.out.println("class is the following: " + classType);
                         /* TODO: ici il faudra demander en argument du créateur les variables de la classe
                            Note: le code ici dans la fonction fait ce qu'il faut actuellement pour des
                             fonctions donc il faut changer pour avoir des variables à la place
