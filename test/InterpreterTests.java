@@ -350,7 +350,7 @@ public final class InterpreterTests extends TestFixture {
     
     // ---------------------------------------------------------------------------------------------
     
-    @Test public void testHigherOrder()
+    @Test public void testHigherOrderFunctions()
     {
         check("fun f(): Int : return(1) {} ; return f()", 1L);
         

@@ -115,36 +115,6 @@ public class GrammarTests extends AutumnTestFixture {
                     new SimpleTypeNode(null, "Int"),
                     null,
                     new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
-        
-        // Added
-         
-        successExpect("fun f (x: Int): Int : return(9) { }",
-                new FunDeclarationNode(null, "f",
-                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                    new SimpleTypeNode(null, "Int"),
-                    intlit(9),
-                    new BlockNode(null, asList())));
-        
-        successExpect("fun f (x: Int): Int : return(9)",
-                new FunDeclarationNode(null, "f",
-                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                    new SimpleTypeNode(null, "Int"),
-                    intlit(9),
-                    null));
-        
-        successExpect("fun f (x: Int): Int : return(x + 4) { }",
-                new FunDeclarationNode(null, "f",
-                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                    new SimpleTypeNode(null, "Int"),
-                    new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(4)),
-                    new BlockNode(null, asList())));
-        
-        successExpect("fun f (x: Any): Int { return 1 }",
-                new FunDeclarationNode(null, "f",
-                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Any"))),
-                    new SimpleTypeNode(null, "Int"),
-                    null,
-                    new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -173,6 +143,40 @@ public class GrammarTests extends AutumnTestFixture {
         successExpect("while 1 < 2 { return } ", new WhileNode(null,
             new BinaryExpressionNode(null, intlit(1), LOWER, intlit(2)),
             new BlockNode(null, asList(new ReturnNode(null, null)))));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testHigherOrderFunctions() {
+        rule = grammar.statement;
+
+        successExpect("fun f (x: Int): Int : return(9) { }",
+            new FunDeclarationNode(null, "f",
+                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                new SimpleTypeNode(null, "Int"),
+                intlit(9),
+                new BlockNode(null, asList())));
+
+        successExpect("fun f (x: Int): Int : return(9)",
+            new FunDeclarationNode(null, "f",
+                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                new SimpleTypeNode(null, "Int"),
+                intlit(9),
+                null));
+
+        successExpect("fun f (x: Int): Int : return(x + 4) { }",
+            new FunDeclarationNode(null, "f",
+                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                new SimpleTypeNode(null, "Int"),
+                new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(4)),
+                new BlockNode(null, asList())));
+
+        successExpect("fun f (x: Any): Int { return 1 }",
+            new FunDeclarationNode(null, "f",
+                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Any"))),
+                new SimpleTypeNode(null, "Int"),
+                null,
+                new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
     }
 
     // ---------------------------------------------------------------------------------------------

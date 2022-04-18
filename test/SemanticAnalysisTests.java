@@ -201,25 +201,6 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("var str: String = null; return print(str + 1)");
 
         failureInputWith("return print(1)", "argument 0: expected String but got Int");
-        
-        // Added
-        
-        successInput("fun f (x: Int): Int : return(9) { }");
-        
-        successInput("fun f (x: Int): Int : return(9)");
-        
-        successInput(
-        		"fun inc (x: Int): Int { return x + 1 }" + 
-        		"fun map (x: Int[], f: Any) : Int[] { return x }");
-        
-        successInput(
-        		"fun inc (x: Int): Int { return x + 1 }" + 
-        		"fun map (x: Int[], f: Any) : Int[] { return f(x) }");
-        
-        successInput(
-        		"fun inc (x: Int): Int { return x + 1 }" + 
-        		"fun map (x: Int[], f: Any) : Int[] { return f(x) }" +
-        		"return map([1, 2, 3], inc)");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -317,6 +298,27 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         //   not the whole function declaration
         failureInputWith("fun f(): Int { if (true) return 1 } ; return f()",
             "Missing return in function");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testHigherOrderFunctions() {
+        successInput("fun f (x: Int): Int : return(9) { }");
+
+        successInput("fun f (x: Int): Int : return(9)");
+
+        successInput(
+            "fun inc (x: Int): Int { return x + 1 }" +
+                "fun map (x: Int[], f: Any) : Int[] { return x }");
+
+        successInput(
+            "fun inc (x: Int): Int { return x + 1 }" +
+                "fun map (x: Int[], f: Any) : Int[] { return f(x) }");
+
+        successInput(
+            "fun inc (x: Int): Int { return x + 1 }" +
+                "fun map (x: Int[], f: Any) : Int[] { return f(x) }" +
+                "return map([1, 2, 3], inc)");
     }
 
     // ---------------------------------------------------------------------------------------------
