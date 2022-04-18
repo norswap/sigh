@@ -1,3 +1,4 @@
+import jdk.nashorn.internal.ir.ExpressionStatement;
 import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
@@ -177,6 +178,39 @@ public class GrammarTests extends AutumnTestFixture {
                 new SimpleTypeNode(null, "Int"),
                 null,
                 new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
+
+        successExpect("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1);}",
+            new BlockNode(null,
+                asList(new FunDeclarationNode(null, "one",
+                        asList(),
+                        new SimpleTypeNode(null, "Int"),
+                        intlit(1),
+                        null),
+                    new FunDeclarationNode(null, "addOne",
+                        asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                        new SimpleTypeNode(null, "Int"),
+                        new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)),
+                        null))));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testConcatenativeProgramming() {
+        rule = grammar.statement;
+
+        successExpect("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); return one() -> addOne}",
+            new BlockNode(null,
+                asList(new FunDeclarationNode(null, "one",
+                        asList(),
+                        new SimpleTypeNode(null, "Int"),
+                        intlit(1),
+                        null),
+                    new FunDeclarationNode(null, "addOne",
+                        asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                        new SimpleTypeNode(null, "Int"),
+                        new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)),
+                        null),
+                    new ReturnNode(null, new BinaryExpressionNode(null, new FunCallNode(null, new ReferenceNode(null, "one"), asList()), FEEDER, new ReferenceNode(null, "addOne"))))));
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -353,6 +353,8 @@ public final class InterpreterTests extends TestFixture {
     @Test public void testHigherOrderFunctions()
     {
         check("fun f(): Int : return(1) {} ; return f()", 1L);
+
+        check("fun one(): Int : return(1);  fun addOne(x: Int): Int : return(x+1); return addOne(one())", 2L);
         
         check("fun add(a: Int, b: Int): Int : return(a + b) {}; fun f(): Int : return(add(1, 2)) {}; return f()", 3L);
         
@@ -361,6 +363,13 @@ public final class InterpreterTests extends TestFixture {
         check("fun inc(a: Int): Int : return(a + 1) {}; fun f(a: Int, f: Any): Int : return(f(a)) {}; return f(0, inc)", 1L);
         
         check("fun add(a: Int, b:Int): Int : return(a + b) {}; fun f(a: Int, b: Int, f: Any): Int : return(f(a, b)) {}; return f(1, 1, add)", 2L);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testConcatenativeProgramming()
+    {
+
     }
 
     // ---------------------------------------------------------------------------------------------

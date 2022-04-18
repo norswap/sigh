@@ -51,6 +51,7 @@ public class SighGrammar extends Grammar
     public rule DOT             = word(".");
     public rule DOLLAR          = word("$");
     public rule COMMA           = word(",");
+    public rule ARROW_RIGHT     = word("->");
 
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
@@ -184,8 +185,13 @@ public class SighGrammar extends Grammar
         .infix(BAR_BAR.as_val(BinaryOperator.OR),
             $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
-    public rule assignment_expression = right_expression()
+    public rule concat_expression = left_expression()
         .operand(or_expression)
+        .infix(ARROW_RIGHT.as_val(BinaryOperator.FEEDER),
+            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
+
+    public rule assignment_expression = right_expression()
+        .operand(concat_expression)
         .infix(EQUALS,
             $ -> new AssignmentNode($.span(), $.$[0], $.$[1]));
 

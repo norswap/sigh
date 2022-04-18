@@ -322,4 +322,13 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    @Test public void testConcatenativeProgramming() {
+        successInput(
+            "fun one(): Int : return(1)" +
+                "fun addOne (x: Int): Int : return(x + 1)" +
+                "return one() + addOne(1)");
+    }
+
+    // ---------------------------------------------------------------------------------------------
 }
