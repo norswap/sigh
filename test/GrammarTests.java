@@ -157,7 +157,7 @@ public class GrammarTests extends AutumnTestFixture {
 
         // Test if the function is well parsed in the grammar
         successExpect("class Car { fun f (x: Int): Int { return 1 } }",
-            new ClassDeclarationNode(null, "Car", asList(
+            new ClassDeclarationNode(null, "Car", asList(), asList(
                 new FunDeclarationNode(null, "f",
                     asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
                     new SimpleTypeNode(null, "Int"),
@@ -165,7 +165,7 @@ public class GrammarTests extends AutumnTestFixture {
         )));
 
         successExpect("class Car { fun brand (): String { return \"Ferrari\" } fun speed (): Int { return 350 } }",
-            new ClassDeclarationNode(null, "Car", asList(
+            new ClassDeclarationNode(null, "Car", asList(), asList(
                 new FunDeclarationNode(null, "brand", asList(),
                     new SimpleTypeNode(null, "String"),
                     new BlockNode(null, asList(new ReturnNode(null, new StringLiteralNode(null, "Ferrari"))))),
