@@ -414,12 +414,24 @@ public final class SemanticAnalysis
             if (type instanceof ClassType) {
                 ClassDeclarationNode decl = ((ClassType) type).node;
 
-                for (DeclarationNode field: decl.functions)
+                // Deal with attributes
+                for (DeclarationNode attribute: decl.attributes)
                 {
-                    if (!field.name().equals(node.fieldName)) continue;
+                    if (!attribute.name().equals(node.fieldName)) continue;
 
                     R.rule(node, "type")
-                        .using(field, "type")
+                        .using(attribute, "type")
+                        .by(Rule::copyFirst);
+
+                    return;
+                }
+                // Deal with functions
+                for (DeclarationNode function: decl.functions)
+                {
+                    if (!function.name().equals(node.fieldName)) continue;
+
+                    R.rule(node, "type")
+                        .using(function, "type")
                         .by(Rule::copyFirst);
 
                     return;
@@ -844,6 +856,8 @@ public final class SemanticAnalysis
     {
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
+        // TODO this is where we get the scope accessible by this function
+        //      in the case of a class, we should allow to access the class attributes
         R.set(node, "scope", scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
