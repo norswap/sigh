@@ -855,20 +855,44 @@ public class BytecodeCompiler
 
     private Object classDecl (ClassDeclarationNode node)
     {
+        System.out.println("starting class declaration");
         String binaryName = node.name;
         classs = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         classs.visit(V1_8, ACC_PUBLIC, binaryName, null, "java/lang/Object", null);
+        node.attributes.forEach(this::run);
         node.functions.forEach(this::run);
 
         // generate constructor
-        Type[] paramTypes =
-            node.functions.stream().map(f -> (Type) reactor.get(f, "type")).toArray(Type[]::new);
-        String descriptor = methodDescriptor(VoidType.INSTANCE, paramTypes);
+        // HANDLE THE ATTRIBUTES
+        Type[] attributesTypes =
+            node.attributes.stream().map(f -> (Type) reactor.get(f, "type")).toArray(Type[]::new);
+        System.out.println("BytcodeCompiler types: " + Arrays.toString(attributesTypes));
+        String descriptor = methodDescriptor(VoidType.INSTANCE, attributesTypes);
         MethodVisitor init = classs.visitMethod(ACC_PUBLIC, "<init>", descriptor, null, null);
         init.visitCode();
         init.visitVarInsn(ALOAD, 0); // this
         init.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
         int i = 1;
+        for (FieldDeclarationNode field: node.attributes) {
+            init.visitVarInsn(ALOAD, 0);
+            org.objectweb.asm.Type type = nodeAsmType(field);
+            init.visitVarInsn(type.getOpcode(ILOAD), i);
+            i += type.getSize();
+            init.visitFieldInsn(PUTFIELD, binaryName, field.name, type.getDescriptor());
+        }
+        init.visitInsn(RETURN);
+        init.visitMaxs(-1,-1);
+        init.visitEnd();
+
+        // HANDLE THE FUNCTIONS
+        Type[] functionsTypes =
+            node.functions.stream().map(f -> (Type) reactor.get(f, "type")).toArray(Type[]::new);
+        String funDescriptor = methodDescriptor(VoidType.INSTANCE, functionsTypes);
+        init = classs.visitMethod(ACC_PUBLIC, "<init>", funDescriptor, null, null);
+        init.visitCode();
+        init.visitVarInsn(ALOAD, 0); // this
+        init.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        i = 1;
         for (FunDeclarationNode fun: node.functions) {
             init.visitVarInsn(ALOAD, 0);
             org.objectweb.asm.Type type = nodeAsmType(fun);
@@ -890,6 +914,9 @@ public class BytecodeCompiler
 
     private Object fieldDecl (FieldDeclarationNode node)
     {
+        // Not sure about the 2 following lines
+        System.out.println("declaring a field");
+        classs.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         struct.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         return null;
     }
