@@ -60,6 +60,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return Object.class; // the proper class type is not available at compile time
+        else if (type instanceof ClassType)
+            return Object.class; // the proper class type is not available at compile time
         else
             throw new Error("unreachable");
     }
@@ -95,6 +97,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return Object[].class; // the proper class type is not available at compile time
+        else if (type instanceof ClassType)
+            return Object.class; // the proper class type is not available at compile time
         else
             throw new Error("unreachable");
     }
@@ -126,6 +130,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return "L" + structBinaryName((StructType) type) + ";";
+        else if (type instanceof ClassType)
+            return "L" + classBinaryName((ClassType) type) + ";";
         else
             throw new Error("unreachable");
     }
