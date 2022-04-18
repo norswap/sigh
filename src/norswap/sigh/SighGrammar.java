@@ -265,8 +265,11 @@ public class SighGrammar extends Grammar
      * Here we should add the fact that inside the braces, we can in fact declare fields like
      * in a struct, but we can also define functions and maybe a constructor or some other things
      * */
+
+    /* A class can have a list of attributes (vars) followed by a list of methods (funs) */
     public rule class_body =
-        seq(LBRACE, fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
+        seq(LBRACE, field_decl.at_least(0).as_list(FieldDeclarationNode.class),
+            fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
 
     public rule struct_decl =
         seq(_struct, identifier, struct_body)
@@ -274,7 +277,7 @@ public class SighGrammar extends Grammar
 
     public rule class_decl =
         seq(_class, identifier, class_body)
-        .push($ -> new ClassDeclarationNode($.span(), $.$[0], $.$[1]));
+        .push($ -> new ClassDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule if_stmt =
         seq(_if, expression, statement, seq(_else, statement).or_push_null())
