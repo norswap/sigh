@@ -369,7 +369,9 @@ public final class InterpreterTests extends TestFixture {
 
     @Test public void testConcatenativeProgramming()
     {
-
+        check("{fun addOne (x: Int): Int : return(x + 1); return 1 -> addOne}", 2L);
+        check("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); return one() -> addOne}", 2L);
+        check("{fun halfOne (): Float : return(0.5); fun addOne (x: Float): Float : return(x + 1); return halfOne() -> addOne}", 1.5d);
     }
 
     // ---------------------------------------------------------------------------------------------
