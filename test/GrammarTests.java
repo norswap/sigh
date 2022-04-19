@@ -164,6 +164,7 @@ public class GrammarTests extends AutumnTestFixture {
                     new BlockNode(null, asList(new ReturnNode(null, intlit(1)))))
         )));
 
+        // Test only with functions
         successExpect("class Car { fun brand (): String { return \"Ferrari\" } fun speed (): Int { return 350 } }",
             new ClassDeclarationNode(null, "Car", asList(), asList(
                 new FunDeclarationNode(null, "brand", asList(),
@@ -173,6 +174,28 @@ public class GrammarTests extends AutumnTestFixture {
                     new SimpleTypeNode(null, "Int"),
                     new BlockNode(null, asList(new ReturnNode(null, intlit(350)))))
         )));
+
+        // Test only with attributes
+        successExpect("class Car { var brand: String var max_speed: Int }",
+            new ClassDeclarationNode(null, "Car", asList(
+                new FieldDeclarationNode(null, "brand", new SimpleTypeNode(null, "String")),
+                new FieldDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int"))
+            ), asList()));
+
+        // Test with attributes and functions, but no use of the attributes in the function
+        successExpect("class Car { var brand: String var max_speed: Int " +
+            "fun brand (): String { return \"Ferrari\" } fun speed (): Int { return 350 } }",
+            new ClassDeclarationNode(null, "Car", asList(
+                new FieldDeclarationNode(null, "brand", new SimpleTypeNode(null, "String")),
+                new FieldDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int"))
+            ), asList(
+                new FunDeclarationNode(null, "brand", asList(),
+                    new SimpleTypeNode(null, "String"),
+                    new BlockNode(null, asList(new ReturnNode(null, new StringLiteralNode(null, "Ferrari"))))),
+                new FunDeclarationNode(null, "speed", asList(),
+                    new SimpleTypeNode(null, "Int"),
+                    new BlockNode(null, asList(new ReturnNode(null, intlit(350)))))
+            )));
 
     }
 }
