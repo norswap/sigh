@@ -354,12 +354,12 @@ public final class InterpreterTests extends TestFixture {
     @Test
     public void testTypeAsValuesClass () {
 
-        /* TODO: those test currently fail, they are commented to pass the INGInious task
+        // TODO: those test currently fail, they are commented to pass the INGInious task
         // TODO: here we cannot find why this does not return C
         // In fact the return value is "ClassDeclaration(class C)" instead
         // We checked all parts were the structs are defined and did class the same way
         // However, nothing from what we understood and changed managed to provide a solution
-        check("class C{} ; return \"\"+ C", "C");*/
+        //check("class C{} ; return \"\"+ C", "C");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -373,28 +373,21 @@ public final class InterpreterTests extends TestFixture {
         check("class Car {}" +
             "return create Car()", emptyClass);
 
-        /* TODO: those test currently fail, they are commented to pass the INGInious task
-        HashMap<String, Object> oneFunctionClass = new HashMap<>();
-        oneFunctionClass.put("brand", "() -> String");
-        // TODO: trouver un moyen de comprendre le bon nombre de parametres
-        // Ici on ne donne aucun paramètre et c'est que l'on est sensé faire,
-        // mais le programme demande à avoir un paramètre, car il sait qu'il y a une fonction
-        // dans la classe (si deux fonctions sont déclarées, 2 paramètres sont demandés, etc.
+        // Use function
         check("class Car { fun brand (): String { return \"Ferrari\" } }" +
-            "return create Car()", oneFunctionClass);
+            "var car: Car = create Car() return car.brand()", "Ferrari");
 
-        HashMap<String, Object> twoFunctionClass = new HashMap<>();
-        oneFunctionClass.put("brand", "() -> String");
-        oneFunctionClass.put("speed", "() -> Int");
-        // TODO: trouver un moyen de comprendre le bon nombre de parametres
-        // Ici on ne donne aucun paramètre et c'est que l'on est sensé faire,
-        // mais le programme demande à avoir un paramètre, car il sait qu'il y a une fonction
-        // dans la classe (si deux fonctions sont déclarées, 2 paramètres sont demandés, etc.
-        check("class Car { " +
-            "fun brand (): String { return \"Ferrari\" }" +
-            "fun speed (): Int { return 350 }" +
-            " }" +
-            "return create Car()", twoFunctionClass);*/
+        // Use attributes
+        check("class Car { var brand: String }" +
+            "var car: Car = create Car()" +
+            "car.brand = \"Ferrari\"" +
+            "return car.brand", "Ferrari");
+
+        // Use parameters from a function
+        check("class Car { var brand: String " +
+            "fun get_param(param: Int): Int { return param } }" +
+            "var car: Car = create Car()" +
+            "return car.get_param(5)", 5L);
     }
 
     // ---------------------------------------------------------------------------------------------
