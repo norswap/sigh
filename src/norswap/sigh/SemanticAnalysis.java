@@ -856,8 +856,7 @@ public final class SemanticAnalysis
     {
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
-        // TODO this is where we get the scope accessible by this function
-        //      in the case of a class, we should allow to access the class attributes
+        /* TODO create a new node that correspond to a class to be able to put the scopes */
         R.set(node, "scope", scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
