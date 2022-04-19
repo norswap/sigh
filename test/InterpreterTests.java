@@ -355,6 +355,12 @@ public final class InterpreterTests extends TestFixture {
         check("fun inc(a: Int): Int {return a + 1}; fun f(a: Int, f: Any): Int {return f(a)}; return f(0, inc)", 1L);
         
         check("fun add(a: Int, b:Int): Int {return a + b}; fun f(a: Int, b: Int, f: Any): Int {return f(a, b)}; return f(1, 1, add)", 2L);
+
+        check("fun factory(): Any {fun f(b: Int): Int {return 1 + b}; return f}; return factory()(0)", 1L);
+
+        check("fun factory(a: Int): Int {fun f(): Int {return a + 1}; return f()}; return factory(2)", 3L);
+
+        check("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(0)", 2L);
     }
 
     // ---------------------------------------------------------------------------------------------

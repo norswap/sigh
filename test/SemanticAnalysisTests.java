@@ -303,18 +303,12 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testHigherOrderFunctions() {
-        successInput(
-            "fun inc (x: Int): Int { return x + 1 }" +
-                "fun map (x: Int[], f: Any) : Int[] { return x }");
+        successInput("fun factory(a: Int): Int {fun f(): Int {return a + 1}; return f()}; return factory(2)");
+        successInput("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(0)");
 
-        successInput(
-            "fun inc (x: Int): Int { return x + 1 }" +
-                "fun map (x: Int[], f: Any) : Int[] { return f(x) }");
-
-        successInput(
-            "fun inc (x: Int): Int { return x + 1 }" +
-                "fun map (x: Int[], f: Any) : Int[] { return f(x) }" +
-                "return map([1, 2, 3], inc)");
+        successInput("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(\"Hello\")");
+        successInput("fun justReturns (s: String): String {return s}; fun apply (x: Int, f: Any) : Int { return f(x) }; return apply(1, justReturns)");
+        successInput("fun inc (x: Int): Int { return x + 1 }; fun map (x: Int[], f: Any) : Int[] { return f(x) }; return map([1, 2, 3], inc)");
     }
 
     // ---------------------------------------------------------------------------------------------
