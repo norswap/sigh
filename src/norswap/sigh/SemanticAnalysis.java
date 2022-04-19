@@ -13,6 +13,7 @@ import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -565,11 +566,15 @@ public final class SemanticAnalysis
                 r.set(0, IntType.INSTANCE);
             else if (right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
+            else if(right instanceof ArrayType)
+                r.set(0,new ArrayType(((ArrayType) right).componentType,((ArrayType) right).dimensions));
             else
                 r.error(arithmeticError(node, "Int", right), node);
         else if (left instanceof FloatType)
             if (right instanceof IntType || right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
+            else if(right instanceof ArrayType)
+                r.set(0,new ArrayType(((ArrayType) right).componentType,((ArrayType) right).dimensions));
             else
                 r.error(arithmeticError(node, "Float", right), node);
             //TODO : new rule
@@ -584,6 +589,8 @@ public final class SemanticAnalysis
                 }
                 r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
             }
+            else if(right instanceof IntType || right instanceof FloatType)
+                r.set(0,new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
             else
                 r.error(arithmeticError(node, left, right), node);
         else

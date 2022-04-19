@@ -3,6 +3,7 @@ import norswap.autumn.positions.LineMapString;
 import norswap.sigh.SemanticAnalysis;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.SighNode;
+import norswap.sigh.interpreter.InterpreterException;
 import norswap.uranium.Reactor;
 import norswap.uranium.UraniumTestFixture;
 import norswap.utils.visitors.Walker;
@@ -282,6 +283,49 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "struct P { var x: Int; var y: Int }" +
             "return $P(1, 2).z",
             "Trying to access missing field z on struct P");
+    }
+
+    @Test public void testArrayScalarOperation(){
+        successInput("return ([1,2,3]+2)[0]");
+        successInput("return ([1,2,3]+2)[1]");
+        successInput("return ([1,2,3]+2)[2]");
+        successInput("return ([[1],[2],[3]]+2)[0][0]");
+        successInput("return ([[1],[2],[3]]+2)[1][0]");
+        successInput("return (2+[1,2,3])[0]");
+        successInput("return (2+[1,2,3])[1]");
+        successInput("return (2+[1,2,3])[2]");
+        successInput("return (2+[[1],[2],[3]])[0][0]");
+        successInput("return (2+[[1],[2],[3]])[1][0]");
+        successInput("return ([1,2,3]*2)[0]");
+        successInput("return ([1,2,3]*2)[1]");
+        successInput("return ([1,2,3]*2)[2]");
+        successInput("return ([[1],[2],[3]]*2)[0][0]");
+        successInput("return ([[1],[2],[3]]*2)[1][0]");
+        successInput("return (2*[1,2,3])[0]");
+        successInput("return (2*[1,2,3])[1]");
+        successInput("return (2*[1,2,3])[2]");
+        successInput("return (2*[[1],[2],[3]])[0][0]");
+        successInput("return (2*[[1],[2],[3]])[1][0]");
+        successInput("return ([1,2,3]-2)[0]");
+        successInput("return ([1,2,3]-2)[1]");
+        successInput("return ([1,2,3]-2)[2]");
+        successInput("return ([[1],[2],[3]]-2)[0][0]");
+        successInput("return ([[1],[2],[3]]-2)[1][0]");
+        successInput("return (2-[1,2,3])[0]");
+        successInput("return (2-[1,2,3])[1]");
+        successInput("return (2-[1,2,3])[2]");
+        successInput("return (2-[[1],[2],[3]])[0][0]");
+        successInput("return (2-[[1],[2],[3]])[1][0]");
+        successInput("return ([1,2,3]/2)[0]");
+        successInput("return ([1,2,3]/2)[1]");
+        successInput("return ([1,2,3]/2)[2]");
+        successInput("return ([[1],[2],[3]]/2)[0][0]");
+        successInput("return ([[1],[2],[3]]/2)[1][0]");
+        successInput("return (2/[1,2,3])[0]");
+        successInput("return (2/[1,2,3])[1]");
+        successInput("return (2/[1,2,3])[2]");
+        successInput("return (2/[[1],[2],[3]])[0][0]");
+        successInput("return (2/[[1],[2],[3]])[1][0]");
     }
 
     @Test public void testClassDeclaration(){

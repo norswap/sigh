@@ -276,6 +276,50 @@ public final class InterpreterTests extends TestFixture {
         check("return [].nDim", 1L);
     }
 
+    @Test public void testArrayScalarOperation(){
+        rule=grammar.root;
+        check("return ([1,2,3]+2)[0]",3L);
+        check("return ([1,2,3]+2)[1]",4L);
+        check("return ([1,2,3]+2)[2]",5L);
+        check("return ([[1],[2],[3]]+2)[0][0]",3L);
+        check("return ([[1],[2],[3]]+2)[1][0]",4L);
+        check("return (2+[1,2,3])[0]",3L);
+        check("return (2+[1,2,3])[1]",4L);
+        check("return (2+[1,2,3])[2]",5L);
+        check("return (2+[[1],[2],[3]])[0][0]",3L);
+        check("return (2+[[1],[2],[3]])[1][0]",4L);
+        check("return ([1,2,3]*2)[0]",2L);
+        check("return ([1,2,3]*2)[1]",4L);
+        check("return ([1,2,3]*2)[2]",6L);
+        check("return ([[1],[2],[3]]*2)[0][0]",2L);
+        check("return ([[1],[2],[3]]*2)[1][0]",4L);
+        check("return (2*[1,2,3])[0]",2L);
+        check("return (2*[1,2,3])[1]",4L);
+        check("return (2*[1,2,3])[2]",6L);
+        check("return (2*[[1],[2],[3]])[0][0]",2L);
+        check("return (2*[[1],[2],[3]])[1][0]",4L);
+        check("return ([1,2,3]-2)[0]",-1L);
+        check("return ([1,2,3]-2)[1]",0L);
+        check("return ([1,2,3]-2)[2]",1L);
+        check("return ([[1],[2],[3]]-2)[0][0]",-1L);
+        check("return ([[1],[2],[3]]-2)[1][0]",0L);
+        check("return (2-[1,2,3])[0]",1L);
+        check("return (2-[1,2,3])[1]",0L);
+        check("return (2-[1,2,3])[2]",-1L);
+        check("return (2-[[1],[2],[3]])[0][0]",1L);
+        check("return (2-[[1],[2],[3]])[1][0]",0L);
+        check("return ([1,2,3]/2)[0]",0L);
+        check("return ([1,2,3]/2)[1]",1L);
+        check("return ([1,2,3]/2)[2]",1L);
+        check("return ([[1],[2],[3]]/2)[0][0]",0L);
+        check("return ([[1],[2],[3]]/2)[1][0]",1L);
+        checkThrows("return (2/[1,2,3])[0]",InterpreterException.class);
+        checkThrows("return (2/[1,2,3])[1]",InterpreterException.class);
+        checkThrows("return (2/[1,2,3])[2]",InterpreterException.class);
+        checkThrows("return (2/[[1],[2],[3]])[0][0]",InterpreterException.class);
+        checkThrows("return (2/[[1],[2],[3]])[1][0]",InterpreterException.class);
+    }
+
     @Test public void testClassDeclaration(){
         rule = grammar.root;
 
@@ -301,10 +345,6 @@ public final class InterpreterTests extends TestFixture {
                 " var p: Fraction = $Fraction(2, 2)" +
                 "return p.to_Number(p.num,p.den)",
             1L);
-
-
-
-
 
     }
     @Test

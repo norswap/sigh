@@ -162,7 +162,103 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
+    private Object[] arrayScalarOperation(Object array,Number scalar, int op){
+        Object[] a = (Object[]) array;
+        if(a[0] instanceof Double ){
+            if (scalar instanceof Double) {
+                Double[] result = new Double[a.length];
+                for (int i = 0; i < a.length; i++) {
+                    switch (op){
+                        case 0:
+                            result[i] = (double) a[i] + (double) scalar;
+                            break;
+                        case 1:
+                            result[i] = (double) a[i] - (double) scalar;
+                            break;
+                        case 2:
+                            result[i] = (double) a[i] * (double) scalar;
+                            break;
+                        case 3:
+                            if((double) scalar==0)
+                                throw new ArithmeticException("Division by zero");
+                            result[i] = (double) a[i] / (double) scalar;
+                            break;
+                        default:
+                            result[i] = null;
+                            break;
+                    }
+                }
+                return result;
+            }else{
+                throw new InterpreterException("Try to operate on two arrays with different types: "+a.getClass()+
+                    " and "+scalar.getClass(),new ArithmeticException());
+            }
+        }
+        else if(a[0] instanceof Long ){
+            if (scalar instanceof Long) {
+                Long[] result = new Long[a.length];
+                for (int i = 0; i < a.length; i++) {
+                    switch (op) {
+                        case 0:
+                            result[i] = (long) a[i] + (long) scalar;
+                            break;
+                        case 1:
+                            result[i] = (long) a[i] - (long) scalar;
+                            break;
+                        case 2:
+                            result[i] = (long) a[i] * (long) scalar;
+                            break;
+                        case 3:
+                            if ((long) scalar == 0)
+                                throw new ArithmeticException("Division by zero");
+                            result[i] = (long) a[i] / (long) scalar;
+                            break;
+                        default:
+                            result[i] = null;
+                            break;
+                    }
+                }
+                return result;
+            }
+            else if(op==4) {
+                Long[] result = new Long[a.length];
+                for (int i = 0; i < a.length; i++)
+                    result[i] = -(long) a[i];
+                return result;
+            }
+            else{
+                throw new InterpreterException("Try to operate on two arrays with different types: "+a.getClass()+
+                    " and "+scalar.getClass(),new ArithmeticException());
+            }
+        }
+        else if(a[0] instanceof Object[]){
+            if(scalar instanceof Number){
+                Object[] result=new Object[a.length];
+                for(int i=0;i<a.length;i++){
+                    result[i]=arrayScalarOperation(a[i],scalar,op);
+                }
+                return result;
+            }
+        }
+        else{
+            throw new InterpreterException("Operation not implemented",new Exception());
+        }
+        return null;
+    }
+
     private Object[] arrayOperate(Object lArray,Object rArray, int op){
+        if(lArray instanceof Number && rArray instanceof  Object[]){
+            if(op==1){
+                return arrayScalarOperation(arrayScalarOperation((Object[]) rArray,-1,4),(Number) lArray,0);
+            }
+            else if(op==3)
+                throw new InterpreterException("Try to divide a scalar by an array", new ArithmeticException());
+            else
+                return arrayScalarOperation((Object[]) rArray, (Number) lArray,op);
+        }
+        if(rArray instanceof Number && lArray instanceof  Object[]){
+            return arrayScalarOperation((Object[]) lArray, (Number) rArray,op);
+        }
         if(!(lArray instanceof Object[]) || !(rArray instanceof  Object[]))
             throw new InterpreterException("Operation between an array and a scalar not implemented yet", new Exception());
         Object[] leftArray=(Object[]) lArray;
@@ -352,29 +448,19 @@ public final class Interpreter
         Object right = get(node.right);
 
         if(node.operator == BinaryOperator.ADD){
-            Object[] leftArray=(Object[])left;
-            Object[] rightArray=(Object[])right;
-            return arrayOperate(leftArray,rightArray,0);
+            return arrayOperate(left,right,0);
         }
         else if (node.operator==BinaryOperator.MULTIPLY){
-            Object[] leftArray=(Object[])left;
-            Object[] rightArray=(Object[])right;
-            return arrayOperate(leftArray,rightArray,2);
+            return arrayOperate(left,right,2);
         }
         else if (node.operator==BinaryOperator.SUBTRACT){
-            Object[] leftArray=(Object[])left;
-            Object[] rightArray=(Object[])right;
-            return arrayOperate(leftArray,rightArray,1);
+            return arrayOperate(left,right,1);
         }
         else if (node.operator==BinaryOperator.DIVIDE){
-            Object[] leftArray=(Object[])left;
-            Object[] rightArray=(Object[])right;
-            return arrayOperate(leftArray,rightArray,3);
+            return arrayOperate(left,right,3);
         }
         else if (node.operator==BinaryOperator.DOTPRODUCT){
-            Object[] rightArray=(Object[])right;
-            Object[] leftArray=(Object[])left;
-            return matrixOperate(leftArray,rightArray,0);
+            return matrixOperate(left,right,0);
         }
         switch (node.operator) {
             case EQUALITY:

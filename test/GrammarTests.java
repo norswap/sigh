@@ -90,6 +90,10 @@ public class GrammarTests extends AutumnTestFixture {
 
     }
 
+    @Test public void testArrayScalarOperation(){
+        rule= grammar.root;
+        success("var x: Int[]=([1,2,3]+2)");
+    }
     @Test public void testArrayStructAccess () {
         rule = grammar.expression;
         successExpect("[1][0]", new ArrayAccessNode(null,
