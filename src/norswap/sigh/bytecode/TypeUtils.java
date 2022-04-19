@@ -98,7 +98,7 @@ public final class TypeUtils {
         else if (type instanceof StructType)
             return Object[].class; // the proper class type is not available at compile time
         else if (type instanceof ClassType)
-            return Object.class; // the proper class type is not available at compile time
+            return Object[].class; // the proper class type is not available at compile time
         else
             throw new Error("unreachable");
     }
