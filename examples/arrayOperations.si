@@ -1,0 +1,27 @@
+var x: Int [3][4]
+print("x.nDim = " + x.nDim)//3
+print("x.count = " + x.count)//12
+print("x.sum = " + x.sum)//0
+print("x.avg = " + x.avg)//0
+x[0][0] = 30
+x[1][1] = 21
+x[2][2] = 78
+x[2][3] = 45
+print("x.sum = " + x.sum)//129
+print("x.avg = " + x.avg)//10
+
+var y: Int [4][5]
+y[0][1] = 3
+y[1][3] = 5
+y[2][4] = 6
+y[3][0] = 10
+y[2][2] = 7
+var z: Int [][] = x @ y // z=[[0,90,0,0,0],[0,0,0,105,0],[450,0,546,0,468]]
+
+print("z[0][1] = "+z[0][1])//90
+print("z[1][3] = "+z[1][3])//105
+print("z[2][2] = "+z[2][2])//546
+
+var array: Int [][] = 2 * x  + 2
+print("array[0][0] = "+array[0][0])//62
+print("array[1][1] = "+array[1][1])//44

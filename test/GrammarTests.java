@@ -93,6 +93,13 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testArrayScalarOperation(){
         rule= grammar.root;
         success("var x: Int[]=([1,2,3]+2)");
+        success("var x: Int[2][2][2]; var y: Int[2][2][2];" +
+            "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
+            "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
+            "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
+            "y[0][1][0]=9;y[1][1][0]=11;y[0][1][1]=13;y[1][1][1]=15;"+
+            "var z:Int[][][]=x@y;" +
+            "return z[0][0][0]");
     }
     @Test public void testArrayStructAccess () {
         rule = grammar.expression;
@@ -133,6 +140,7 @@ public class GrammarTests extends AutumnTestFixture {
             null,new BinaryExpressionNode(null,new ArrayLiteralNode(null, toGet),BinaryOperator.MULTIPLY,new IntLiteralNode(null, 2))),
             new IntLiteralNode(null,0)));
         success("([[0,1],[2,3]] @ [[1,1],[2,2]])");
+
     }
 
     // ---------------------------------------------------------------------------------------------

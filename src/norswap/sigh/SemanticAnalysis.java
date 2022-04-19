@@ -547,7 +547,7 @@ public final class SemanticAnalysis
 
     private boolean compatible(List<StringLiteralNode> a, List<StringLiteralNode> b){
         if(a.size()>2 ||b.size()>2||a.size()==0||b.size()==0) return false;
-        if(b.get(0).value.equals(a.get(0).value)||b.get(1).value.equals(a.get(0).value)) return true;
+        if(b.get(0).value.equals(a.get(1).value)||b.get(1).value.equals(a.get(0).value)) return true;
         return false;
     }
     private String conversionDimension(List<StringLiteralNode> dimensions){

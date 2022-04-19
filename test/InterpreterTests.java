@@ -358,7 +358,11 @@ public final class InterpreterTests extends TestFixture {
         // is no inference context available)
         checkExpr("[1].length", 1L);
         checkExpr("[1, 2].length", 2L);
-
+        checkExpr("[].sum",0L);
+        checkExpr("[].avg",0L);
+        checkExpr("[].count",0L);
+        checkExpr("[].nDim",1L);
+        checkExpr("[[]].nDim",2L);
         checkExpr("[4, 2].avg", 3L);
         checkExpr("[1, 3, 4, 2].count", 4L);
         checkExpr("[4, 2].sum", 6L);
@@ -588,6 +592,11 @@ public final class InterpreterTests extends TestFixture {
             "y[0][1][0]=9;y[1][1][0]=11;y[0][1][1]=13;y[1][1][1]=15;"+
             "var z:Int[][][]=y/x;" +
             "return z[0][1][1]", 1L);
+        check("var x: Int[3][2]; var y: Int[2][2];" +
+            "x[0][0]=1;x[1][0]=2;" +
+            "y[0][0]=4;y[1][0]=5;" +
+            "var z:Int[][]=x@y;" +
+            "return z[1][0]", 8L);
 
         check("var x: Int[2]; x[0]=2;x[1]=4;" +
             "return x.sum", 6L);

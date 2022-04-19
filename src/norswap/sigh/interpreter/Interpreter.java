@@ -728,7 +728,7 @@ public final class Interpreter
     }
 
     private long nDim(Object[] tab, long n){
-        if(tab.length==0)return 1;
+        if(tab.length==0)return n;
         if (tab[0] instanceof Object[]){
             return nDim((Object[])tab[0],n+1);
         }
