@@ -650,7 +650,7 @@ public final class SemanticAnalysis
      */
     private static boolean isAssignableTo (Type a, Type b)
     {
-    	if (a instanceof AnyType || b instanceof AnyType) return true; 
+    	if (a instanceof AnyType || b instanceof AnyType) return true;
     	
         if (a instanceof VoidType || b instanceof VoidType)
             return false;

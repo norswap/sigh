@@ -303,12 +303,13 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testHigherOrderFunctions() {
+        successInput("fun inc(a: Int): Int {return a + 1}; fun apply(a: Int, f: Any): Int {return f(a)}; return apply(0, inc)");
         successInput("fun factory(a: Int): Int {fun f(): Int {return a + 1}; return f()}; return factory(2)");
+        successInput("fun factory(a: Int): Any {fun f(): Int {return a}; return f}; return factory(2)()");
         successInput("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(0)");
 
-        successInput("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(\"Hello\")");
-        successInput("fun justReturns (s: String): String {return s}; fun apply (x: Int, f: Any) : Int { return f(x) }; return apply(1, justReturns)");
-        successInput("fun inc (x: Int): Int { return x + 1 }; fun map (x: Int[], f: Any) : Int[] { return f(x) }; return map([1, 2, 3], inc)");
+        failureInput("fun factory(a: Int): Any {fun f(): Int {return y}; return f}; return factory(2)()");
+        //failureInput("fun factory(): Any {fun f(x: Int): Int {return x + 1}; return f}; return factory()(\"Hello\")");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -317,6 +318,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("{fun addOne (x: Int): Int {return x + 1}; return 1 -> addOne}");
         successInput("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}");
         successInput("{fun halfOne (): Float {return 0.5}; fun addOne (x: Float): Float {return x + 1}; return halfOne() -> addOne}");
+
+        failureInput("{fun one (): Int {return 1}; return halfOne() -> 1}");
     }
 
     // ---------------------------------------------------------------------------------------------
