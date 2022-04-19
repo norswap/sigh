@@ -3,6 +3,8 @@ package norswap.sigh;
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
 
+import java.util.Arrays;
+
 import static norswap.sigh.ast.UnaryOperator.NOT;
 
 @SuppressWarnings("Convert2MethodRef")
@@ -188,7 +190,9 @@ public class SighGrammar extends Grammar
     public rule concat_expression = left_expression()
         .operand(or_expression)
         .infix(ARROW_RIGHT.as_val(BinaryOperator.FEEDER),
-            $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
+            $ -> new FunCallNode($.span(), $.$[2], Arrays.asList($.$[0])));
+        //.infix(ARROW_RIGHT.as_val(BinaryOperator.FEEDER),
+        //    $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule assignment_expression = right_expression()
         .operand(concat_expression)

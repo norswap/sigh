@@ -198,6 +198,12 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testConcatenativeProgramming() {
         rule = grammar.statement;
 
+        successExpect("return one() -> addOne",
+            new ReturnNode(null,
+                new FunCallNode(null,
+                    new ReferenceNode(null, "addOne"),
+                    asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))));
+
         successExpect("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); return one() -> addOne}",
             new BlockNode(null,
                 asList(new FunDeclarationNode(null, "one",
@@ -210,7 +216,10 @@ public class GrammarTests extends AutumnTestFixture {
                         new SimpleTypeNode(null, "Int"),
                         new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)),
                         null),
-                    new ReturnNode(null, new BinaryExpressionNode(null, new FunCallNode(null, new ReferenceNode(null, "one"), asList()), FEEDER, new ReferenceNode(null, "addOne"))))));
+                    new ReturnNode(null,
+                        new FunCallNode(null,
+                            new ReferenceNode(null, "addOne"),
+                            asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))))));
     }
 
     // ---------------------------------------------------------------------------------------------
