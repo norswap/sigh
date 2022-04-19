@@ -312,13 +312,27 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("class Car {}" +
             "var car: Car = create Car()");
 
-        /* TODO: this test fail, commented to pass INGInious task
+        // TODO: this test fail, commented to pass INGInious task
         // There is again the problem of the number of arguments
         successInput("class Car { " +
             "fun brand (): String { return \"Ferrari\" }" +
             "fun speed (): Int { return 350 }" +
             " }" +
-            "var car: Car = create Car()");*/
+            "var car: Car = create Car()");
+
+        // Complete test with calls, attributes init and updates
+        successInput("class Car {" +
+            "var brand: String " +
+            "var speed: Int " +
+            "fun get_brand (): String { return \"Ferrari\" }" +
+            "fun get_speed (): Int { return 350 }" +
+            " }" +
+            "var car: Car = create Car() " +
+            "car.brand = \"Porsche\" " +
+            "car.speed = 375 " +
+            "print(car.get_brand()) " +
+            "print(\"\" + car.get_speed())" +
+            "car.speed = 120");
     }
 
     // ---------------------------------------------------------------------------------------------
