@@ -352,28 +352,20 @@ public final class InterpreterTests extends TestFixture {
     
     @Test public void testHigherOrderFunctions()
     {
-        check("fun f(): Int : return(1) {} ; return f()", 1L);
-
-        check("fun one(): Int : return(1);  fun addOne(x: Int): Int : return(x+1); return addOne(one())", 2L);
+        check("fun inc(a: Int): Int {return a + 1}; fun f(a: Int, f: Any): Int {return f(a)}; return f(0, inc)", 1L);
         
-        check("fun add(a: Int, b: Int): Int : return(a + b) {}; fun f(): Int : return(add(1, 2)) {}; return f()", 3L);
-        
-        check("fun add(a: Int, b: Int): Int : return(a + b); fun f(): Int : return(add(1, 2)); return f()", 3L);
-        
-        check("fun inc(a: Int): Int : return(a + 1) {}; fun f(a: Int, f: Any): Int : return(f(a)) {}; return f(0, inc)", 1L);
-        
-        check("fun add(a: Int, b:Int): Int : return(a + b) {}; fun f(a: Int, b: Int, f: Any): Int : return(f(a, b)) {}; return f(1, 1, add)", 2L);
+        check("fun add(a: Int, b:Int): Int {return a + b}; fun f(a: Int, b: Int, f: Any): Int {return f(a, b)}; return f(1, 1, add)", 2L);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testConcatenativeProgramming()
     {
-        check("{fun addOne (x: Int): Int : return(x + 1); return 1 -> addOne}", 2L);
-        check("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); return one() -> addOne}", 2L);
-        check("{fun halfOne (): Float : return(0.5); fun addOne (x: Float): Float : return(x + 1); return halfOne() -> addOne}", 1.5d);
-        check("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); fun timesTwo (x: Int): Int : return(x * 2); return one() -> addOne -> timesTwo}", 4L);
-        check("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); fun timesTwo (x: Int): Int : return(x * 2); return one() -> timesTwo -> addOne}", 3L);
+        check("{fun addOne (x: Int): Int {return x + 1}; return 1 -> addOne}", 2L);
+        check("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}", 2L);
+        check("{fun halfOne (): Float {return 0.5}; fun addOne (x: Float): Float {return x + 1}; return halfOne() -> addOne}", 1.5d);
+        check("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; fun timesTwo (x: Int): Int {return x * 2}; return one() -> addOne -> timesTwo}", 4L);
+        check("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; fun timesTwo (x: Int): Int {return x * 2}; return one() -> timesTwo -> addOne}", 3L);
     }
 
     // ---------------------------------------------------------------------------------------------

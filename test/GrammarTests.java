@@ -107,14 +107,12 @@ public class GrammarTests extends AutumnTestFixture {
             new FunDeclarationNode(null, "f",
                 asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
                 new SimpleTypeNode(null, "Int"),
-                null,
                 new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
         
         successExpect("fun f (x: Int): Int { return 1 }",
                 new FunDeclarationNode(null, "f",
                     asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
                     new SimpleTypeNode(null, "Int"),
-                    null,
                     new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
     }
 
@@ -151,46 +149,11 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testHigherOrderFunctions() {
         rule = grammar.statement;
 
-        successExpect("fun f (x: Int): Int : return(9) { }",
-            new FunDeclarationNode(null, "f",
-                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                new SimpleTypeNode(null, "Int"),
-                intlit(9),
-                new BlockNode(null, asList())));
-
-        successExpect("fun f (x: Int): Int : return(9)",
-            new FunDeclarationNode(null, "f",
-                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                new SimpleTypeNode(null, "Int"),
-                intlit(9),
-                null));
-
-        successExpect("fun f (x: Int): Int : return(x + 4) { }",
-            new FunDeclarationNode(null, "f",
-                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                new SimpleTypeNode(null, "Int"),
-                new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(4)),
-                new BlockNode(null, asList())));
-
-        successExpect("fun f (x: Any): Int { return 1 }",
+        successExpect("fun f (x: Any): Int {return 1}",
             new FunDeclarationNode(null, "f",
                 asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Any"))),
                 new SimpleTypeNode(null, "Int"),
-                null,
                 new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
-
-        successExpect("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1);}",
-            new BlockNode(null,
-                asList(new FunDeclarationNode(null, "one",
-                        asList(),
-                        new SimpleTypeNode(null, "Int"),
-                        intlit(1),
-                        null),
-                    new FunDeclarationNode(null, "addOne",
-                        asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                        new SimpleTypeNode(null, "Int"),
-                        new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)),
-                        null))));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -204,18 +167,16 @@ public class GrammarTests extends AutumnTestFixture {
                     new ReferenceNode(null, "addOne"),
                     asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))));
 
-        successExpect("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); return one() -> addOne}",
+        successExpect("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}",
             new BlockNode(null,
                 asList(new FunDeclarationNode(null, "one",
                         asList(),
                         new SimpleTypeNode(null, "Int"),
-                        intlit(1),
-                        null),
+                        new BlockNode(null, asList(new ReturnNode(null, intlit(1))))),
                     new FunDeclarationNode(null, "addOne",
                         asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
                         new SimpleTypeNode(null, "Int"),
-                        new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)),
-                        null),
+                        new BlockNode(null, asList(new ReturnNode(null, new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)))))),
                     new ReturnNode(null,
                         new FunCallNode(null,
                             new ReferenceNode(null, "addOne"),

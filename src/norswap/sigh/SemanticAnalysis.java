@@ -797,25 +797,16 @@ public final class SemanticAnalysis
                 paramTypes[i] = r.get(i + 1);
             r.set(0, new FunType(r.get(0), paramTypes));
         });
-                
-        if(node.block != null)
-        {
-        	R.rule()
+
+        R.rule()
             .using(node.block.attr("returns"), node.returnType.attr("value"))
             .by(r -> {
                 boolean returns = r.get(0);
-                returns |= node.returnValue != null;
                 Type returnType = r.get(1);
-                
                 if (!returns && !(returnType instanceof VoidType))
                     r.error("Missing return in function.", node);
                 // NOTE: The returned value presence & type is checked in returnStmt().
             });
-        }
-        
-        // TODO
-        //if (!returns && !(returnType instanceof VoidType))
-        //    r.error("Missing return in function.", node);
     }
 
     // ---------------------------------------------------------------------------------------------

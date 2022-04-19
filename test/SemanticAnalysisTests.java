@@ -303,10 +303,6 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testHigherOrderFunctions() {
-        successInput("fun f (x: Int): Int : return(9) { }");
-
-        successInput("fun f (x: Int): Int : return(9)");
-
         successInput(
             "fun inc (x: Int): Int { return x + 1 }" +
                 "fun map (x: Int[], f: Any) : Int[] { return x }");
@@ -324,9 +320,9 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testConcatenativeProgramming() {
-        successInput("{fun addOne (x: Int): Int : return(x + 1); return 1 -> addOne}");
-        successInput("{fun one (): Int : return(1); fun addOne (x: Int): Int : return(x + 1); return one() -> addOne}");
-        successInput("{fun halfOne (): Float : return(0.5); fun addOne (x: Float): Float : return(x + 1); return halfOne() -> addOne}");
+        successInput("{fun addOne (x: Int): Int {return x + 1}; return 1 -> addOne}");
+        successInput("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}");
+        successInput("{fun halfOne (): Float {return 0.5}; fun addOne (x: Float): Float {return x + 1}; return halfOne() -> addOne}");
     }
 
     // ---------------------------------------------------------------------------------------------
