@@ -915,8 +915,7 @@ public class BytecodeCompiler
     private Object fieldDecl (FieldDeclarationNode node)
     {
         // Not sure about the 2 following lines
-        System.out.println("declaring a field");
-        classs.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
+//        classs.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         struct.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         return null;
     }
