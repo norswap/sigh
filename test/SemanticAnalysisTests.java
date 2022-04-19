@@ -309,6 +309,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(0)");
 
         failureInput("fun factory(a: Int): Any {fun f(): Int {return y}; return f}; return factory(2)()");
+
+        failureInput("fun f(x: Int): Int {return x + 1}; return f(\"Hello\")");
         //failureInput("fun factory(): Any {fun f(x: Int): Int {return x + 1}; return f}; return factory()(\"Hello\")");
     }
 

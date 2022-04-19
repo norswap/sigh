@@ -191,8 +191,6 @@ public class SighGrammar extends Grammar
         .operand(or_expression)
         .infix(ARROW_RIGHT.as_val(BinaryOperator.FEEDER),
             $ -> new FunCallNode($.span(), $.$[2], Arrays.asList($.$[0])));
-        //.infix(ARROW_RIGHT.as_val(BinaryOperator.FEEDER),
-        //    $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule assignment_expression = right_expression()
         .operand(concat_expression)
@@ -255,15 +253,6 @@ public class SighGrammar extends Grammar
     public rule fun_decl =
         seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
             .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
-
-//    public rule maybe_return_value =
-//        seq(COLON, _return, LPAREN, expression, RPAREN).or_push_null();
-//
-//    public rule maybe_block = block.or_push_null();
-//
-//    public rule fun_decl =
-//        seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, maybe_return_value, maybe_block)
-//        .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3], $.$[4]));
 
     public rule field_decl =
         seq(_var, identifier, COLON, type)
