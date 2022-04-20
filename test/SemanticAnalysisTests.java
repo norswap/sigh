@@ -302,26 +302,69 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testHigherOrderFunctions() {
-        successInput("fun inc(a: Int): Int {return a + 1}; fun apply(a: Int, f: Any): Int {return f(a)}; return apply(0, inc)");
-        successInput("fun factory(a: Int): Int {fun f(): Int {return a + 1}; return f()}; return factory(2)");
-        successInput("fun factory(a: Int): Any {fun f(): Int {return a}; return f}; return factory(2)()");
-        successInput("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(0)");
-
-        failureInput("fun factory(a: Int): Any {fun f(): Int {return y}; return f}; return factory(2)()");
-
-        failureInput("fun f(x: Int): Int {return x + 1}; return f(\"Hello\")");
-        //failureInput("fun factory(): Any {fun f(x: Int): Int {return x + 1}; return f}; return factory()(\"Hello\")");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     @Test public void testConcatenativeProgramming() {
         successInput("{fun addOne (x: Int): Int {return x + 1}; return 1 -> addOne}");
         successInput("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}");
         successInput("{fun halfOne (): Float {return 0.5}; fun addOne (x: Float): Float {return x + 1}; return halfOne() -> addOne}");
 
         failureInput("{fun one (): Int {return 1}; return halfOne() -> 1}");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testHigherOrderFunctions() {
+        successInput("fun exec(f: <(): Int>): Int {return f()}");
+        successInput("fun exec(f: <(): Int>): Int {return f()}; fun one(): Int {return 1}; return exec(one)");
+        successInput("fun exec(x: Int, f: <(Int)>) {f(x)}");
+        successInput("fun exec(x: Int, f: <(Int): Int>): Int {return f(x)}");
+        successInput("fun exec(x: Int, f: <(Int): Int>): Int {return f(x)}; fun plusOne(x: Int): Int {return x + 1}; return exec(2, plusOne)");
+
+        failureInput("fun exec(f: <(): Int>): Int {return f()}; fun one(): String {return \"Hello\"}; return exec(one)");
+        failureInput("fun exec(x: Int, f: <(Int)>): Int {return f(x)}");
+        failureInput("fun exec(f: <(Int): Int>): Int {return f(0.5)}");
+
+        //
+        successInput("fun factory(): <(): Int> {fun one(): Int {return 1}; return one}");
+
+        failureInput("fun factory(): <(): Int> {fun one(): Int {return 0.5}; return one}");
+        failureInput("fun factory(): <(): Float> {fun one(): Int {return 1}; return one}");
+
+        //
+        successInput("fun factory(): <(): Int> {fun one(): Int {return 1}; return one}; return factory()()");
+        successInput("fun factory(): <(Int): Int> {fun one(x: Int): Int {return x}; return one}; return factory()(1)");
+
+        failureInput("fun factory(): <(): Int> {fun one(): Int {return 1}; return one}; return factory()()()");
+        failureInput("fun factory(): <(): Int> {fun one(x: Int): Int {return x}; return one}; return factory()(1)");
+        failureInput("fun factory(): <(Int): Int> {fun one(x: Int): Int {return 0.5}; return one}; return factory()(1)");
+
+        //
+        successInput("fun factory(x: Int): <(): Int> {fun plusOne(): Int {return x + 1}; return plusOne}; return factory(1)()");
+        successInput("fun factory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return factory(1)(2)");
+
+        failureInput("fun factory(x: Int): <(): Int> {fun plusOne(): Int {return y + 1}; return plusOne}; return factory(1)()");
+        failureInput("fun factory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return factory(1)(2.5)");
+
+        //
+        successInput(
+            "fun one(): Int {return 1};" +
+            "fun two(): Int {return 2};" +
+            "fun addFactory(f1: <(): Int>, f2: <(): Int>): Int {return f1() + f2()};" +
+            "return addFactory(one, two)");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testCPAndHOP() {
+        //
+        successInput(
+            "fun one(): Int {return 1};" +
+            "fun exec(f: <(): Int>): Int {return f()};" +
+            "return one -> exec");
+
+        //
+//        successInput(
+//            "fun timesTwo(a: Int[], l: Int): Int[] {var a_: Int[] = a; var i: Int = 0; while (i < l) {a_[i] = a[i] * 2; i = i + 1}; return a_};" +
+//            "return timesTwo([1, 2, 3], 3)");
     }
 
     // ---------------------------------------------------------------------------------------------

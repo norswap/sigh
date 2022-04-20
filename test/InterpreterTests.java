@@ -349,17 +349,6 @@ public final class InterpreterTests extends TestFixture {
     }
     
     // ---------------------------------------------------------------------------------------------
-    
-    @Test public void testHigherOrderFunctions()
-    {
-        check("fun inc(a: Int): Int {return a + 1}; fun apply(a: Int, f: Any): Int {return f(a)}; return apply(0, inc)", 1L);
-        check("fun add(a: Int, b:Int): Int {return a + b}; fun apply(a: Int, b: Int, f: Any): Int {return f(a, b)}; return apply(1, 1, add)", 2L);
-        check("fun factory(): Any {fun f(b: Int): Int {return 1 + b}; return f}; return factory()(0)", 1L);
-        check("fun factory(a: Int): Int {fun f(): Int {return a + 1}; return f()}; return factory(2)", 3L);
-
-        //check("fun factory(a: Int): Any {fun f(): Int {return a}; return f}; return factory(2)()", 2L);
-        //check("fun factory(a: Int): Any {fun f(b: Int): Int {return a + b}; return f}; return factory(2)(0)", 2L);
-    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -370,6 +359,22 @@ public final class InterpreterTests extends TestFixture {
         check("{fun halfOne (): Float {return 0.5}; fun addOne (x: Float): Float {return x + 1}; return halfOne() -> addOne}", 1.5d);
         check("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; fun timesTwo (x: Int): Int {return x * 2}; return one() -> addOne -> timesTwo}", 4L);
         check("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; fun timesTwo (x: Int): Int {return x * 2}; return one() -> timesTwo -> addOne}", 3L);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testHigherOrderFunctions() {
+        check("fun exec(f: <(): Int>): Int {return f()}; fun one(): Int {return 1}; return exec(one)", 1L);
+        check("fun exec(f: <(): Int>): Int {return f()}; fun one(): Int {return 1}; return exec(one)", 1L);
+
+        //check("fun addFactory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return addFactory(1)(2)", 3L);
+
+        check(
+            "fun one(): Int {return 1};" +
+            "fun two(): Int {return 2};" +
+            "fun add(f1: <(): Int>, f2: <(): Int>): Int {return f1() + f2()};" +
+            "return add(one, two)",
+            3L);
     }
 
     // ---------------------------------------------------------------------------------------------

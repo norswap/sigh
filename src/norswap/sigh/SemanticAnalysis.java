@@ -115,6 +115,7 @@ public final class SemanticAnalysis
         walker.register(ReferenceNode.class,            PRE_VISIT,  analysis::reference);
         walker.register(ConstructorNode.class,          PRE_VISIT,  analysis::constructor);
         walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analysis::arrayLiteral);
+        walker.register(FunTypeNode.class,              PRE_VISIT,  analysis::funType);
         walker.register(ParenthesizedNode.class,        PRE_VISIT,  analysis::parenthesized);
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
         walker.register(ArrayAccessNode.class,          PRE_VISIT,  analysis::arrayAccess);
@@ -315,6 +316,29 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void funType (FunTypeNode node)
+    {
+        Attribute[] dependencies = new Attribute[node.parametersTypes.size() + 1];
+        dependencies[0] = node.returnType.attr("value");
+        forEachIndexed(node.parametersTypes, (i, parametersTypes) ->
+            dependencies[i + 1] = parametersTypes.attr("value"));
+
+        R.rule(node, "value")
+            .using(dependencies)
+            .by(r -> {
+                Type returnType  = r.get(0);
+                Type[] paramTypes = new Type[node.parametersTypes.size()];
+                for (int i = 0; i < paramTypes.length; ++i)
+                    paramTypes[i] = r.get(i + 1);
+
+                r.set(0, new FunType(returnType, paramTypes)); // the type of the assignment is the left-side type
+            });
+
+        int toto = 0;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private void parenthesized (ParenthesizedNode node)
     {
         R.rule(node, "type")
@@ -408,35 +432,32 @@ public final class SemanticAnalysis
         .by(r -> {
             Type maybeFunType = r.get(0);
 
-            if (maybeFunType instanceof FunType) {
-            	FunType funType = cast(maybeFunType);
-                r.set(0, funType.returnType);
-
-                Type[] params = funType.paramTypes;
-                List<ExpressionNode> args = node.arguments;
-
-                if (params.length != args.size())
-                    r.errorFor(format("wrong number of arguments, expected %d but got %d",
-                            params.length, args.size()),
-                        node);
-
-                int checkedArgs = Math.min(params.length, args.size());
-
-                for (int i = 0; i < checkedArgs; ++i) {
-                    Type argType = r.get(i + 1);
-                    Type paramType = funType.paramTypes[i];
-                    if (!isAssignableTo(argType, paramType))
-                        r.errorFor(format(
-                                "incompatible argument provided for argument %d: expected %s but got %s",
-                                i, paramType, argType),
-                            node.arguments.get(i));
-                }
-            } else if(maybeFunType instanceof AnyType) {
-                r.set(0, AnyType.INSTANCE);
-            } else
-            {
-            	r.error("trying to call a non-function expression: " + node.function, node.function);
+            if (!(maybeFunType instanceof FunType)) {
+                r.error("trying to call a non-function expression: " + node.function, node.function);
                 return;
+            }
+
+            FunType funType = cast(maybeFunType);
+            r.set(0, funType.returnType);
+
+            Type[] params = funType.paramTypes;
+            List<ExpressionNode> args = node.arguments;
+
+            if (params.length != args.size())
+                r.errorFor(format("wrong number of arguments, expected %d but got %d",
+                        params.length, args.size()),
+                    node);
+
+            int checkedArgs = Math.min(params.length, args.size());
+
+            for (int i = 0; i < checkedArgs; ++i) {
+                Type argType = r.get(i + 1);
+                Type paramType = funType.paramTypes[i];
+                if (!isAssignableTo(argType, paramType))
+                    r.errorFor(format(
+                            "incompatible argument provided for argument %d: expected %s but got %s",
+                            i, paramType, argType),
+                        node.arguments.get(i));
             }
         });
     }
@@ -650,7 +671,9 @@ public final class SemanticAnalysis
      */
     private static boolean isAssignableTo (Type a, Type b)
     {
-    	if (a instanceof AnyType || b instanceof AnyType) return true;
+        if (a instanceof FunType && b instanceof FunType) return ((FunType) a).returnType.getClass().equals(((FunType) b).returnType.getClass());
+        else if(a instanceof FunType) return ((FunType) a).returnType.getClass().equals(b.getClass());
+        else if(b instanceof FunType) return a.getClass().equals(((FunType) b).getClass());
     	
         if (a instanceof VoidType || b instanceof VoidType)
             return false;
@@ -795,6 +818,7 @@ public final class SemanticAnalysis
             Type[] paramTypes = new Type[node.parameters.size()];
             for (int i = 0; i < paramTypes.length; ++i)
                 paramTypes[i] = r.get(i + 1);
+
             r.set(0, new FunType(r.get(0), paramTypes));
         });
 

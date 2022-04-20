@@ -1,4 +1,3 @@
-import jdk.nashorn.internal.ir.ExpressionStatement;
 import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
@@ -146,18 +145,6 @@ public class GrammarTests extends AutumnTestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testHigherOrderFunctions() {
-        rule = grammar.statement;
-
-        successExpect("fun f (x: Any): Int {return 1}",
-            new FunDeclarationNode(null, "f",
-                asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Any"))),
-                new SimpleTypeNode(null, "Int"),
-                new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     @Test public void testConcatenativeProgramming() {
         rule = grammar.statement;
 
@@ -181,6 +168,25 @@ public class GrammarTests extends AutumnTestFixture {
                         new FunCallNode(null,
                             new ReferenceNode(null, "addOne"),
                             asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))))));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testHigherOrderFunctions() {
+        rule = grammar.statement;
+
+        successExpect("fun f (x: <(Int) : Int>) {}",
+            new FunDeclarationNode(null, "f",
+                asList(new ParameterNode(null, "x", new FunTypeNode(null, new SimpleTypeNode(null, "Int"), asList(new SimpleTypeNode(null, "Int"))))),
+                new SimpleTypeNode(null, "Void"),
+                new BlockNode(null, asList())));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testLazyEvaluation() {
+        rule = grammar.statement;
+
     }
 
     // ---------------------------------------------------------------------------------------------
