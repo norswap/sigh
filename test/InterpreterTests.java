@@ -365,7 +365,8 @@ public final class InterpreterTests extends TestFixture {
 
     @Test public void testHigherOrderFunctions() {
         check("fun exec(f: <(): Int>): Int {return f()}; fun one(): Int {return 1}; return exec(one)", 1L);
-        check("fun exec(f: <(): Int>): Int {return f()}; fun one(): Int {return 1}; return exec(one)", 1L);
+
+        check("fun factory(x: Int): <(): Int> {fun plusOne(): Int {return x + 1}; return plusOne}; return factory(1)()", 1L);
 
         //check("fun addFactory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return addFactory(1)(2)", 3L);
 
