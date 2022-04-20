@@ -333,8 +333,6 @@ public final class SemanticAnalysis
 
                 r.set(0, new FunType(returnType, paramTypes)); // the type of the assignment is the left-side type
             });
-
-        int toto = 0;
     }
 
     // ---------------------------------------------------------------------------------------------

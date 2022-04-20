@@ -324,6 +324,24 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         failureInput("fun exec(f: <(Int): Int>): Int {return f(0.5)}");
 
         //
+        successInput(
+            "fun one(): Int {return 1};" +
+            "fun two(): Int {return 2};" +
+            "fun add(f1: <(): Int>, f2: <(): Int>): Int {return f1() + f2()};" +
+            "return add(one, two)");
+
+        //
+        successInput(
+            "fun lazyOne(): Int {return 1};" +
+            "fun lazyTwo(): Int {return 2};" +
+            "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> {fun f(): Int {return f1() + f2()}; return f};" +
+            "return lazyAdd(lazyOne, lazyTwo)()");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testFactoryFunctions() {
+        //
         successInput("fun factory(): <(): Int> {fun one(): Int {return 1}; return one}");
 
         failureInput("fun factory(): <(): Int> {fun one(): Int {return 0.5}; return one}");
@@ -343,28 +361,6 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         failureInput("fun factory(x: Int): <(): Int> {fun plusOne(): Int {return y + 1}; return plusOne}; return factory(1)()");
         failureInput("fun factory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return factory(1)(2.5)");
-
-        //
-        successInput(
-            "fun one(): Int {return 1};" +
-            "fun two(): Int {return 2};" +
-            "fun addFactory(f1: <(): Int>, f2: <(): Int>): Int {return f1() + f2()};" +
-            "return addFactory(one, two)");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Test public void testCPAndHOP() {
-        //
-        successInput(
-            "fun one(): Int {return 1};" +
-            "fun exec(f: <(): Int>): Int {return f()};" +
-            "return one -> exec");
-
-        //
-//        successInput(
-//            "fun timesTwo(a: Int[], l: Int): Int[] {var a_: Int[] = a; var i: Int = 0; while (i < l) {a_[i] = a[i] * 2; i = i + 1}; return a_};" +
-//            "return timesTwo([1, 2, 3], 3)");
     }
 
     // ---------------------------------------------------------------------------------------------

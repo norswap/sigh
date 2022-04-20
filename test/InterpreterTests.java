@@ -350,8 +350,6 @@ public final class InterpreterTests extends TestFixture {
     
     // ---------------------------------------------------------------------------------------------
 
-    // ---------------------------------------------------------------------------------------------
-
     @Test public void testConcatenativeProgramming()
     {
         check("{fun addOne (x: Int): Int {return x + 1}; return 1 -> addOne}", 2L);
@@ -365,17 +363,34 @@ public final class InterpreterTests extends TestFixture {
 
     @Test public void testHigherOrderFunctions() {
         check("fun exec(f: <(): Int>): Int {return f()}; fun one(): Int {return 1}; return exec(one)", 1L);
+    }
 
-        check("fun factory(x: Int): <(): Int> {fun plusOne(): Int {return x + 1}; return plusOne}; return factory(1)()", 1L);
+    // ---------------------------------------------------------------------------------------------
 
+    @Test public void testFactoryFunctions() {
+        //check("fun factory(x: Int): <(): Int> {fun plusOne(): Int {return x + 1}; return plusOne}; return factory(0)()", 1L);
         //check("fun addFactory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return addFactory(1)(2)", 3L);
 
-        check(
-            "fun one(): Int {return 1};" +
-            "fun two(): Int {return 2};" +
-            "fun add(f1: <(): Int>, f2: <(): Int>): Int {return f1() + f2()};" +
-            "return add(one, two)",
-            3L);
+//        check("fun lazyOne(): Int {return 1}; " +
+//            "fun lazyTwo(): Int {return 2}; " +
+//            "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> {fun f(): Int {return f1() + f2()}; return f}; " +
+//            " lazyAdd(lazyOne, lazyTwo)()", 3L);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testCombined() {
+        check("fun third(a: Int[]) : Int { return a[2]; };" +
+                    "return third([1, 2, 3])", 3L);
+
+        check("fun map(a: Int[], l: Int, f: <(Int): Int>): Int[] { var a_: Int[] = a; var i: Int = 0; while (i < l) {a_[i] = a[i] * 2; i = i + 1}; return a_ };" +
+                    "fun plusOne(x: Int): Int { return x + 1 };" +
+                    "return map([1, 2, 3], 3, plusOne)", new Object[]{2L, 4L, 6L});
+
+        check("fun map(a: Int[], l: Int, f: <(Int): Int>): Int[] { var a_: Int[] = a; var i: Int = 0; while (i < l) {a_[i] = a[i] * 2; i = i + 1}; return a_ };" +
+            "fun plusOne(x: Int): Int { return x + 1 };" +
+            "fun third(a: Int[]) : Int { return a[2]; };" +
+            "return map([1, 2, 3], 3, plusOne) -> third", 6L);
     }
 
     // ---------------------------------------------------------------------------------------------
