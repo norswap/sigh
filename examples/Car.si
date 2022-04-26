@@ -2,19 +2,19 @@ class Car {
     var brand: String
     var max_speed: Int
 
-    fun set_max_speed(speed: Int) {
+    meth set_max_speed(speed: Int) {
         max_speed = speed
     }
 
-    fun get_max_speed(): Int {
+    meth get_max_speed(): Int {
         return max_speed
     }
 
-    fun set_brand(name: String) {
+    meth set_brand(name: String) {
         brand = name
     }
 
-    fun get_brand(): String {
+    meth get_brand(): String {
         return brand
     }
 }

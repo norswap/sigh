@@ -135,6 +135,7 @@ public final class SemanticAnalysis
         walker.register(FieldDeclarationNode.class,     PRE_VISIT,  analysis::fieldDecl);
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
+        walker.register(ClassFunDeclarationNode.class,  PRE_VISIT,  analysis::classFunDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
         walker.register(ClassDeclarationNode.class,     PRE_VISIT,  analysis::classDecl);
 
@@ -882,6 +883,38 @@ public final class SemanticAnalysis
                 r.error("Missing return in function.", node);
             // NOTE: The returned value presence & type is checked in returnStmt().
         });
+    }
+
+    private void classFunDecl (ClassFunDeclarationNode node)
+    {
+        scope.declare(node.name, node);
+        scope = new Scope(node, scope);
+        /* TODO create a new node that correspond to a class to be able to put the scopes */
+        R.set(node, "scope", scope);
+
+        Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
+        dependencies[0] = node.returnType.attr("value");
+        forEachIndexed(node.parameters, (i, param) ->
+            dependencies[i + 1] = param.attr("type"));
+
+        R.rule(node, "type")
+            .using(dependencies)
+            .by (r -> {
+                Type[] paramTypes = new Type[node.parameters.size()];
+                for (int i = 0; i < paramTypes.length; ++i)
+                    paramTypes[i] = r.get(i + 1);
+                r.set(0, new FunType(r.get(0), paramTypes));
+            });
+
+        R.rule()
+            .using(node.block.attr("returns"), node.returnType.attr("value"))
+            .by(r -> {
+                boolean returns = r.get(0);
+                Type returnType = r.get(1);
+                if (!returns && !(returnType instanceof VoidType))
+                    r.error("Missing return in function.", node);
+                // NOTE: The returned value presence & type is checked in returnStmt().
+            });
     }
 
     // ---------------------------------------------------------------------------------------------

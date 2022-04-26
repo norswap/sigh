@@ -55,7 +55,7 @@ public class SighGrammar extends Grammar
 
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
-    public rule _meth            = reserved("meth");
+    public rule _meth           = reserved("meth");
     public rule _struct         = reserved("struct");
     public rule _class          = reserved("class");
     public rule _if             = reserved("if");
@@ -252,8 +252,9 @@ public class SighGrammar extends Grammar
         seq(COLON, type).or_push_null();
 
     public rule fun_decl =
-    seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
-        .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+        seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
+            .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+
     public rule class_fun_decl =
         seq(_meth, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
             .push($ -> new ClassFunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
@@ -273,7 +274,7 @@ public class SighGrammar extends Grammar
     /* A class can have a list of attributes (vars) followed by a list of methods (funs) */
     public rule class_body =
         seq(LBRACE, field_decl.at_least(0).as_list(FieldDeclarationNode.class),
-            fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
+            class_fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
 
     public rule struct_decl =
         seq(_struct, identifier, struct_body)
