@@ -274,19 +274,25 @@ public final class SemanticAnalysis
 
                 ClassDeclarationNode classDecl = (ClassDeclarationNode) decl;
 
-                Attribute[] dependencies = new Attribute[classDecl.functions.size() + 1];
+                Attribute[] dependencies = new Attribute[classDecl.attributes.size() +
+                                                            classDecl.functions.size() + 1];
                 dependencies[0] = decl.attr("declared");
-                forEachIndexed(classDecl.functions, (i, field) ->
-                    dependencies[i + 1] = field.attr("type"));
+                forEachIndexed(classDecl.attributes, (i, attribute) ->
+                    dependencies[i + 1] = attribute.attr("type"));
+                forEachIndexed(classDecl.functions, (i, function) ->
+                    dependencies[i + classDecl.attributes.size() + 1] = function.attr("type"));
 
                 R.rule(node, "type")
                     .using(dependencies)
                     .by(rr -> {
                         Type classType = rr.get(0);
-                        System.out.println("class is the follwinfg: " + classType);
+                        /* TODO: ici il faudra demander en argument du créateur les variables de la classe
+                           Note: le code ici dans la fonction fait ce qu'il faut actuellement pour des
+                            fonctions donc il faut changer pour avoir des variables à la place
+
                         Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
-                            .toArray(Type[]::new);
-                        rr.set(0, new FunType(classType, params));
+                            .toArray(Type[]::new);*/
+                        rr.set(0, new FunType(classType));
                     });
             });
     }
@@ -408,12 +414,24 @@ public final class SemanticAnalysis
             if (type instanceof ClassType) {
                 ClassDeclarationNode decl = ((ClassType) type).node;
 
-                for (DeclarationNode field: decl.functions)
+                // Deal with attributes
+                for (DeclarationNode attribute: decl.attributes)
                 {
-                    if (!field.name().equals(node.fieldName)) continue;
+                    if (!attribute.name().equals(node.fieldName)) continue;
 
                     R.rule(node, "type")
-                        .using(field, "type")
+                        .using(attribute, "type")
+                        .by(Rule::copyFirst);
+
+                    return;
+                }
+                // Deal with functions
+                for (DeclarationNode function: decl.functions)
+                {
+                    if (!function.name().equals(node.fieldName)) continue;
+
+                    R.rule(node, "type")
+                        .using(function, "type")
                         .by(Rule::copyFirst);
 
                     return;
@@ -838,6 +856,7 @@ public final class SemanticAnalysis
     {
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
+        /* TODO create a new node that correspond to a class to be able to put the scopes */
         R.set(node, "scope", scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];

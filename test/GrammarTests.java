@@ -107,6 +107,18 @@ public class GrammarTests extends AutumnTestFixture {
                 asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
                 new SimpleTypeNode(null, "Int"),
                 new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
+
+        // New test by group 10 to try a no parameter function
+        successExpect("fun f (): Int { return 1 }",
+            new FunDeclarationNode(null, "f", asList(),
+                new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, intlit(1))))));
+        // New test by group 10 to try a return String function
+        successExpect("fun f (): String { return \"Read carefully the output\" }",
+            new FunDeclarationNode(null, "f", asList(),
+                new SimpleTypeNode(null, "String"),
+                new BlockNode(null, asList(new ReturnNode(null,
+                    new StringLiteralNode(null, "Read carefully the output"))))));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -138,4 +150,52 @@ public class GrammarTests extends AutumnTestFixture {
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    @Test
+    public void testClassDeclarations() {
+        rule = grammar.statement;
+
+        // Test if the function is well parsed in the grammar
+        successExpect("class Car { fun f (x: Int): Int { return 1 } }",
+            new ClassDeclarationNode(null, "Car", asList(), asList(
+                new FunDeclarationNode(null, "f",
+                    asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                    new SimpleTypeNode(null, "Int"),
+                    new BlockNode(null, asList(new ReturnNode(null, intlit(1)))))
+        )));
+
+        // Test only with functions
+        successExpect("class Car { fun brand (): String { return \"Ferrari\" } fun speed (): Int { return 350 } }",
+            new ClassDeclarationNode(null, "Car", asList(), asList(
+                new FunDeclarationNode(null, "brand", asList(),
+                    new SimpleTypeNode(null, "String"),
+                    new BlockNode(null, asList(new ReturnNode(null, new StringLiteralNode(null, "Ferrari"))))),
+                new FunDeclarationNode(null, "speed", asList(),
+                    new SimpleTypeNode(null, "Int"),
+                    new BlockNode(null, asList(new ReturnNode(null, intlit(350)))))
+        )));
+
+        // Test only with attributes
+        successExpect("class Car { var brand: String var max_speed: Int }",
+            new ClassDeclarationNode(null, "Car", asList(
+                new FieldDeclarationNode(null, "brand", new SimpleTypeNode(null, "String")),
+                new FieldDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int"))
+            ), asList()));
+
+        // Test with attributes and functions, but no use of the attributes in the function
+        successExpect("class Car { var brand: String var max_speed: Int " +
+            "fun brand (): String { return \"Ferrari\" } fun speed (): Int { return 350 } }",
+            new ClassDeclarationNode(null, "Car", asList(
+                new FieldDeclarationNode(null, "brand", new SimpleTypeNode(null, "String")),
+                new FieldDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int"))
+            ), asList(
+                new FunDeclarationNode(null, "brand", asList(),
+                    new SimpleTypeNode(null, "String"),
+                    new BlockNode(null, asList(new ReturnNode(null, new StringLiteralNode(null, "Ferrari"))))),
+                new FunDeclarationNode(null, "speed", asList(),
+                    new SimpleTypeNode(null, "Int"),
+                    new BlockNode(null, asList(new ReturnNode(null, intlit(350)))))
+            )));
+
+    }
 }

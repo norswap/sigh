@@ -485,9 +485,13 @@ public final class Interpreter
 
     private HashMap<String, Object> buildClass (ClassDeclarationNode node, Object[] args)
     {
+        System.out.println("Starting to build a class");
         HashMap<String, Object> classs = new HashMap<>();
+        for (int i = 0; i < node.attributes.size(); ++i)
+            classs.put(node.attributes.get(i).name, node.attributes.get(i));
         for (int i = 0; i < node.functions.size(); ++i)
-            classs.put(node.functions.get(i).name, args[i]);
+            classs.put(node.functions.get(i).name, node.functions.get(i));
+        System.out.println("Result of the building of a class" + classs);
         return classs;
     }
 
