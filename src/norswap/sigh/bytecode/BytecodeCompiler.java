@@ -869,7 +869,7 @@ public class BytecodeCompiler
         init.visitVarInsn(ALOAD, 0); // this
         init.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
         int i = 1;
-        for (FunDeclarationNode fun: node.functions) {
+        for (ClassFunDeclarationNode fun: node.functions) {
             init.visitVarInsn(ALOAD, 0);
             org.objectweb.asm.Type type = nodeAsmType(fun);
             init.visitVarInsn(type.getOpcode(ILOAD), i);
@@ -885,6 +885,9 @@ public class BytecodeCompiler
         classs = null;
         return null;
     }
+
+
+
 
     // ---------------------------------------------------------------------------------------------
 

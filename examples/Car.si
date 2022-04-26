@@ -13,7 +13,6 @@ class Car {
         max_speed: Int
     }
 }
-
 var brand: String = "Ferrari"
 var speed: Int = 350
 

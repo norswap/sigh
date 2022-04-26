@@ -55,6 +55,7 @@ public class SighGrammar extends Grammar
 
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
+    public rule _meth            = reserved("meth");
     public rule _struct         = reserved("struct");
     public rule _class          = reserved("class");
     public rule _if             = reserved("if");
@@ -251,8 +252,11 @@ public class SighGrammar extends Grammar
         seq(COLON, type).or_push_null();
 
     public rule fun_decl =
-        seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
+    seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
         .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+    public rule class_fun_decl =
+        seq(_meth, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
+            .push($ -> new ClassFunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
 
     public rule field_decl =
         seq(_var, identifier, COLON, type)
