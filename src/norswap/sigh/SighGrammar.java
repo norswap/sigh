@@ -221,6 +221,7 @@ public class SighGrammar extends Grammar
         this.block,
         this.var_decl,
         this.fun_decl,
+        this.class_fun_decl,
         this.struct_decl,
         this.class_decl,
         this.if_stmt,
@@ -266,19 +267,13 @@ public class SighGrammar extends Grammar
     public rule struct_body =
         seq(LBRACE, field_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
 
-    /** TODO group 10
-     * Here we should add the fact that inside the braces, we can in fact declare fields like
-     * in a struct, but we can also define functions and maybe a constructor or some other things
-     * */
-
-    /* A class can have a list of attributes (vars) followed by a list of methods (funs) */
-    public rule class_body =
-        seq(LBRACE, field_decl.at_least(0).as_list(FieldDeclarationNode.class),
-            class_fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
-
     public rule struct_decl =
         seq(_struct, identifier, struct_body)
-        .push($ -> new StructDeclarationNode($.span(), $.$[0], $.$[1]));
+            .push($ -> new StructDeclarationNode($.span(), $.$[0], $.$[1]));
+
+    public rule class_body =
+        seq(LBRACE, field_decl.at_least(0).as_list(DeclarationNode.class),
+            class_fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
 
     public rule class_decl =
         seq(_class, identifier, class_body)

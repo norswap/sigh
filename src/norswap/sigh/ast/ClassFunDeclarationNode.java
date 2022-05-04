@@ -34,4 +34,5 @@ public class ClassFunDeclarationNode extends DeclarationNode {
     @Override public String declaredThing () {
         return "Class function";
     }
+
 }

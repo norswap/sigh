@@ -1,2 +1,7 @@
-class S{}
-print(""+S)
+struct Test {
+    var a: Int
+}
+
+var test: Test = $Test(12122121)
+
+print("" + test.a)

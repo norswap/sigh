@@ -120,6 +120,7 @@ public final class SemanticAnalysis
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
         walker.register(ArrayAccessNode.class,          PRE_VISIT,  analysis::arrayAccess);
         walker.register(FunCallNode.class,              PRE_VISIT,  analysis::funCall);
+        // TODO CLASS FUN CALL NODE
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
         walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analysis::binaryExpression);
         walker.register(AssignmentNode.class,           PRE_VISIT,  analysis::assignment);
@@ -251,6 +252,7 @@ public final class SemanticAnalysis
                         Type structType = rr.get(0);
                         Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
                             .toArray(Type[]::new);
+                        System.out.println(Arrays.toString(params));
                         rr.set(0, new FunType(structType, params));
                     });
             });
@@ -287,13 +289,14 @@ public final class SemanticAnalysis
                     .using(dependencies)
                     .by(rr -> {
                         Type classType = rr.get(0);
-                        /* TODO: ici il faudra demander en argument du créateur les variables de la classe
+                        /* Ici on peut éventuellement demander en argument du créateur les variables de la classe
                            Note: le code ici dans la fonction fait ce qu'il faut actuellement pour des
-                            fonctions donc il faut changer pour avoir des variables à la place
+                            fonctions donc il faut changer pour avoir des variables à la place */
 
-                        Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
+/*                        Type[] params = IntStream.range(1, classDecl.attributes.size()+1).<Type>mapToObj(rr::get)
                             .toArray(Type[]::new);*/
-                        rr.set(0, new FunType(classType));
+                        //System.out.println(Arrays.toString(params));
+                        rr.set(0, new FunType(classType/*, params*/));
                     });
             });
     }
@@ -857,7 +860,6 @@ public final class SemanticAnalysis
     {
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
-        /* TODO create a new node that correspond to a class to be able to put the scopes */
         R.set(node, "scope", scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
@@ -889,8 +891,11 @@ public final class SemanticAnalysis
     {
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
-        /* TODO create a new node that correspond to a class to be able to put the scopes */
         R.set(node, "scope", scope);
+        // TODO Add all variables from the class in the scope here
+        System.out.println("This is the scope: " + scope);
+//        DeclarationContext context = scope.lookup(node.);
+//        System.out.println(context.scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
         dependencies[0] = node.returnType.attr("value");
@@ -927,6 +932,9 @@ public final class SemanticAnalysis
 
     private void classDecl (ClassDeclarationNode node) {
         scope.declare(node.name, node);
+        for (int i = 0; i < node.attributes.size(); i++) {
+            scope.declare(node.attributes.get(i).name, node.attributes.get(i));
+        }
         R.set(node, "type", TypeType.INSTANCE);
         R.set(node, "declared", new ClassType(node));
     }
