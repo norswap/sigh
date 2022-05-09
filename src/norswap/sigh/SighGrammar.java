@@ -54,6 +54,8 @@ public class SighGrammar extends Grammar
     public rule DOLLAR          = word("$");
     public rule COMMA           = word(",");
 
+    public rule AT              = word("@");
+
     public rule _var            = reserved("var");
     public rule _template       = reserved("template");
     public rule _fun            = reserved("fun");
@@ -210,6 +212,10 @@ public class SighGrammar extends Grammar
             $ -> new AssignmentNode($.span(), $.$[0], $.$[1]));
 
     public rule expression = seq(assignment_expression);
+
+    public rule dot_prod_expr =
+        seq(array,AT,array)
+            .push($ -> new DotPrdExpression($.span(), $.$[0], $.$[2]));
 
     public rule expression_stmt =
         expression
