@@ -352,7 +352,7 @@ public class GrammarTests extends AutumnTestFixture {
     }
     @Test
     public void testdotprod () {
-        successExpect("[1,2,3] @ [4,5,6]", new DotPrdExpression(null, new ArrayLiteralNode(null, asList(intlit(1), intlit(2), intlit(3))), new ArrayLiteralNode(null, asList(intlit(4), intlit(5), intlit(6)))));
+        successExpect("[1,2,4] @ [4,5,7]", new DotPrdExpression(null, new ArrayLiteralNode(null, asList(intlit(1), intlit(2), intlit(3))), new ArrayLiteralNode(null, asList(intlit(4), intlit(5), intlit(6)))));
 
     }
 }
