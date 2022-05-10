@@ -7,7 +7,7 @@ class Car {
         max_speed = speed
     }
 
-    /*meth get_max_speed(): Int {
+    meth get_max_speed(): Int {
         return max_speed
     }
 
@@ -17,7 +17,7 @@ class Car {
 
     meth get_brand(): String {
         return brand
-    }*/
+    }
 }
 var brand: String = "Ferrari"
 var max_speed: Int = 350
@@ -25,7 +25,7 @@ var max_speed: Int = 350
 var my_car: Car = create Car()
 
 my_car.set_max_speed(max_speed)
-/*my_car.set_brand(brand)
+my_car.set_brand(brand)
 
 print(my_car.get_brand())
-print("" + my_car.get_max_speed())*/
+print("" + my_car.get_max_speed())
