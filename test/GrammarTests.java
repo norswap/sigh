@@ -155,6 +155,47 @@ public class GrammarTests extends AutumnTestFixture {
     public void testClassDeclarations() {
         rule = grammar.statement;
 
+        String input1 = "" +
+            "class Car {\n" +
+            "    var brand: String\n" +
+            "    var max_speed: Int\n" +
+            "    var test: Bool\n" +
+            "\n" +
+            "    meth set_max_speed(speed: Int) {\n" +
+            "        max_speed = speed\n" +
+            "    }\n" +
+            "\n" +
+            "    meth get_max_speed(): Int {\n" +
+            "        return max_speed\n" +
+            "    }\n" +
+            "\n" +
+            "    meth set_brand(name: String) {\n" +
+            "        brand = name\n" +
+            "    }\n" +
+            "\n" +
+            "    meth get_brand(): String {\n" +
+            "        return brand\n" +
+            "    }\n" +
+            "}";
+
+        SimpleTypeNode string = new SimpleTypeNode(null, "String");
+        SimpleTypeNode integer = new SimpleTypeNode(null, "Int");
+        SimpleTypeNode bool = new SimpleTypeNode(null, "Bool");
+        SimpleTypeNode none = new SimpleTypeNode(null, "null");
+
+        successExpect(input1,
+            new ClassDeclarationNode(null, "Car", asList(
+                new FieldDeclarationNode(null, "brand", string),
+                    new FieldDeclarationNode(null, "max_speed", integer),
+                    new FieldDeclarationNode(null, "test", bool)
+            ), asList(
+                new ClassFunDeclarationNode(null, "set_max_speed",
+                    asList(new ParameterNode(null, "speed", integer)), none,
+                    new BlockNode(null, new AssignmentNode(null,
+                        new FieldDeclarationNode(null, "brand", string),
+                        new ParameterNode(null, "speed", integer))))
+            )));
+
         // Test if the function is well parsed in the grammar
         successExpect("class Car { fun f (x: Int): Int { return 1 } }",
             new ClassDeclarationNode(null, "Car", asList(), asList(
