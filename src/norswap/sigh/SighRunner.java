@@ -24,8 +24,8 @@ public final class SighRunner
     private final SighGrammar grammar = new SighGrammar();
 
     private final ParseOptions parseOptions = ParseOptions.builder()
-            .wellFormednessCheck(false)
-            .get();
+        .wellFormednessCheck(false)
+        .get();
 
     // ---------------------------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ public final class SighRunner
                 System.err.println(error);
             }
             String tree = AttributeTreeFormatter.format(root, reactor,
-                    new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT));
+                new ReflectiveFieldWalker<>(SighNode.class, PRE_VISIT, POST_VISIT));
             System.err.println(tree);
             throw new AssertionError("semantic errors");
         }

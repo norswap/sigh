@@ -2,6 +2,10 @@ package norswap.sigh;
 
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
+import norswap.utils.Util;
+import org.objectweb.asm.xml.ASMContentHandler$Rule;
+
+import java.util.Objects;
 
 import static norswap.sigh.ast.UnaryOperator.NOT;
 
@@ -50,31 +54,32 @@ public class SighGrammar extends Grammar
     public rule BANG            = word("!");
     public rule DOT             = word(".");
     public rule DOLLAR          = word("$");
-    public rule CREATE          = word("create");
     public rule COMMA           = word(",");
+    public rule CREATE          = word("create");
 
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
-    public rule _meth           = reserved("meth");
     public rule _struct         = reserved("struct");
-    public rule _class          = reserved("class");
     public rule _if             = reserved("if");
     public rule _else           = reserved("else");
     public rule _while          = reserved("while");
     public rule _return         = reserved("return");
+    public rule _box            = reserved("box");
+    public rule _attr           = reserved("attr");
+    public rule _meth           = reserved("meth");
 
     public rule number =
         seq(opt('-'), choice('0', digit.at_least(1)));
 
     public rule integer =
         number
-        .push($ -> new IntLiteralNode($.span(), Long.parseLong($.str())))
-        .word();
+            .push($ -> new IntLiteralNode($.span(), Long.parseLong($.str())))
+            .word();
 
     public rule floating =
         seq(number, '.', digit.at_least(1))
-        .push($ -> new FloatLiteralNode($.span(), Double.parseDouble($.str())))
-        .word();
+            .push($ -> new FloatLiteralNode($.span(), Double.parseDouble($.str())))
+            .word();
 
     public rule string_char = choice(
         seq(set('"', '\\').not(), any),
@@ -82,50 +87,45 @@ public class SighGrammar extends Grammar
 
     public rule string_content =
         string_char.at_least(0)
-        .push($ -> $.str());
+            .push($ -> $.str());
 
     public rule string =
         seq('"', string_content, '"')
-        .push($ -> new StringLiteralNode($.span(), $.$[0]))
-        .word();
+            .push($ -> new StringLiteralNode($.span(), $.$[0]))
+            .word();
 
     public rule identifier =
         identifier(seq(choice(alpha, '_'), id_part.at_least(0)))
-        .push($ -> $.str());
-    
+            .push($ -> $.str());
+
     // ==== SYNTACTIC =========================================================
-    
+
     public rule reference =
         identifier
-        .push($ -> new ReferenceNode($.span(), $.$[0]));
+            .push($ -> new ReferenceNode($.span(), $.$[0]));
 
     public rule constructor =
         seq(DOLLAR, reference)
-        .push($ -> new ConstructorNode($.span(), $.$[0]));
+            .push($ -> new ConstructorNode($.span(), $.$[0]));
 
-    public rule class_constructor =
-        seq(CREATE, reference)
-            .push($ -> new ClassConstructorNode($.span(), $.$[0]));
-    
     public rule simple_type =
         identifier
-        .push($ -> new SimpleTypeNode($.span(), $.$[0]));
+            .push($ -> new SimpleTypeNode($.span(), $.$[0]));
 
     public rule paren_expression = lazy(() ->
         seq(LPAREN, this.expression, RPAREN)
-        .push($ -> new ParenthesizedNode($.span(), $.$[0])));
+            .push($ -> new ParenthesizedNode($.span(), $.$[0])));
 
     public rule expressions = lazy(() ->
         this.expression.sep(0, COMMA)
-        .as_list(ExpressionNode.class));
+            .as_list(ExpressionNode.class));
 
     public rule array =
         seq(LSQUARE, expressions, RSQUARE)
-        .push($ -> new ArrayLiteralNode($.span(), $.$[0]));
+            .push($ -> new ArrayLiteralNode($.span(), $.$[0]));
 
     public rule basic_expression = choice(
         constructor,
-        class_constructor,
         reference,
         floating,
         integer,
@@ -202,12 +202,12 @@ public class SighGrammar extends Grammar
 
     public rule expression_stmt =
         expression
-        .filter($ -> {
-            if (!($.$[0] instanceof AssignmentNode || $.$[0] instanceof FunCallNode))
-                return false;
-            $.push(new ExpressionStatementNode($.span(), $.$[0]));
-            return true;
-        });
+            .filter($ -> {
+                if (!($.$[0] instanceof AssignmentNode || $.$[0] instanceof FunCallNode))
+                    return false;
+                $.push(new ExpressionStatementNode($.span(), $.$[0]));
+                return true;
+            });
 
     public rule array_type = left_expression()
         .left(simple_type)
@@ -221,33 +221,32 @@ public class SighGrammar extends Grammar
         this.block,
         this.var_decl,
         this.fun_decl,
-        this.class_fun_decl,
         this.struct_decl,
-        this.class_decl,
         this.if_stmt,
         this.while_stmt,
         this.return_stmt,
-        this.expression_stmt));
+        this.expression_stmt,
+        this.box_decl));
 
     public rule statements =
         statement.at_least(0)
-        .as_list(StatementNode.class);
+            .as_list(StatementNode.class);
 
     public rule block =
         seq(LBRACE, statements, RBRACE)
-        .push($ -> new BlockNode($.span(), $.$[0]));
+            .push($ -> new BlockNode($.span(), $.$[0]));
 
     public rule var_decl =
         seq(_var, identifier, COLON, type, EQUALS, expression)
-        .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
+            .push($ -> new VarDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule parameter =
         seq(identifier, COLON, type)
-        .push($ -> new ParameterNode($.span(), $.$[0], $.$[1]));
+            .push($ -> new ParameterNode($.span(), $.$[0], $.$[1]));
 
     public rule parameters =
         parameter.sep(0, COMMA)
-        .as_list(ParameterNode.class);
+            .as_list(ParameterNode.class);
 
     public rule maybe_return_type =
         seq(COLON, type).or_push_null();
@@ -256,13 +255,9 @@ public class SighGrammar extends Grammar
         seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
             .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
 
-    public rule class_fun_decl =
-        seq(_meth, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
-            .push($ -> new ClassFunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
-
     public rule field_decl =
         seq(_var, identifier, COLON, type)
-        .push($ -> new FieldDeclarationNode($.span(), $.$[0], $.$[1]));
+            .push($ -> new FieldDeclarationNode($.span(), $.$[0], $.$[1]));
 
     public rule struct_body =
         seq(LBRACE, field_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
@@ -271,30 +266,38 @@ public class SighGrammar extends Grammar
         seq(_struct, identifier, struct_body)
             .push($ -> new StructDeclarationNode($.span(), $.$[0], $.$[1]));
 
-    public rule class_body =
-        seq(LBRACE, field_decl.at_least(0).as_list(DeclarationNode.class),
-            class_fun_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
-
-    public rule class_decl =
-        seq(_class, identifier, class_body)
-        .push($ -> new ClassDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
-
     public rule if_stmt =
         seq(_if, expression, statement, seq(_else, statement).or_push_null())
-        .push($ -> new IfNode($.span(), $.$[0], $.$[1], $.$[2]));
+            .push($ -> new IfNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     public rule while_stmt =
         seq(_while, expression, statement)
-        .push($ -> new WhileNode($.span(), $.$[0], $.$[1]));
+            .push($ -> new WhileNode($.span(), $.$[0], $.$[1]));
 
     public rule return_stmt =
         seq(_return, expression.or_push_null())
-        .push($ -> new ReturnNode($.span(), $.$[0]));
+            .push($ -> new ReturnNode($.span(), $.$[0]));
 
     public rule root =
         seq(ws, statement.at_least(1))
-        .as_list(StatementNode.class)
-        .push($ -> new RootNode($.span(), $.$[0]));
+            .as_list(StatementNode.class)
+            .push($ -> new RootNode($.span(), $.$[0]));
+
+    public rule attribute_decl =
+        seq(_attr, identifier, COLON, type)
+            .push($ -> new AttributeDeclarationNode($.span(), $.$[0], $.$[1]));
+
+    public rule method_decl =
+        seq(_meth, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
+            .push($ -> new MethodDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+
+    public rule box_body =
+        seq(LBRACE, attribute_decl.at_least(0).as_list(DeclarationNode.class),
+            method_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
+
+    public rule box_decl =
+        seq(_box, identifier, box_body)
+            .push($ -> new BoxDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
 
     @Override public rule root () {
         return root;

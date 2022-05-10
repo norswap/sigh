@@ -260,7 +260,7 @@ public class BytecodeTests
 
     private final String makePair =
         "struct Pair { var x: Int ; var y: Float }" +
-        "var x: Pair = $Pair(1, 2.0) ;";
+            "var x: Pair = $Pair(1, 2.0) ;";
 
     @Test public void testStructs() {
         check(makePair + "print(\"\" + x.x + \":\" + x.y)", "1:2.0");

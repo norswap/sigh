@@ -28,17 +28,9 @@ public final class CompilationResult
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * The generated classes corresponding to structures defined in the source unit.
-     */
-    public final List<GeneratedClass> classes;
-
-    // ---------------------------------------------------------------------------------------------
-
-    public CompilationResult (GeneratedClass mainClass, List<GeneratedClass> structures, List<GeneratedClass> classes) {
+    public CompilationResult (GeneratedClass mainClass, List<GeneratedClass> structures) {
         this.mainClass = mainClass;
         this.structures = structures;
-        this.classes = classes;
     }
 
     // ---------------------------------------------------------------------------------------------

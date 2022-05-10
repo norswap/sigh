@@ -201,7 +201,7 @@ public final class InterpreterTests extends TestFixture {
         checkExpr("\"hi\" != \"hi2\"", true);
         checkExpr("[1] != [1]", true);
 
-         // test short circuit
+        // test short circuit
         checkExpr("true || print(\"x\") == \"y\"", true, "");
         checkExpr("false && print(\"x\") == \"y\"", false, "");
     }
@@ -237,8 +237,8 @@ public final class InterpreterTests extends TestFixture {
 
         check(
             "var x: Int = 1;" +
-            "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
-            "print(\"\" + x)",
+                "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
+                "print(\"\" + x)",
             null, "1\n2\n1\n");
     }
 
@@ -246,7 +246,6 @@ public final class InterpreterTests extends TestFixture {
 
     @Test
     public void testCalls () {
-        rule = grammar.root;
         check(
             "fun add (a: Int, b: Int): Int { return a + b } " +
                 "return add(4, 7)",
@@ -347,47 +346,6 @@ public final class InterpreterTests extends TestFixture {
     @Test public void testUnconditionalReturn()
     {
         check("fun f(): Int { if (true) return 1 else return 2 } ; return f()", 1L);
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Test
-    public void testTypeAsValuesClass () {
-
-        // TODO: those test currently fail, they are commented to pass the INGInious task
-        // TODO: here we cannot find why this does not return C
-        // In fact the return value is "ClassDeclaration(class C)" instead
-        // We checked all parts were the structs are defined and did class the same way
-        // However, nothing from what we understood and changed managed to provide a solution
-        //check("class C{} ; return \"\"+ C", "C");
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    @Test
-    public void testClassCalls () {
-        rule = grammar.root;
-
-        // Test that the return of an empty class is empty
-        HashMap<String, Object> emptyClass = new HashMap<>();
-        check("class Car {}" +
-            "return create Car()", emptyClass);
-
-        // Use function
-        check("class Car { fun brand (): String { return \"Ferrari\" } }" +
-            "var car: Car = create Car() return car.brand()", "Ferrari");
-
-        // Use attributes
-        check("class Car { var brand: String }" +
-            "var car: Car = create Car()" +
-            "car.brand = \"Ferrari\"" +
-            "return car.brand", "Ferrari");
-
-        // Use parameters from a function
-        check("class Car { var brand: String " +
-            "fun get_param(param: Int): Int { return param } }" +
-            "var car: Car = create Car()" +
-            "return car.get_param(5)", 5L);
     }
 
     // ---------------------------------------------------------------------------------------------

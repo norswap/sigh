@@ -114,16 +114,15 @@ public final class SemanticAnalysis
         walker.register(StringLiteralNode.class,        PRE_VISIT,  analysis::stringLiteral);
         walker.register(ReferenceNode.class,            PRE_VISIT,  analysis::reference);
         walker.register(ConstructorNode.class,          PRE_VISIT,  analysis::constructor);
-        walker.register(ClassConstructorNode.class,     PRE_VISIT,  analysis::classConstructor);
         walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analysis::arrayLiteral);
         walker.register(ParenthesizedNode.class,        PRE_VISIT,  analysis::parenthesized);
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
         walker.register(ArrayAccessNode.class,          PRE_VISIT,  analysis::arrayAccess);
         walker.register(FunCallNode.class,              PRE_VISIT,  analysis::funCall);
-        // TODO CLASS FUN CALL NODE
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
         walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analysis::binaryExpression);
         walker.register(AssignmentNode.class,           PRE_VISIT,  analysis::assignment);
+        walker.register(BoxConstructorNode.class,       PRE_VISIT,  analysis::boxConstructor);
 
         // types
         walker.register(SimpleTypeNode.class,           PRE_VISIT,  analysis::simpleType);
@@ -136,9 +135,7 @@ public final class SemanticAnalysis
         walker.register(FieldDeclarationNode.class,     PRE_VISIT,  analysis::fieldDecl);
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
-        walker.register(ClassFunDeclarationNode.class,  PRE_VISIT,  analysis::classFunDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
-        walker.register(ClassDeclarationNode.class,     PRE_VISIT,  analysis::classDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, analysis::popScope);
         walker.register(BlockNode.class,                POST_VISIT, analysis::popScope);
@@ -192,34 +189,34 @@ public final class SemanticAnalysis
             R.set(node, "scope", maybeCtx.scope);
 
             R.rule(node, "type")
-            .using(maybeCtx.declaration, "type")
-            .by(Rule::copyFirst);
+                .using(maybeCtx.declaration, "type")
+                .by(Rule::copyFirst);
             return;
         }
 
         // Re-lookup after the scopes have been built.
         R.rule(node.attr("decl"), node.attr("scope"))
-        .by(r -> {
-            DeclarationContext ctx = scope.lookup(node.name);
-            DeclarationNode decl = ctx == null ? null : ctx.declaration;
+            .by(r -> {
+                DeclarationContext ctx = scope.lookup(node.name);
+                DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
-            if (ctx == null) {
-                r.errorFor("Could not resolve: " + node.name,
-                    node, node.attr("decl"), node.attr("scope"), node.attr("type"));
-            }
-            else {
-                r.set(node, "scope", ctx.scope);
-                r.set(node, "decl", decl);
+                if (ctx == null) {
+                    r.errorFor("Could not resolve: " + node.name,
+                        node, node.attr("decl"), node.attr("scope"), node.attr("type"));
+                }
+                else {
+                    r.set(node, "scope", ctx.scope);
+                    r.set(node, "decl", decl);
 
-                if (decl instanceof VarDeclarationNode)
-                    r.errorFor("Variable used before declaration: " + node.name,
-                        node, node.attr("type"));
-                else
-                    R.rule(node, "type")
-                    .using(decl, "type")
-                    .by(Rule::copyFirst);
-            }
-        });
+                    if (decl instanceof VarDeclarationNode)
+                        r.errorFor("Variable used before declaration: " + node.name,
+                            node, node.attr("type"));
+                    else
+                        R.rule(node, "type")
+                            .using(decl, "type")
+                            .by(Rule::copyFirst);
+                }
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -252,7 +249,6 @@ public final class SemanticAnalysis
                         Type structType = rr.get(0);
                         Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
                             .toArray(Type[]::new);
-                        System.out.println(Arrays.toString(params));
                         rr.set(0, new FunType(structType, params));
                     });
             });
@@ -260,43 +256,39 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
-    private void classConstructor (ClassConstructorNode node)
+    private void boxConstructor (BoxConstructorNode node)
     {
         R.rule()
             .using(node.ref, "decl")
             .by(r -> {
                 DeclarationNode decl = r.get(0);
 
-                if (!(decl instanceof ClassDeclarationNode)) {
+                if (!(decl instanceof BoxDeclarationNode)) {
                     String description =
-                        "Applying the constructor operator (create) to non-class reference for: "
+                        "Applying the constructor operator (create) to non-boc reference for: "
                             + decl;
                     r.errorFor(description, node, node.attr("type"));
                     return;
                 }
 
-                ClassDeclarationNode classDecl = (ClassDeclarationNode) decl;
+                BoxDeclarationNode boxDecl = (BoxDeclarationNode) decl;
 
-                Attribute[] dependencies = new Attribute[classDecl.attributes.size() +
-                                                            classDecl.functions.size() + 1];
+                int nAttr = boxDecl.attributes.size();
+                int nMeth = boxDecl.methods.size();
+                Attribute[] dependencies = new Attribute[nAttr + nMeth];
                 dependencies[0] = decl.attr("declared");
-                forEachIndexed(classDecl.attributes, (i, attribute) ->
+                forEachIndexed(boxDecl.attributes, (i, attribute) ->
                     dependencies[i + 1] = attribute.attr("type"));
-                forEachIndexed(classDecl.functions, (i, function) ->
-                    dependencies[i + classDecl.attributes.size() + 1] = function.attr("type"));
+                forEachIndexed(boxDecl.methods, (i, method) ->
+                    dependencies[nAttr + i + 1] = method.attr("type"));
 
                 R.rule(node, "type")
                     .using(dependencies)
                     .by(rr -> {
-                        Type classType = rr.get(0);
-                        /* Ici on peut éventuellement demander en argument du créateur les variables de la classe
-                           Note: le code ici dans la fonction fait ce qu'il faut actuellement pour des
-                            fonctions donc il faut changer pour avoir des variables à la place */
-
-/*                        Type[] params = IntStream.range(1, classDecl.attributes.size()+1).<Type>mapToObj(rr::get)
-                            .toArray(Type[]::new);*/
-                        //System.out.println(Arrays.toString(params));
-                        rr.set(0, new FunType(classType/*, params*/));
+                        Type boxType = rr.get(0);
+                        Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
+                            .toArray(Type[]::new);
+                        rr.set(0, new FunType(boxType));
                     });
             });
     }
@@ -312,15 +304,15 @@ public final class SemanticAnalysis
 
             if (context instanceof VarDeclarationNode)
                 R.rule(node, "type")
-                .using(context, "type")
-                .by(Rule::copyFirst);
+                    .using(context, "type")
+                    .by(Rule::copyFirst);
             else if (context instanceof FunCallNode) {
                 R.rule(node, "type")
-                .using(((FunCallNode) context).function.attr("type"), node.attr("index"))
-                .by(r -> {
-                    FunType funType = r.get(0);
-                    r.set(0, funType.paramTypes[(int) r.get(1)]);
-                });
+                    .using(((FunCallNode) context).function.attr("type"), node.attr("index"))
+                    .by(r -> {
+                        FunType funType = r.get(0);
+                        r.set(0, funType.paramTypes[(int) r.get(1)]);
+                    });
             }
             return;
         }
@@ -329,36 +321,36 @@ public final class SemanticAnalysis
             node.components.stream().map(it -> it.attr("type")).toArray(Attribute[]::new);
 
         R.rule(node, "type")
-        .using(dependencies)
-        .by(r -> {
-            Type[] types = IntStream.range(0, dependencies.length).<Type>mapToObj(r::get)
+            .using(dependencies)
+            .by(r -> {
+                Type[] types = IntStream.range(0, dependencies.length).<Type>mapToObj(r::get)
                     .distinct().toArray(Type[]::new);
 
-            int i = 0;
-            Type supertype = null;
-            for (Type type: types) {
-                if (type instanceof VoidType)
-                    // We report the error, but compute a type for the array from the other elements.
-                    r.errorFor("Void-valued expression in array literal", node.components.get(i));
-                else if (supertype == null)
-                    supertype = type;
-                else {
-                    supertype = commonSupertype(supertype, type);
-                    if (supertype == null) {
-                        r.error("Could not find common supertype in array literal.", node);
-                        return;
+                int i = 0;
+                Type supertype = null;
+                for (Type type: types) {
+                    if (type instanceof VoidType)
+                        // We report the error, but compute a type for the array from the other elements.
+                        r.errorFor("Void-valued expression in array literal", node.components.get(i));
+                    else if (supertype == null)
+                        supertype = type;
+                    else {
+                        supertype = commonSupertype(supertype, type);
+                        if (supertype == null) {
+                            r.error("Could not find common supertype in array literal.", node);
+                            return;
+                        }
                     }
+                    ++i;
                 }
-                ++i;
-            }
 
-            if (supertype == null)
-                r.error(
-                    "Could not find common supertype in array literal: all members have Void type.",
-                    node);
-            else
-                r.set(0, new ArrayType(supertype));
-        });
+                if (supertype == null)
+                    r.error(
+                        "Could not find common supertype in array literal: all members have Void type.",
+                        node);
+                else
+                    r.set(0, new ArrayType(supertype));
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -366,8 +358,8 @@ public final class SemanticAnalysis
     private void parenthesized (ParenthesizedNode node)
     {
         R.rule(node, "type")
-        .using(node.expression, "type")
-        .by(Rule::copyFirst);
+            .using(node.expression, "type")
+            .by(Rule::copyFirst);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -375,28 +367,27 @@ public final class SemanticAnalysis
     private void fieldAccess (FieldAccessNode node)
     {
         R.rule()
-        .using(node.stem, "type")
-        .by(r -> {
-            Type type = r.get(0);
+            .using(node.stem, "type")
+            .by(r -> {
+                Type type = r.get(0);
 
-            if (type instanceof ArrayType) {
-                if (node.fieldName.equals("length"))
-                    R.rule(node, "type")
-                    .by(rr -> rr.set(0, IntType.INSTANCE));
-                else
-                    r.errorFor("Trying to access a non-length field on an array", node,
-                        node.attr("type"));
-                return;
-            }
-            
-            if (!(type instanceof StructType) && !(type instanceof ClassType)) {
-                r.errorFor("Trying to access a field on an expression of type " + type,
+                if (type instanceof ArrayType) {
+                    if (node.fieldName.equals("length"))
+                        R.rule(node, "type")
+                            .by(rr -> rr.set(0, IntType.INSTANCE));
+                    else
+                        r.errorFor("Trying to access a non-length field on an array", node,
+                            node.attr("type"));
+                    return;
+                }
+
+                if (!(type instanceof StructType)) {
+                    r.errorFor("Trying to access a field on an expression of type " + type,
                         node,
                         node.attr("type"));
-                return;
-            }
+                    return;
+                }
 
-            if (type instanceof StructType) {
                 StructDeclarationNode decl = ((StructType) type).node;
 
                 for (DeclarationNode field: decl.fields)
@@ -413,41 +404,7 @@ public final class SemanticAnalysis
                 String description = format("Trying to access missing field %s on struct %s",
                     node.fieldName, decl.name);
                 r.errorFor(description, node, node.attr("type"));
-            }
-
-            if (type instanceof ClassType) {
-                ClassDeclarationNode decl = ((ClassType) type).node;
-
-                // Deal with attributes
-                for (DeclarationNode attribute: decl.attributes)
-                {
-                    if (!attribute.name().equals(node.fieldName)) continue;
-
-                    R.rule(node, "type")
-                        .using(attribute, "type")
-                        .by(Rule::copyFirst);
-
-                    return;
-                }
-                // Deal with functions
-                for (DeclarationNode function: decl.functions)
-                {
-                    if (!function.name().equals(node.fieldName)) continue;
-
-                    R.rule(node, "type")
-                        .using(function, "type")
-                        .by(Rule::copyFirst);
-
-                    return;
-                }
-
-                String description = format("Trying to access missing field %s on class %s",
-                    node.fieldName, decl.name);
-                r.errorFor(description, node, node.attr("type"));
-            }
-
-
-        });
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -455,22 +412,22 @@ public final class SemanticAnalysis
     private void arrayAccess (ArrayAccessNode node)
     {
         R.rule()
-        .using(node.index, "type")
-        .by(r -> {
-            Type type = r.get(0);
-            if (!(type instanceof IntType))
-                r.error("Indexing an array using a non-Int-valued expression", node.index);
-        });
+            .using(node.index, "type")
+            .by(r -> {
+                Type type = r.get(0);
+                if (!(type instanceof IntType))
+                    r.error("Indexing an array using a non-Int-valued expression", node.index);
+            });
 
         R.rule(node, "type")
-        .using(node.array, "type")
-        .by(r -> {
-            Type type = r.get(0);
-            if (type instanceof ArrayType)
-                r.set(0, ((ArrayType) type).componentType);
-            else
-                r.error("Trying to index a non-array expression of type " + type, node);
-        });
+            .using(node.array, "type")
+            .by(r -> {
+                Type type = r.get(0);
+                if (type instanceof ArrayType)
+                    r.set(0, ((ArrayType) type).componentType);
+                else
+                    r.error("Trying to index a non-array expression of type " + type, node);
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -487,38 +444,38 @@ public final class SemanticAnalysis
         });
 
         R.rule(node, "type")
-        .using(dependencies)
-        .by(r -> {
-            Type maybeFunType = r.get(0);
+            .using(dependencies)
+            .by(r -> {
+                Type maybeFunType = r.get(0);
 
-            if (!(maybeFunType instanceof FunType)) {
-                r.error("trying to call a non-function expression: " + node.function, node.function);
-                return;
-            }
+                if (!(maybeFunType instanceof FunType)) {
+                    r.error("trying to call a non-function expression: " + node.function, node.function);
+                    return;
+                }
 
-            FunType funType = cast(maybeFunType);
-            r.set(0, funType.returnType);
+                FunType funType = cast(maybeFunType);
+                r.set(0, funType.returnType);
 
-            Type[] params = funType.paramTypes;
-            List<ExpressionNode> args = node.arguments;
+                Type[] params = funType.paramTypes;
+                List<ExpressionNode> args = node.arguments;
 
-            if (params.length != args.size())
-                r.errorFor(format("wrong number of arguments, expected %d but got %d",
-                        params.length, args.size()),
-                    node);
+                if (params.length != args.size())
+                    r.errorFor(format("wrong number of arguments, expected %d but got %d",
+                            params.length, args.size()),
+                        node);
 
-            int checkedArgs = Math.min(params.length, args.size());
+                int checkedArgs = Math.min(params.length, args.size());
 
-            for (int i = 0; i < checkedArgs; ++i) {
-                Type argType = r.get(i + 1);
-                Type paramType = funType.paramTypes[i];
-                if (!isAssignableTo(argType, paramType))
-                    r.errorFor(format(
-                            "incompatible argument provided for argument %d: expected %s but got %s",
-                            i, paramType, argType),
-                        node.arguments.get(i));
-            }
-        });
+                for (int i = 0; i < checkedArgs; ++i) {
+                    Type argType = r.get(i + 1);
+                    Type paramType = funType.paramTypes[i];
+                    if (!isAssignableTo(argType, paramType))
+                        r.errorFor(format(
+                                "incompatible argument provided for argument %d: expected %s but got %s",
+                                i, paramType, argType),
+                            node.arguments.get(i));
+                }
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -529,12 +486,12 @@ public final class SemanticAnalysis
         R.set(node, "type", BoolType.INSTANCE);
 
         R.rule()
-        .using(node.operand, "type")
-        .by(r -> {
-            Type opType = r.get(0);
-            if (!(opType instanceof BoolType))
-                r.error("Trying to negate type: " + opType, node);
-        });
+            .using(node.operand, "type")
+            .by(r -> {
+                Type opType = r.get(0);
+                if (!(opType instanceof BoolType))
+                    r.error("Trying to negate type: " + opType, node);
+            });
     }
 
     // endregion
@@ -545,22 +502,22 @@ public final class SemanticAnalysis
     private void binaryExpression (BinaryExpressionNode node)
     {
         R.rule(node, "type")
-        .using(node.left.attr("type"), node.right.attr("type"))
-        .by(r -> {
-            Type left  = r.get(0);
-            Type right = r.get(1);
+            .using(node.left.attr("type"), node.right.attr("type"))
+            .by(r -> {
+                Type left  = r.get(0);
+                Type right = r.get(1);
 
-            if (node.operator == ADD && (left instanceof StringType || right instanceof StringType))
-                r.set(0, StringType.INSTANCE);
-            else if (isArithmetic(node.operator))
-                binaryArithmetic(r, node, left, right);
-            else if (isComparison(node.operator))
-                binaryComparison(r, node, left, right);
-            else if (isLogic(node.operator))
-                binaryLogic(r, node, left, right);
-            else if (isEquality(node.operator))
-                binaryEquality(r, node, left, right);
-        });
+                if (node.operator == ADD && (left instanceof StringType || right instanceof StringType))
+                    r.set(0, StringType.INSTANCE);
+                else if (isArithmetic(node.operator))
+                    binaryArithmetic(r, node, left, right);
+                else if (isComparison(node.operator))
+                    binaryComparison(r, node, left, right);
+                else if (isLogic(node.operator))
+                    binaryLogic(r, node, left, right);
+                else if (isEquality(node.operator))
+                    binaryEquality(r, node, left, right);
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -651,22 +608,22 @@ public final class SemanticAnalysis
     private void assignment (AssignmentNode node)
     {
         R.rule(node, "type")
-        .using(node.left.attr("type"), node.right.attr("type"))
-        .by(r -> {
-            Type left  = r.get(0);
-            Type right = r.get(1);
+            .using(node.left.attr("type"), node.right.attr("type"))
+            .by(r -> {
+                Type left  = r.get(0);
+                Type right = r.get(1);
 
-            r.set(0, r.get(0)); // the type of the assignment is the left-side type
+                r.set(0, r.get(0)); // the type of the assignment is the left-side type
 
-            if (node.left instanceof ReferenceNode
-            ||  node.left instanceof FieldAccessNode
-            ||  node.left instanceof ArrayAccessNode) {
-                if (!isAssignableTo(right, left))
-                    r.errorFor("Trying to assign a value to a non-compatible lvalue.", node);
-            }
-            else
-                r.errorFor("Trying to assign to an non-lvalue expression.", node.left);
-        });
+                if (node.left instanceof ReferenceNode
+                    ||  node.left instanceof FieldAccessNode
+                    ||  node.left instanceof ArrayAccessNode) {
+                    if (!isAssignableTo(right, left))
+                        r.errorFor("Trying to assign a value to a non-compatible lvalue.", node);
+                }
+                else
+                    r.errorFor("Trying to assign to an non-lvalue expression.", node.left);
+            });
     }
 
     // endregion
@@ -679,28 +636,28 @@ public final class SemanticAnalysis
         final Scope scope = this.scope;
 
         R.rule()
-        .by(r -> {
-            // type declarations may occur after use
-            DeclarationContext ctx = scope.lookup(node.name);
-            DeclarationNode decl = ctx == null ? null : ctx.declaration;
+            .by(r -> {
+                // type declarations may occur after use
+                DeclarationContext ctx = scope.lookup(node.name);
+                DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
-            if (ctx == null)
-                r.errorFor("could not resolve: " + node.name,
-                    node,
-                    node.attr("value"));
+                if (ctx == null)
+                    r.errorFor("could not resolve: " + node.name,
+                        node,
+                        node.attr("value"));
 
-            else if (!isTypeDecl(decl))
-                r.errorFor(format(
-                    "%s did not resolve to a type declaration but to a %s declaration",
-                    node.name, decl.declaredThing()),
-                    node,
-                    node.attr("value"));
+                else if (!isTypeDecl(decl))
+                    r.errorFor(format(
+                            "%s did not resolve to a type declaration but to a %s declaration",
+                            node.name, decl.declaredThing()),
+                        node,
+                        node.attr("value"));
 
-            else
-                R.rule(node, "value")
-                .using(decl, "declared")
-                .by(Rule::copyFirst);
-        });
+                else
+                    R.rule(node, "value")
+                        .using(decl, "declared")
+                        .by(Rule::copyFirst);
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -708,15 +665,15 @@ public final class SemanticAnalysis
     private void arrayType (ArrayTypeNode node)
     {
         R.rule(node, "value")
-        .using(node.componentType, "value")
-        .by(r -> r.set(0, new ArrayType(r.get(0))));
+            .using(node.componentType, "value")
+            .by(r -> r.set(0, new ArrayType(r.get(0))));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private static boolean isTypeDecl (DeclarationNode decl)
     {
-        if (decl instanceof StructDeclarationNode || decl instanceof ClassDeclarationNode) return true;
+        if (decl instanceof StructDeclarationNode) return true;
         if (!(decl instanceof SyntheticDeclarationNode)) return false;
         SyntheticDeclarationNode synthetic = cast(decl);
         return synthetic.kind() == DeclarationKind.TYPE;
@@ -802,8 +759,8 @@ public final class SemanticAnalysis
 
         Attribute[] deps = getReturnsDependencies(node.statements);
         R.rule(node, "returns")
-        .using(deps)
-        .by(r -> r.set(0, deps.length != 0 && Arrays.stream(deps).anyMatch(r::get)));
+            .using(deps)
+            .by(r -> r.set(0, deps.length != 0 && Arrays.stream(deps).anyMatch(r::get)));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -816,21 +773,21 @@ public final class SemanticAnalysis
         R.set(node, "scope", scope);
 
         R.rule(node, "type")
-        .using(node.type, "value")
-        .by(Rule::copyFirst);
+            .using(node.type, "value")
+            .by(Rule::copyFirst);
 
         R.rule()
-        .using(node.type.attr("value"), node.initializer.attr("type"))
-        .by(r -> {
-            Type expected = r.get(0);
-            Type actual = r.get(1);
+            .using(node.type.attr("value"), node.initializer.attr("type"))
+            .by(r -> {
+                Type expected = r.get(0);
+                Type actual = r.get(1);
 
-            if (!isAssignableTo(actual, expected))
-                r.error(format(
-                    "incompatible initializer type provided for variable `%s`: expected %s but got %s",
-                    node.name, expected, actual),
-                    node.initializer);
-        });
+                if (!isAssignableTo(actual, expected))
+                    r.error(format(
+                            "incompatible initializer type provided for variable `%s`: expected %s but got %s",
+                            node.name, expected, actual),
+                        node.initializer);
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -838,8 +795,8 @@ public final class SemanticAnalysis
     private void fieldDecl (FieldDeclarationNode node)
     {
         R.rule(node, "type")
-        .using(node.type, "value")
-        .by(Rule::copyFirst);
+            .using(node.type, "value")
+            .by(Rule::copyFirst);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -850,8 +807,8 @@ public final class SemanticAnalysis
         scope.declare(node.name, node); // scope pushed by FunDeclarationNode
 
         R.rule(node, "type")
-        .using(node.type, "value")
-        .by(Rule::copyFirst);
+            .using(node.type, "value")
+            .by(Rule::copyFirst);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -861,41 +818,6 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         scope = new Scope(node, scope);
         R.set(node, "scope", scope);
-
-        Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
-        dependencies[0] = node.returnType.attr("value");
-        forEachIndexed(node.parameters, (i, param) ->
-            dependencies[i + 1] = param.attr("type"));
-
-        R.rule(node, "type")
-        .using(dependencies)
-        .by (r -> {
-            Type[] paramTypes = new Type[node.parameters.size()];
-            for (int i = 0; i < paramTypes.length; ++i)
-                paramTypes[i] = r.get(i + 1);
-            r.set(0, new FunType(r.get(0), paramTypes));
-        });
-
-        R.rule()
-        .using(node.block.attr("returns"), node.returnType.attr("value"))
-        .by(r -> {
-            boolean returns = r.get(0);
-            Type returnType = r.get(1);
-            if (!returns && !(returnType instanceof VoidType))
-                r.error("Missing return in function.", node);
-            // NOTE: The returned value presence & type is checked in returnStmt().
-        });
-    }
-
-    private void classFunDecl (ClassFunDeclarationNode node)
-    {
-        scope.declare(node.name, node);
-        scope = new Scope(node, scope);
-        R.set(node, "scope", scope);
-        // TODO Add all variables from the class in the scope here
-        System.out.println("This is the scope: " + scope);
-//        DeclarationContext context = scope.lookup(node.);
-//        System.out.println(context.scope);
 
         Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
         dependencies[0] = node.returnType.attr("value");
@@ -930,15 +852,6 @@ public final class SemanticAnalysis
         R.set(node, "declared", new StructType(node));
     }
 
-    private void classDecl (ClassDeclarationNode node) {
-        scope.declare(node.name, node);
-        for (int i = 0; i < node.attributes.size(); i++) {
-            scope.declare(node.attributes.get(i).name, node.attributes.get(i));
-        }
-        R.set(node, "type", TypeType.INSTANCE);
-        R.set(node, "declared", new ClassType(node));
-    }
-
     // endregion
     // =============================================================================================
     // region [Other Statements]
@@ -946,33 +859,33 @@ public final class SemanticAnalysis
 
     private void ifStmt (IfNode node) {
         R.rule()
-        .using(node.condition, "type")
-        .by(r -> {
-            Type type = r.get(0);
-            if (!(type instanceof BoolType)) {
-                r.error("If statement with a non-boolean condition of type: " + type,
-                    node.condition);
-            }
-        });
+            .using(node.condition, "type")
+            .by(r -> {
+                Type type = r.get(0);
+                if (!(type instanceof BoolType)) {
+                    r.error("If statement with a non-boolean condition of type: " + type,
+                        node.condition);
+                }
+            });
 
         Attribute[] deps = getReturnsDependencies(list(node.trueStatement, node.falseStatement));
         R.rule(node, "returns")
-        .using(deps)
-        .by(r -> r.set(0, deps.length == 2 && Arrays.stream(deps).allMatch(r::get)));
+            .using(deps)
+            .by(r -> r.set(0, deps.length == 2 && Arrays.stream(deps).allMatch(r::get)));
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private void whileStmt (WhileNode node) {
         R.rule()
-        .using(node.condition, "type")
-        .by(r -> {
-            Type type = r.get(0);
-            if (!(type instanceof BoolType)) {
-                r.error("While statement with a non-boolean condition of type: " + type,
-                    node.condition);
-            }
-        });
+            .using(node.condition, "type")
+            .by(r -> {
+                Type type = r.get(0);
+                if (!(type instanceof BoolType)) {
+                    r.error("While statement with a non-boolean condition of type: " + type,
+                        node.condition);
+                }
+            });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -987,26 +900,26 @@ public final class SemanticAnalysis
 
         if (node.expression == null)
             R.rule()
-            .using(function.returnType, "value")
-            .by(r -> {
-               Type returnType = r.get(0);
-               if (!(returnType instanceof VoidType))
-                   r.error("Return without value in a function with a return type.", node);
-            });
+                .using(function.returnType, "value")
+                .by(r -> {
+                    Type returnType = r.get(0);
+                    if (!(returnType instanceof VoidType))
+                        r.error("Return without value in a function with a return type.", node);
+                });
         else
             R.rule()
-            .using(function.returnType.attr("value"), node.expression.attr("type"))
-            .by(r -> {
-                Type formal = r.get(0);
-                Type actual = r.get(1);
-                if (formal instanceof VoidType)
-                    r.error("Return with value in a Void function.", node);
-                else if (!isAssignableTo(actual, formal)) {
-                    r.errorFor(format(
-                        "Incompatible return type, expected %s but got %s", formal, actual),
-                        node.expression);
-                }
-            });
+                .using(function.returnType.attr("value"), node.expression.attr("type"))
+                .by(r -> {
+                    Type formal = r.get(0);
+                    Type actual = r.get(1);
+                    if (formal instanceof VoidType)
+                        r.error("Return with value in a Void function.", node);
+                    else if (!isAssignableTo(actual, formal)) {
+                        r.errorFor(format(
+                                "Incompatible return type, expected %s but got %s", formal, actual),
+                            node.expression);
+                    }
+                });
     }
 
     // ---------------------------------------------------------------------------------------------

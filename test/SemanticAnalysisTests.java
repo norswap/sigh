@@ -183,8 +183,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         successInput(
             "var x: Int = 1;" +
-            "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
-            "print(\"\" + x)");
+                "{ print(\"\" + x); var x: Int = 2; print(\"\" + x) }" +
+                "print(\"\" + x)");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -192,11 +192,11 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     @Test public void testCalls() {
         successInput(
             "fun add (a: Int, b: Int): Int { return a + b } " +
-            "return add(4, 7)");
+                "return add(4, 7)");
 
         successInput(
             "struct Point { var x: Int; var y: Int }" +
-            "return $Point(1, 2)");
+                "return $Point(1, 2)");
 
         successInput("var str: String = null; return print(str + 1)");
 
@@ -227,32 +227,32 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         successInput(
             "struct P { var x: Int; var y: Int }" +
-            "return $P(1, 2).y");
+                "return $P(1, 2).y");
 
         successInput(
             "struct P { var x: Int; var y: Int }" +
-            "var p: P = null;" +
-            "return p.y");
+                "var p: P = null;" +
+                "return p.y");
 
         successInput(
             "struct P { var x: Int; var y: Int }" +
-            "var p: P = $P(1, 2);" +
-            "p.y = 42;" +
-            "return p.y");
+                "var p: P = $P(1, 2);" +
+                "p.y = 42;" +
+                "return p.y");
 
         successInput(
             "struct P { var x: Int; var y: Int }" +
-            "var p: P = null;" +
-            "p.y = 42");
+                "var p: P = null;" +
+                "p.y = 42");
 
         failureInputWith(
             "struct P { var x: Int; var y: Int }" +
-            "return $P(1, true)",
+                "return $P(1, true)",
             "argument 1: expected Int but got Bool");
 
         failureInputWith(
             "struct P { var x: Int; var y: Int }" +
-            "return $P(1, 2).z",
+                "return $P(1, 2).z",
             "Trying to access missing field z on struct P");
     }
 
@@ -302,37 +302,19 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test
-    public void testClassDeclaration() {
-        successInput("class Car { " +
-                "fun brand (): String { return \"Ferrari\" }" +
-                "fun speed (): Int { return 350 }" +
-                " }");
-
-        successInput("class Car {}" +
-            "var car: Car = create Car()");
-
-        // TODO: this test fail, commented to pass INGInious task
-        // There is again the problem of the number of arguments
-        successInput("class Car { " +
-            "fun brand (): String { return \"Ferrari\" }" +
-            "fun speed (): Int { return 350 }" +
-            " }" +
-            "var car: Car = create Car()");
-
-        // Complete test with calls, attributes init and updates
-        successInput("class Car {" +
-            "var brand: String " +
-            "var speed: Int " +
-            "fun get_brand (): String { return \"Ferrari\" }" +
-            "fun get_speed (): Int { return 350 }" +
-            " }" +
-            "var car: Car = create Car() " +
-            "car.brand = \"Porsche\" " +
-            "car.speed = 375 " +
-            "print(car.get_brand()) " +
-            "print(\"\" + car.get_speed())" +
-            "car.speed = 120");
+    @Test public void testBoxSemantic()
+    {
+        String input1 = "" +
+            "box Car {\n" +
+            "   attr max_speed: Int\n" +
+            "   meth get_max_speed(): Int {\n" +
+            "       return max_speed\n" +
+            "   }\n" +
+            "   meth set_max_speed(speed: Int) {\n" +
+            "       max_speed = speed\n" +
+            "   }\n" +
+            "}\n";
+        successInput(input1);
     }
 
     // ---------------------------------------------------------------------------------------------

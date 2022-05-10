@@ -5,7 +5,7 @@ import norswap.sigh.ast.SighNode;
 import java.util.HashMap;
 
 /**
- * Represent a lexical scope in which declarations occur.
+ * Represent a lexical scope in which declarations occurs.
  */
 public class Scope
 {
@@ -51,10 +51,10 @@ public class Scope
     {
         DeclarationNode declaration = declarations.get(name);
         return declaration != null
-                ? new DeclarationContext(this, declaration)
-                : parent != null
-                    ? parent.lookup(name)
-                    : null;
+            ? new DeclarationContext(this, declaration)
+            : parent != null
+            ? parent.lookup(name)
+            : null;
     }
 
     // ---------------------------------------------------------------------------------------------

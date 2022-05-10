@@ -4,18 +4,18 @@ import norswap.autumn.positions.Span;
 import norswap.utils.Util;
 import java.util.List;
 
-public class ClassDeclarationNode extends DeclarationNode
+public class BoxDeclarationNode extends DeclarationNode
 {
     public final String name;
-    public final List<FieldDeclarationNode> attributes;
-    public final List<ClassFunDeclarationNode> functions;
+    public final List<AttributeDeclarationNode> attributes;
+    public final List<MethodDeclarationNode> methods;
 
     @SuppressWarnings("unchecked")
-    public ClassDeclarationNode (Span span, Object name, Object attributes, Object functions) {
+    public BoxDeclarationNode (Span span, Object name, Object attributes, Object methods) {
         super(span);
         this.name = Util.cast(name, String.class);
         this.attributes = Util.cast(attributes, List.class);
-        this.functions = Util.cast(functions, List.class);
+        this.methods = Util.cast(methods, List.class);
     }
 
     @Override public String name () {
@@ -23,10 +23,10 @@ public class ClassDeclarationNode extends DeclarationNode
     }
 
     @Override public String contents () {
-        return "class " + name;
+        return "box " + name;
     }
 
     @Override public String declaredThing () {
-        return "class";
+        return "box";
     }
 }

@@ -39,12 +39,10 @@ import static norswap.utils.Vanilla.map;
  *     <li>{@code null}: {@link Null#INSTANCE}</li>
  *     <li>Arrays: {@code Object[]}</li>
  *     <li>Structs: {@code HashMap<String, Object>}</li>
- *     <li>Classes: {@code HashMap<String, Object>}</li>
  *     <li>Functions: the corresponding {@link DeclarationNode} ({@link FunDeclarationNode} or
  *     {@link SyntheticDeclarationNode}), excepted structure constructors, which are
- *     represented by {@link Constructor} and class constructors, which are represented by {@link ClassConstructor}</li>
+ *     represented by {@link Constructor}</li>
  *     <li>Types: the corresponding {@link StructDeclarationNode}</li>
- *     <li>Types: the corresponding {@link ClassDeclarationNode}</li>
  * </ul>
  */
 public final class Interpreter
@@ -68,7 +66,6 @@ public final class Interpreter
         visitor.register(StringLiteralNode.class,        this::stringLiteral);
         visitor.register(ReferenceNode.class,            this::reference);
         visitor.register(ConstructorNode.class,          this::constructor);
-        visitor.register(ClassConstructorNode.class,     this::classConstructor);
         visitor.register(ArrayLiteralNode.class,         this::arrayLiteral);
         visitor.register(ParenthesizedNode.class,        this::parenthesized);
         visitor.register(FieldAccessNode.class,          this::fieldAccess);
@@ -176,7 +173,7 @@ public final class Interpreter
         Object right = get(node.right);
 
         if (node.operator == BinaryOperator.ADD
-                && (leftType instanceof StringType || rightType instanceof StringType))
+            && (leftType instanceof StringType || rightType instanceof StringType))
             return convertToString(left) + convertToString(right);
 
         boolean floating = leftType instanceof FloatType || rightType instanceof FloatType;
@@ -201,14 +198,14 @@ public final class Interpreter
     {
         boolean left = get(node.left);
         return isAnd
-                ? left && (boolean) get(node.right)
-                : left || (boolean) get(node.right);
+            ? left && (boolean) get(node.right)
+            : left || (boolean) get(node.right);
     }
 
     // ---------------------------------------------------------------------------------------------
 
     private Object numericOp
-            (BinaryExpressionNode node, boolean floating, Number left, Number right)
+        (BinaryExpressionNode node, boolean floating, Number left, Number right)
     {
         long ileft, iright;
         double fleft, fright;
@@ -378,13 +375,6 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
-    private ClassConstructor classConstructor (ClassConstructorNode node) {
-        // guaranteed safe by semantic analysis
-        return new ClassConstructor(get(node.ref));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     private Object expressionStmt (ExpressionStatementNode node) {
         get(node.expression);
         return null;  // discard value
@@ -399,8 +389,8 @@ public final class Interpreter
             throw new PassthroughException(
                 new NullPointerException("accessing field of null object"));
         return stem instanceof Map
-                ? Util.<Map<String, Object>>cast(stem).get(node.fieldName)
-                : (long) ((Object[]) stem).length; // only field on arrays
+            ? Util.<Map<String, Object>>cast(stem).get(node.fieldName)
+            : (long) ((Object[]) stem).length; // only field on arrays
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -420,16 +410,13 @@ public final class Interpreter
         if (decl instanceof Constructor)
             return buildStruct(((Constructor) decl).declaration, args);
 
-        if (decl instanceof ClassConstructor)
-            return buildClass(((ClassConstructor) decl).declaration, args);
-
         ScopeStorage oldStorage = storage;
         Scope scope = reactor.get(decl, "scope");
         storage = new ScopeStorage(scope, storage);
 
         FunDeclarationNode funDecl = (FunDeclarationNode) decl;
         coIterate(args, funDecl.parameters,
-                (arg, param) -> storage.set(scope, param.name, arg));
+            (arg, param) -> storage.set(scope, param.name, arg));
 
         try {
             get(funDecl.block);
@@ -465,8 +452,6 @@ public final class Interpreter
             return ((StructDeclarationNode) arg).name;
         else if (arg instanceof Constructor)
             return "$" + ((Constructor) arg).declaration.name;
-        else if (arg instanceof ClassConstructor)
-            return "$" + ((ClassConstructor) arg).declaration.name;
         else
             return arg.toString();
     }
@@ -479,20 +464,6 @@ public final class Interpreter
         for (int i = 0; i < node.fields.size(); ++i)
             struct.put(node.fields.get(i).name, args[i]);
         return struct;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private HashMap<String, Object> buildClass (ClassDeclarationNode node, Object[] args)
-    {
-        System.out.println("Starting to build a class");
-        HashMap<String, Object> classs = new HashMap<>();
-        for (int i = 0; i < node.attributes.size(); ++i)
-            classs.put(node.attributes.get(i).name, node.attributes.get(i));
-        for (int i = 0; i < node.functions.size(); ++i)
-            classs.put(node.functions.get(i).name, node.functions.get(i));
-        System.out.println("Result of the building of a class" + classs);
-        return classs;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -523,9 +494,9 @@ public final class Interpreter
         DeclarationNode decl = reactor.get(node, "decl");
 
         if (decl instanceof VarDeclarationNode
-        || decl instanceof ParameterNode
-        || decl instanceof SyntheticDeclarationNode
-                && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
+            || decl instanceof ParameterNode
+            || decl instanceof SyntheticDeclarationNode
+            && ((SyntheticDeclarationNode) decl).kind() == DeclarationKind.VARIABLE)
             return scope == rootScope
                 ? rootStorage.get(scope, node.name)
                 : storage.get(scope, node.name);

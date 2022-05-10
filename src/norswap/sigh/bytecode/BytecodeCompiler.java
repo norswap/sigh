@@ -2,7 +2,6 @@ package norswap.sigh.bytecode;
 
 import norswap.sigh.ast.*;
 import norswap.sigh.interpreter.Constructor;
-import norswap.sigh.interpreter.ClassConstructor;
 import norswap.sigh.scopes.Scope;
 import norswap.sigh.scopes.SyntheticDeclarationNode;
 import norswap.sigh.types.*;
@@ -92,7 +91,6 @@ public class BytecodeCompiler
         visitor.register(StringLiteralNode.class,        this::stringLiteral);
         visitor.register(ReferenceNode.class,            this::reference);
         visitor.register(ConstructorNode.class,          this::constructor);
-        visitor.register(ClassConstructorNode.class,     this::classConstructor);
         visitor.register(ArrayLiteralNode.class,         this::arrayLiteral);
         visitor.register(ParenthesizedNode.class,        this::parenthesized);
         visitor.register(FieldAccessNode.class,          this::fieldAccess);
@@ -110,7 +108,6 @@ public class BytecodeCompiler
         visitor.register(ParameterNode.class,            this::parameter);
         visitor.register(FunDeclarationNode.class,       this::funDecl);
         visitor.register(StructDeclarationNode.class,    this::structDecl);
-        visitor.register(ClassDeclarationNode.class,     this::classDecl);
 
         // statements
         visitor.register(ExpressionStatementNode.class,  this::expressionStmt);
@@ -131,16 +128,9 @@ public class BytecodeCompiler
     /* Class writer for the class representing the struct currently being emitted. */
     private ClassWriter struct;
 
-    /* Class writer for the class representing the class currently being emitted. */
-    private ClassWriter classs;
-
     /** The list of (class name, class writer) pairs for the classes representing the structures
      * defined in the source unit. */
     ArrayList<Pair<String, ClassWriter>> structs = new ArrayList<>();
-
-    /** The list of (class name, class writer) pairs for the classes representing the classes
-     * defined in the source unit. */
-    ArrayList<Pair<String, ClassWriter>> classes = new ArrayList<>();
 
     /* MethodVisitor for current method. */
     private MethodVisitor method;
@@ -169,11 +159,7 @@ public class BytecodeCompiler
             .map(it -> new GeneratedClass(it.a, it.b.toByteArray()))
             .collect(Collectors.toList());
 
-        List<GeneratedClass> classClasses = classes.stream()
-            .map(it -> new GeneratedClass(it.a, it.b.toByteArray()))
-            .collect(Collectors.toList());
-
-        return new CompilationResult(mainClass, structClasses, classClasses);
+        return new CompilationResult(mainClass, structClasses);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -303,13 +289,11 @@ public class BytecodeCompiler
         } else if (compType instanceof NullType) {
             method.visitTypeInsn(ANEWARRAY, "norswap/sigh/bytecode/Null");
         } else if (compType instanceof VoidType || compType instanceof ArrayType) {
-            // Sigh does not have a syntax for multidimensional arrays, so use an array of
+            // Sigh does not have a syntax for multi-dimensional arrays, so use an array of
             // Object that we'll be able to cast to array themselves.
             method.visitTypeInsn(ANEWARRAY, "java/lang/Object");
         } else if (compType instanceof StructType) {
             method.visitTypeInsn(ANEWARRAY, structBinaryName((StructType) compType));
-        } else if (compType instanceof ClassType) {
-            method.visitTypeInsn(ANEWARRAY, classBinaryName((ClassType) compType));
         }
 
         int i = 0;
@@ -446,9 +430,6 @@ public class BytecodeCompiler
         } else if (type instanceof FunType) {
             throw new UnsupportedOperationException("TODO"); // TODO
         } else if (type instanceof StructType) {
-            // String.valueOf -> Object#toString (or override)
-            invokeStatic(method, String.class, "valueOf", Object.class);
-        } else if (type instanceof ClassType) {
             // String.valueOf -> Object#toString (or override)
             invokeStatic(method, String.class, "valueOf", Object.class);
         } else {
@@ -710,12 +691,6 @@ public class BytecodeCompiler
             org.objectweb.asm.Type asmType = asmType(reactor.get(decl, "declared"));
             method.visitLdcInsn(asmType); // class constant for emitted type
         }
-        else if (decl instanceof ClassDeclarationNode) {
-            // NOTE: This is not used when the reference is part of a constructor call, the
-            // resolution is handled in #funCall.
-            org.objectweb.asm.Type asmType = asmType(reactor.get(decl, "declared"));
-            method.visitLdcInsn(asmType); // class constant for emitted type
-        }
         else if (decl instanceof FunDeclarationNode) {
             // NOTE: This is not used when the reference is part of a function call, the resolution
             // is handled in #funCall.
@@ -853,72 +828,8 @@ public class BytecodeCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object classDecl (ClassDeclarationNode node)
-    {
-        System.out.println("starting class declaration");
-        String binaryName = node.name;
-        classs = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        classs.visit(V1_8, ACC_PUBLIC, binaryName, null, "java/lang/Object", null);
-        node.attributes.forEach(this::run);
-        node.functions.forEach(this::run);
-
-        // generate constructor
-        // HANDLE THE ATTRIBUTES
-        Type[] attributesTypes =
-            node.attributes.stream().map(f -> (Type) reactor.get(f, "type")).toArray(Type[]::new);
-        System.out.println("BytcodeCompiler types: " + Arrays.toString(attributesTypes));
-        String descriptor = methodDescriptor(VoidType.INSTANCE, attributesTypes);
-        MethodVisitor init = classs.visitMethod(ACC_PUBLIC, "<init>", descriptor, null, null);
-        init.visitCode();
-        init.visitVarInsn(ALOAD, 0); // this
-        init.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-        int i = 1;
-        for (FieldDeclarationNode field: node.attributes) {
-            init.visitVarInsn(ALOAD, 0);
-            org.objectweb.asm.Type type = nodeAsmType(field);
-            init.visitVarInsn(type.getOpcode(ILOAD), i);
-            i += type.getSize();
-            init.visitFieldInsn(PUTFIELD, binaryName, field.name, type.getDescriptor());
-        }
-        init.visitInsn(RETURN);
-        init.visitMaxs(-1,-1);
-        init.visitEnd();
-
-        // HANDLE THE FUNCTIONS
-        Type[] functionsTypes =
-            node.functions.stream().map(f -> (Type) reactor.get(f, "type")).toArray(Type[]::new);
-        String funDescriptor = methodDescriptor(VoidType.INSTANCE, functionsTypes);
-        init = classs.visitMethod(ACC_PUBLIC, "<init>", funDescriptor, null, null);
-        init.visitCode();
-        init.visitVarInsn(ALOAD, 0); // this
-        init.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-        i = 1;
-        for (ClassFunDeclarationNode fun: node.functions) {
-            init.visitVarInsn(ALOAD, 0);
-            org.objectweb.asm.Type type = nodeAsmType(fun);
-            init.visitVarInsn(type.getOpcode(ILOAD), i);
-            i += type.getSize();
-            init.visitMethodInsn(INVOKESTATIC, binaryName, fun.name, type.getDescriptor(), false);
-        }
-        init.visitInsn(RETURN);
-        init.visitMaxs(-1,-1);
-        init.visitEnd();
-
-        classs.visitEnd();
-        classes.add(new Pair<>(binaryName, classs));
-        classs = null;
-        return null;
-    }
-
-
-
-
-    // ---------------------------------------------------------------------------------------------
-
     private Object fieldDecl (FieldDeclarationNode node)
     {
-        // Not sure about the 2 following lines
-//        classs.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         struct.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         return null;
     }
@@ -935,13 +846,6 @@ public class BytecodeCompiler
     // ---------------------------------------------------------------------------------------------
 
     private Constructor constructor (ConstructorNode node) {
-        // not needed - handled in funCall instead
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private ClassConstructor classConstructor (ClassConstructorNode node) {
         // not needed - handled in funCall instead
         return null;
     }
@@ -971,7 +875,7 @@ public class BytecodeCompiler
 
     /**
      * Declares a variable introduce by the given declaration (which must be a {@link
-     * VarDeclarationNode} or {@link ParameterNode}), and returns its index in its JVM method
+     * VarDeclarationNode} or {@link ParameterNode}, and returns its index in its JVM method
      * scope.
      */
     private int registerVariable (DeclarationNode node) {
