@@ -160,23 +160,16 @@ public class GrammarTests extends AutumnTestFixture {
             new ExpressionStatementNode(null,
                 new FunCallNode(null,
                     new ReferenceNode(null, "addOne"),
-                    asList(new ExpressionStatementNode(null, new FunCallNode(null, new ReferenceNode(null, "one"), asList()))))));
+                    asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))));
 
-        successExpect("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}",
-            new BlockNode(null,
-                asList(new FunDeclarationNode(null, "one",
-                        asList(),
-                        new SimpleTypeNode(null, "Int"),
-                        new BlockNode(null, asList(new ReturnNode(null, intlit(1))))),
-                    new FunDeclarationNode(null, "addOne",
-                        asList(new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                        new SimpleTypeNode(null, "Int"),
-                        new BlockNode(null, asList(new ReturnNode(null, new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)))))),
-                    new ReturnNode(null,
-                        new ExpressionStatementNode(null,
-                            new FunCallNode(null,
-                                new ReferenceNode(null, "addOne"),
-                                asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList()))))))));
+        successExpect("x -> y -> z",
+            new ExpressionStatementNode(null,
+                new FunCallNode(null,
+                    new ReferenceNode(null, "z"),
+                    asList(new FunCallNode(null,
+                        new ReferenceNode(null, "y"),
+                        asList(new ReferenceNode(null, "x")))))));
+
     }
 
     // ---------------------------------------------------------------------------------------------

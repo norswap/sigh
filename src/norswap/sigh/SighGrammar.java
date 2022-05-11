@@ -144,12 +144,15 @@ public class SighGrammar extends Grammar
         .suffix(function_args,
             $ -> new FunCallNode($.span(), $.$[0], $.$[1]));
 
-    public rule prefix_expression = right_expression()
+    public rule concat_expression = left_expression()
         .operand(suffix_expression)
-        .prefix(BANG.as_val(NOT),
-            $ -> new UnaryExpressionNode($.span(), $.$[0], $.$[1]))
         .infix(ARROW_RIGHT,
             $ -> new FunCallNode($.span(), $.$[1], Arrays.asList($.$[0])));
+
+    public rule prefix_expression = right_expression()
+        .operand(concat_expression)
+        .prefix(BANG.as_val(NOT),
+            $ -> new UnaryExpressionNode($.span(), $.$[0], $.$[1]));
 
     public rule mult_op = choice(
         STAR        .as_val(BinaryOperator.MULTIPLY),
@@ -192,11 +195,6 @@ public class SighGrammar extends Grammar
         .operand(and_expression)
         .infix(BAR_BAR.as_val(BinaryOperator.OR),
             $ -> new BinaryExpressionNode($.span(), $.$[0], $.$[1], $.$[2]));
-
-    //public rule concat_expression = left_expression()
-    //    .operand(or_expression)
-    //    .infix(ARROW_RIGHT,
-    //        $ -> new FunCallNode($.span(), $.$[1], Arrays.asList($.$[0])));
 
     public rule assignment_expression = right_expression()
         .operand(or_expression)
