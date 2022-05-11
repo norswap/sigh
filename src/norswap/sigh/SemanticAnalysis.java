@@ -579,11 +579,26 @@ public final class SemanticAnalysis
             for (int i = 0; i < checkedArgs; ++i) {
                 Type argType = r.get(i + 1);
                 Type paramType = (funType.paramTypes[i] instanceof TemplateType) ? (((TemplateType) funType.paramTypes[i]).node.value) : funType.paramTypes[i];
-                if (!isAssignableTo(argType, paramType))
-                    r.errorFor(format(
-                            "incompatible argument provided for argument %d: expected %s but got %s",
-                            i, paramType, argType),
-                        node.arguments.get(i));
+                if (!isAssignableTo(argType, paramType)) {
+                    if (funType.paramTypes[i] instanceof TemplateType) {
+                        if (paramType == null) {
+                            r.errorFor(format(
+                                    "Missing type of template parameter %s. Suggested template parameter type : %s",
+                                    funType.paramTypes[i].name(), argType),
+                                node.arguments.get(i));
+                        } else {
+                            r.errorFor(format(
+                                    "Mismatch between argument type %s (argument [%d]) and provided type of template parameter %s (expected %s)",
+                                    argType, i, funType.paramTypes[i].name(), paramType), node.arguments.get(i));
+                        }
+                    } else {
+                        r.errorFor(format(
+                                "incompatible argument provided for argument %d: expected %s but got %s",
+                                i, paramType, argType),
+                            node.arguments.get(i));
+                    }
+                }
+
             }
         });
     }

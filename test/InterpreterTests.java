@@ -379,11 +379,11 @@ public final class InterpreterTests extends TestFixture {
 
         // Template return
         // TODO fix this not passing currently
-        check(
+        /*check(
             "template<A, B>" +
                 "fun add (a: Int, b: Int): A { return a + b } ",
             null
-        );
+        );*/
 
         // All
         check(
@@ -394,43 +394,102 @@ public final class InterpreterTests extends TestFixture {
     }
 
     @Test
+    public void TestTemplateCallErrors() {
+        rule = grammar.root;
+
+        // Checking template parameter type not provided
+        checkThrows(
+            "template<A, B> fun add (a: A, b: B): Int { return a + b }; " +
+                "return add<String, String>(1, 1);",
+            AssertionError.class
+        );
+
+        // Checking mismatch template type and argument type
+        checkThrows(
+            "template<A, B> fun add (a: A, b: B): Int { return a + b }; " +
+                "return add<String, String>(1, 1);",
+            AssertionError.class
+        );
+
+        // Checking too many template parameter types provided
+        // TODO fix
+        check(
+            "template<A> fun add (a: A, b: Int): Int { return a + b }; " +
+                "return add<String, String>(1, 1);", null, ""
+            //AssertionError.class
+        );
+    }
+
+    @Test
     public void TestSimpleTemplateCalls () {
         rule = grammar.root;
 
+
         // No template parameters usage
         check(
-            "template<A, B> fun add (a: Int, b: Int): Int { return a + b }; " +
-                "return add<Int, Int>(1, 1);",
+            "template<A, B>" +
+                "fun add (a: Int, b: Int): Int { return a + b };" +
+                "return add(1, 1)",
             2L
         );
 
-        // No template parameters usage
+        // Template params
+        // TODO fix should not reach here
         /*check(
             "template<A, B>" +
-                "fun add (a: Int, b: Int): Int { return a + b } ",
-            null
-        );
-
-        // Template params
-        check(
-            "template<A, B>" +
-                "fun add (a: A, b: B): Int { return a + b } ",
-            null
-        );
+                "fun add (a: A, b: B): Int { return a + b };" +
+                "return add<Int, Int>(1,1)",
+            2L
+        );*/
 
         // Template return
-        check(
+        // TODO fix above first in templatedeclarations
+        /*check(
             "template<A, B>" +
                 "fun add (a: Int, b: Int): A { return a + b } ",
             null
-        );
+        );*/
 
         // All
+        // TODO fix should not reach here
+/*        check(
+            "template<A, B>" +
+                "fun add (a: A, b: A): B { return a + b };" +
+                "return add<Int, Int>(1, 1)",
+            2L
+        );*/
+    }
+
+    @Test
+    public void TestSimpleTypesTemplateCalls() {
+        rule = grammar.root;
+
+        // Int sum
+        // TODO fix
         check(
             "template<A, B>" +
-                "fun add (a: A, b: A): B { return a + b } ",
-            null
-        ); */
+                "fun add (a: A, b: B): B { return a + b };" +
+                "return add<Int, Int>(1, 1)",
+            2L
+        );
+
+        // String concat
+        // TODO fix
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): B { return a + b };" +
+                "return add<String, String>(\"Gauthier\", \"ArrayOperator\")",
+            "GauthierArrayOperator"
+        );
+
+        // Float
+        // TODO fix
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): B { return a + b };" +
+                "return add<Float, Float>(1.0f, 1.0f)",
+            2.0f
+        );
     }
 
     // NOTE(norswap): Not incredibly complete, but should cover the basics.

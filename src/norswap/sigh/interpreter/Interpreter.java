@@ -9,6 +9,7 @@ import norswap.sigh.types.FloatType;
 import norswap.sigh.types.IntType;
 import norswap.sigh.types.StringType;
 import norswap.sigh.types.Type;
+import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
 import norswap.utils.Util;
 import norswap.utils.exceptions.Exceptions;
@@ -17,6 +18,7 @@ import norswap.utils.visitors.ValuedVisitor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static norswap.utils.Util.cast;
 import static norswap.utils.Vanilla.coIterate;
@@ -88,6 +90,19 @@ public final class Interpreter
         visitor.register(ReturnNode.class,               this::returnStmt);
 
         visitor.registerFallback(node -> null);
+    }
+
+    // -------------------------------------------------------
+    // Temporary fix because reactor.get is not working properly
+    public Object getAttr(Object node, String name, Class<Scope> cls) {
+        final Object[] ret = new Object[1];
+        this.reactor.getAll(node).forEach((Entry<Attribute, Object> entry) -> {
+            if (entry.getKey().name.equals(name) && entry.getValue() instanceof Scope) {
+                ret[0] = cast(entry.getValue(), cls);
+            }
+        });
+
+        return ret[0];
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -341,7 +356,16 @@ public final class Interpreter
     private Object root (RootNode node)
     {
         assert storage == null;
-        rootScope = reactor.get(node, "scope");
+
+        RootScope rootscope1 = reactor.get(node, "scope");
+        this.reactor.getAll(node).forEach((Entry<Attribute, Object> entry) -> {
+            if (entry.getValue() instanceof RootScope) {
+                rootScope = cast(entry.getValue(), RootScope.class);
+            }
+        });
+
+        //rootScope = cast(node.attr("scope")., RootScope.class);
+        //rootScope = reactor.get(node, "scope");
         storage = rootStorage = new ScopeStorage(rootScope, null);
         storage.initRoot(rootScope);
 
@@ -411,7 +435,9 @@ public final class Interpreter
             return buildStruct(((Constructor) decl).declaration, args);
 
         ScopeStorage oldStorage = storage;
-        Scope scope = reactor.get(decl, "scope");
+        //Scope scope = reactor.get(decl, "scope");
+        Scope scope = (Scope) getAttr(decl, "scope", Scope.class);
+
         storage = new ScopeStorage(scope, storage);
 
         FunDeclarationNode funDecl = (FunDeclarationNode) decl;
