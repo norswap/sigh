@@ -146,6 +146,8 @@ public class GrammarTests extends AutumnTestFixture {
         String input1 = "" +
             "box Car {\n" +
             "   attr max_speed: Int\n" +
+            "   attr arr: Int[]\n" +
+            "   attr wheels: Wheel\n" +
             "   meth get_max_speed(): Int {\n" +
             "       return max_speed\n" +
             "   }\n" +
@@ -156,7 +158,10 @@ public class GrammarTests extends AutumnTestFixture {
 
         successExpect(input1,
             new BoxDeclarationNode(null, "Car",
-                asList(new AttributeDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int"))),
+                asList(new AttributeDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int")),
+                    new AttributeDeclarationNode(null, "arr", new ArrayTypeNode(null, new SimpleTypeNode(null, "Int"))),
+                    new AttributeDeclarationNode(null, "wheels", new SimpleTypeNode(null, "Wheel"))
+                ),
                 asList(new MethodDeclarationNode(null, "get_max_speed", asList(), new SimpleTypeNode(null, "Int"),
                         new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "max_speed"))))),
                     new MethodDeclarationNode(null, "set_max_speed",

@@ -122,6 +122,7 @@ public final class SemanticAnalysis
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
         walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analysis::binaryExpression);
         walker.register(AssignmentNode.class,           PRE_VISIT,  analysis::assignment);
+
         walker.register(BoxConstructorNode.class,       PRE_VISIT,  analysis::boxConstructor);
 
         // types
@@ -136,6 +137,9 @@ public final class SemanticAnalysis
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
+        walker.register(BoxDeclarationNode.class,       PRE_VISIT,  analysis::boxDecl);
+        walker.register(MethodDeclarationNode.class,    PRE_VISIT,  analysis::methDecl);
+        walker.register(AttributeDeclarationNode.class, PRE_VISIT,  analysis::attrDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, analysis::popScope);
         walker.register(BlockNode.class,                POST_VISIT, analysis::popScope);
@@ -792,6 +796,33 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void attrDecl (AttributeDeclarationNode node)
+    {
+        this.inferenceContext = node;
+
+        scope.declare(node.name, node);
+        R.set(node, "scope", scope);
+
+        R.rule(node, "type")
+            .using(node.type, "value")
+            .by(Rule::copyFirst);
+
+        R.rule()
+            .using(node.type.attr("value"), node.initializer.attr("type"))
+            .by(r -> {
+                Type expected = r.get(0);
+                Type actual = r.get(1);
+
+                if (!isAssignableTo(actual, expected))
+                    r.error(format(
+                            "incompatible initializer type provided for attribute `%s`: expected %s but got %s",
+                            node.name, expected, actual),
+                        node.initializer);
+            });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private void fieldDecl (FieldDeclarationNode node)
     {
         R.rule(node, "type")
@@ -846,10 +877,51 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void methDecl (MethodDeclarationNode node)
+    {
+        scope.declare(node.name, node);
+        scope = new Scope(node, scope);
+        R.set(node, "scope", scope);
+
+        Attribute[] dependencies = new Attribute[node.parameters.size() + 1];
+        dependencies[0] = node.returnType.attr("value");
+        forEachIndexed(node.parameters, (i, param) ->
+            dependencies[i + 1] = param.attr("type"));
+
+        R.rule(node, "type")
+            .using(dependencies)
+            .by (r -> {
+                Type[] paramTypes = new Type[node.parameters.size()];
+                for (int i = 0; i < paramTypes.length; ++i)
+                    paramTypes[i] = r.get(i + 1);
+                r.set(0, new FunType(r.get(0), paramTypes));
+            });
+
+        R.rule()
+            .using(node.block.attr("returns"), node.returnType.attr("value"))
+            .by(r -> {
+                boolean returns = r.get(0);
+                Type returnType = r.get(1);
+                if (!returns && !(returnType instanceof VoidType))
+                    r.error("Missing return in function.", node);
+                // NOTE: The returned value presence & type is checked in returnStmt().
+            });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private void structDecl (StructDeclarationNode node) {
         scope.declare(node.name, node);
         R.set(node, "type", TypeType.INSTANCE);
         R.set(node, "declared", new StructType(node));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private void boxDecl (BoxDeclarationNode node) {
+        scope.declare(node.name, node);
+        R.set(node, "type", TypeType.INSTANCE);
+        R.set(node, "declared", new BoxType(node));
     }
 
     // endregion
