@@ -677,6 +677,15 @@ public final class SemanticAnalysis
             r.error(arithmeticError(node, left, right), node);
     }
 
+    private void dotprod (Rule r, DotPrdExpression node)
+    {
+        int ll = node.left.components.size();
+        int lr = node.right.components.size();
+        if(ll==0 || lr ==0)
+            r.error("Arrays can not be empty",node);
+
+    }
+
     // ---------------------------------------------------------------------------------------------
 
     private static String arithmeticError (BinaryExpressionNode node, Object left, Object right) {

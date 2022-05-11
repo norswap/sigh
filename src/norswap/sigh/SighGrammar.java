@@ -213,11 +213,9 @@ public class SighGrammar extends Grammar
 
     public rule expression = seq(assignment_expression);
 
-    public rule dot_prod_expr = left_expression()
-        .operand(array)
-        .infix(AT,
-             $ -> new DotPrdExpression($.span(), $.$[0], $.$[2]));
-
+    public rule dot_prod_expr =
+        seq(array,AT,array)
+        .push($ -> new DotPrdExpression($.span(), $.$[0], $.$[1]));
     public rule expression_stmt =
         expression
         .filter($ -> {
