@@ -3,6 +3,8 @@ import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+
 import static java.util.Arrays.asList;
 import static norswap.sigh.ast.BinaryOperator.*;
 
@@ -148,11 +150,17 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testConcatenativeProgramming() {
         rule = grammar.statement;
 
-        successExpect("return one() -> addOne",
-            new ReturnNode(null,
+        successExpect("x -> y",
+            new ExpressionStatementNode(null,
+                new FunCallNode(null,
+                    new ReferenceNode(null, "y"),
+                    asList(new ReferenceNode(null, "x")))));
+
+        successExpect("one() -> addOne",
+            new ExpressionStatementNode(null,
                 new FunCallNode(null,
                     new ReferenceNode(null, "addOne"),
-                    asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))));
+                    asList(new ExpressionStatementNode(null, new FunCallNode(null, new ReferenceNode(null, "one"), asList()))))));
 
         successExpect("{fun one (): Int {return 1}; fun addOne (x: Int): Int {return x + 1}; return one() -> addOne}",
             new BlockNode(null,
@@ -165,9 +173,10 @@ public class GrammarTests extends AutumnTestFixture {
                         new SimpleTypeNode(null, "Int"),
                         new BlockNode(null, asList(new ReturnNode(null, new BinaryExpressionNode(null, new ReferenceNode(null, "x"), ADD, intlit(1)))))),
                     new ReturnNode(null,
-                        new FunCallNode(null,
-                            new ReferenceNode(null, "addOne"),
-                            asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList())))))));
+                        new ExpressionStatementNode(null,
+                            new FunCallNode(null,
+                                new ReferenceNode(null, "addOne"),
+                                asList(new FunCallNode(null, new ReferenceNode(null, "one"), asList()))))))));
     }
 
     // ---------------------------------------------------------------------------------------------
