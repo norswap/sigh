@@ -412,6 +412,10 @@ public final class Interpreter
 
         ScopeStorage oldStorage = storage;
         Scope scope = reactor.get(decl, "scope");
+
+        ScopeStorage closureStorage = reactor.get(decl, "closureStorage");
+        if (closureStorage != null) storage = new ScopeStorage(scope, closureStorage);
+
         storage = new ScopeStorage(scope, storage);
 
         FunDeclarationNode funDecl = (FunDeclarationNode) decl;
@@ -421,6 +425,8 @@ public final class Interpreter
         try {
             get(funDecl.block);
         } catch (Return r) {
+            if (r.value instanceof FunDeclarationNode)
+                reactor.set(r.value, "closureStorage", storage);
             return r.value;
         } finally {
             storage = oldStorage;
