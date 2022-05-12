@@ -492,5 +492,71 @@ public final class InterpreterTests extends TestFixture {
         );
     }
 
+    @Test
+    public void TestComplexCalls() {
+        rule = grammar.root;
+
+        // Int sum
+        // TODO fix
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): B { return a + b };" +
+                "template<A, B>" +
+                "return add<Int[], Int[]>(1, 1)",
+            2L
+        );
+    }
+
+    @Test
+    public void TestComplexTemplateDeclarations() {
+        rule = grammar.root;
+
+        // Multiple template declarations
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): B { return a + b };" +
+                "template<A, B>" +
+                "fun add2 (a: A, b: B): B { return a + b};",
+            null
+        );
+
+        // Template declaration inside scope
+        check(
+            "fun test() {" +
+                    "template<A, B>" +
+                    "fun add (a: A, b: B): B { return a + b };" +
+                    "template<A, B>" +
+                    "fun add2 (a: A, b: B): B { return a + b};" +
+                "}",
+            null
+        );
+    }
+
+    @Test
+    public void TestComplexTemplateCalls() {
+        rule = grammar.root;
+
+        // Multiple template declarations + mixed calls
+        // TODO fix
+        /*check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): B { return a + b };" +
+                "template<A, B>" +
+                "fun add2 (a: A, b: B): B { return a + b};" +
+                "return add<Int, Int>(1, 1) + add2<Int, Int>(1, 1)",
+                4L
+        );*/
+
+        // Mixing template function return operations
+        // TODO fix
+        check(
+            "template<A, B>" +
+                "fun add (a: A, b: B): B { return a + b };" +
+                "return add<Int, Int>(1, 1) + add<Int, Int>(1, 1) * 2",
+            6L
+        );
+
+    }
+
     // NOTE(norswap): Not incredibly complete, but should cover the basics.
 }
