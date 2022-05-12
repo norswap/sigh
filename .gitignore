@@ -38,3 +38,4 @@
 
 # Intelllij Maven
 .idea/**/gradle.xml
+.idea/misc.xml
