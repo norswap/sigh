@@ -8,6 +8,7 @@ import norswap.sigh.scopes.SyntheticDeclarationNode;
 import norswap.sigh.types.FloatType;
 import norswap.sigh.types.IntType;
 import norswap.sigh.types.StringType;
+import norswap.sigh.types.TemplateType;
 import norswap.sigh.types.Type;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
@@ -177,6 +178,10 @@ public final class Interpreter
     {
         Type leftType  = reactor.get(node.left, "type");
         Type rightType = reactor.get(node.right, "type");
+
+        // Needed in order to be able to process the binary arithmetic properly
+        if (leftType instanceof TemplateType) leftType = ((TemplateType) leftType).getTemplateTypeReference();
+        if (rightType instanceof TemplateType) rightType = ((TemplateType) rightType).getTemplateTypeReference();
 
         // Cases where both operands should not be evaluated.
         switch (node.operator) {

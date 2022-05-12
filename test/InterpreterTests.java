@@ -434,30 +434,29 @@ public final class InterpreterTests extends TestFixture {
         );
 
         // Template params
-        // TODO fix should not reach here
-        /*check(
+        check(
             "template<A, B>" +
                 "fun add (a: A, b: B): Int { return a + b };" +
                 "return add<Int, Int>(1,1)",
             2L
-        );*/
+        );
 
         // Template return
         // TODO fix above first in templatedeclarations
-        /*check(
-            "template<A, B>" +
-                "fun add (a: Int, b: Int): A { return a + b } ",
-            null
-        );*/
+//        check(
+//            "template<A, B>" +
+//                "fun add (a: Int, b: Int): A { return a + b } ",
+//            null
+//        );
 
         // All
         // TODO fix should not reach here
-/*        check(
-            "template<A, B>" +
-                "fun add (a: A, b: A): B { return a + b };" +
-                "return add<Int, Int>(1, 1)",
-            2L
-        );*/
+//        check(
+//            "template<A, B>" +
+//                "fun add (a: A, b: A): B { return a + b };" +
+//                "return add<Int, Int>(1, 1)",
+//            2L
+//        );
     }
 
     @Test
@@ -465,7 +464,6 @@ public final class InterpreterTests extends TestFixture {
         rule = grammar.root;
 
         // Int sum
-        // TODO fix
         check(
             "template<A, B>" +
                 "fun add (a: A, b: B): B { return a + b };" +
@@ -474,7 +472,6 @@ public final class InterpreterTests extends TestFixture {
         );
 
         // String concat
-        // TODO fix
         check(
             "template<A, B>" +
                 "fun add (a: A, b: B): B { return a + b };" +
@@ -483,12 +480,11 @@ public final class InterpreterTests extends TestFixture {
         );
 
         // Float
-        // TODO fix
         check(
             "template<A, B>" +
                 "fun add (a: A, b: B): B { return a + b };" +
-                "return add<Float, Float>(1.0f, 1.0f)",
-            2.0f
+                "return add<Float, Float>(1.0, 1.0)",
+            2.0
         );
     }
 
@@ -548,7 +544,6 @@ public final class InterpreterTests extends TestFixture {
         );*/
 
         // Mixing template function return operations
-        // TODO fix
         check(
             "template<A, B>" +
                 "fun add (a: A, b: B): B { return a + b };" +
