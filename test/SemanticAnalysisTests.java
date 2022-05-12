@@ -265,8 +265,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "template<T>" +
             "fun add (a: T, b: T): T { return a + b } " +
             "return add<String>(2, 2)",
-"incompatible argument provided for argument 0: expected String but got Int",
-            "incompatible argument provided for argument 1: expected String but got Int");
+"Mismatch between argument type Int (argument [0]) and provided type of template parameter T (expected String)",
+            "Mismatch between argument type Int (argument [1]) and provided type of template parameter T (expected String)");
 
         // Wrong number of arguments
         failureInputWith(
@@ -282,7 +282,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
                 "fun add (a: T, b: T): T { return a + b } " +
                 "return add<String>(2)",
             "wrong number of arguments, expected 2 but got 1",
-            "incompatible argument provided for argument 0: expected String but got Int"
+            "Mismatch between argument type Int (argument [0]) and provided type of template parameter T (expected String)"
         );
 
     }
