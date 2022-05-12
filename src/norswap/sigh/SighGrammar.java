@@ -129,6 +129,14 @@ public class SighGrammar extends Grammar
         seq(LSQUARE, expressions, RSQUARE)
         .push($ -> new ArrayLiteralNode($.span(), $.$[0]));
 
+    public rule array_type = left_expression()
+        .left(simple_type)
+        .suffix(seq(LSQUARE, RSQUARE),
+            $ -> new ArrayTypeNode($.span(), $.$[0]));
+
+    public rule type =
+        seq(array_type);
+
     public rule tuple =
         seq(LPAREN, expressions, RPAREN)
             .push($ -> new TupleLiteralNode($.span(), $.$[0]));
@@ -144,8 +152,10 @@ public class SighGrammar extends Grammar
         tuple
     );
 
+    public rule function_template_args_type = type.sep(1, COMMA)
+        .as_list(SimpleTypeNode.class);
     public rule function_template_args =
-        seq(LANGLE, simple_types, RANGLE);
+        seq(LANGLE, function_template_args_type, RANGLE);
 
     public rule function_args =
         seq(opt(function_template_args), LPAREN, expressions, RPAREN);
@@ -224,14 +234,6 @@ public class SighGrammar extends Grammar
             $.push(new ExpressionStatementNode($.span(), $.$[0]));
             return true;
         });
-
-    public rule array_type = left_expression()
-        .left(simple_type)
-        .suffix(seq(LSQUARE, RSQUARE),
-            $ -> new ArrayTypeNode($.span(), $.$[0]));
-
-    public rule type =
-        seq(array_type);
 
     public rule statement = lazy(() -> choice(
         this.block,

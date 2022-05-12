@@ -209,6 +209,13 @@ public final class SemanticAnalysis
                 continue;
             }
 
+            // ArrayAccess
+            if (n instanceof ArrayAccessNode) {
+                referencesToCheck.add(((ArrayAccessNode) n).array);
+
+                continue;
+            }
+
             // ReferenceNode
             if (n instanceof ReferenceNode) {
 
@@ -491,15 +498,32 @@ public final class SemanticAnalysis
                 r.error("Indexing an array using a non-Int-valued expression", node.index);
         });
 
+        // Checking if any template parameters involved here
+        boolean check = involvesUninitializedTemplateParameter(node, scope);
+
         R.rule(node, "type")
         .using(node.array, "type")
-        .by(r -> {
-            Type type = r.get(0);
-            if (type instanceof ArrayType)
-                r.set(0, ((ArrayType) type).componentType);
-            else
-                r.error("Trying to index a non-array expression of type " + type, node);
-        });
+        .by(check
+            ? r -> {
+                Type type = r.get(0);
+
+                // Needed in order to properly get the reference once calling the function
+                type = type instanceof TemplateType ? ((TemplateType) type).getTemplateTypeReference() : type;
+
+                r.set(0, type);
+            }
+            : r -> {
+                Type type = r.get(0);
+
+                // Needed in order to properly get the reference once calling the function
+                type = type instanceof TemplateType ? ((TemplateType) type).getTemplateTypeReference() : type;
+
+                if (type instanceof ArrayType)
+                    r.set(0, ((ArrayType) type).componentType);
+                else
+                    r.error("Trying to index a non-array expression of type " + type, node);
+            }
+        );
     }
 
     // ---------------------------------------------------------------------------------------------

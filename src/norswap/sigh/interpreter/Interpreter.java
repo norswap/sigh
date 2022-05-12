@@ -180,8 +180,35 @@ public final class Interpreter
         Type rightType = reactor.get(node.right, "type");
 
         // Needed in order to be able to process the binary arithmetic properly
-        if (leftType instanceof TemplateType) leftType = ((TemplateType) leftType).getTemplateTypeReference();
-        if (rightType instanceof TemplateType) rightType = ((TemplateType) rightType).getTemplateTypeReference();
+        if (leftType instanceof TemplateType) {
+            if (node.left instanceof ArrayAccessNode) {
+                SighNode iterator = node.left;
+                int depth = 0;
+
+                while (iterator instanceof ArrayAccessNode) {
+                    iterator = ((ArrayAccessNode) iterator).array;
+                    depth++;
+                }
+
+                leftType = ((TemplateType) leftType).getTemplateTypeAccessReference(depth);
+            }
+            else leftType = ((TemplateType) leftType).getTemplateTypeReference();
+        }
+
+        if (rightType instanceof TemplateType) {
+            if (node.right instanceof ArrayAccessNode) {
+                SighNode iterator = node.right;
+                int depth = 0;
+
+                while (iterator instanceof ArrayAccessNode) {
+                    iterator = ((ArrayAccessNode) iterator).array;
+                    depth++;
+                }
+
+                rightType = ((TemplateType) rightType).getTemplateTypeAccessReference(depth);
+            }
+            else rightType = ((TemplateType) rightType).getTemplateTypeReference();
+        }
 
         // Cases where both operands should not be evaluated.
         switch (node.operator) {

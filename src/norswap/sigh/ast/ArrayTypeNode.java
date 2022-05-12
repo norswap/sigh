@@ -1,6 +1,7 @@
 package norswap.sigh.ast;
 
 import norswap.autumn.positions.Span;
+import norswap.sigh.types.ArrayType;
 import norswap.sigh.types.Type;
 import norswap.utils.Util;
 
@@ -16,7 +17,7 @@ public final class ArrayTypeNode extends TypeNode
     // TODO
     @Override
     public Type getType () {
-        return null;
+        return new ArrayType(this.componentType.getType());
     }
 
     @Override public String contents() {

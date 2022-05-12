@@ -4,6 +4,7 @@ import norswap.sigh.ast.*;
 import norswap.sigh.ast.base.TemplateTypeDeclarationNode;
 import norswap.sigh.ast.base.TemplateTypeNode;
 import norswap.sigh.ast.base.TupleLiteralNode;
+import norswap.sigh.types.IntType;
 import org.testng.annotations.Test;
 
 import static java.util.Arrays.asList;
@@ -297,6 +298,40 @@ public class GrammarTests extends AutumnTestFixture {
                 new ReferenceNode(null, "myFunction"),
                 asList(intlit(5), intlit(5)),
                 asList(new SimpleTypeNode(null, "MyCustomTypeMaybeForLater"))
+            )
+        );
+    }
+
+    @Test
+    public void testTemplateComplexTypeFunctionCall() {
+        rule = grammar.suffix_expression;
+
+        // Int array
+        successExpect("myFunction<Int[], Int[]>([5], [5])",
+            new FunCallNode(null,
+                new ReferenceNode(null, "myFunction"),
+                asList(new ArrayLiteralNode(null, asList(intlit(5))), new ArrayLiteralNode(null, asList(intlit(5)))),
+                asList(new ArrayTypeNode(null, new SimpleTypeNode(null, "Int")), new ArrayTypeNode(null, new SimpleTypeNode(null, "Int")))
+            )
+        );
+
+        // String array
+        successExpect("myFunction<String[], String[]>([\"test\"], [\"test\"])",
+            new FunCallNode(null,
+                new ReferenceNode(null, "myFunction"),
+                asList(
+                    new ArrayLiteralNode(null,
+                        asList(
+                            new StringLiteralNode(null, "test")
+                        )
+                    ),
+                    new ArrayLiteralNode(null,
+                        asList(
+                            new StringLiteralNode(null, "test")
+                        )
+                    )
+                ),
+                asList(new ArrayTypeNode(null, new SimpleTypeNode(null, "String")), new ArrayTypeNode(null, new SimpleTypeNode(null, "String")))
             )
         );
     }

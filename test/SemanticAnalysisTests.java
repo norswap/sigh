@@ -2,11 +2,13 @@ import norswap.autumn.AutumnTestFixture;
 import norswap.autumn.positions.LineMapString;
 import norswap.sigh.SemanticAnalysis;
 import norswap.sigh.SighGrammar;
-import norswap.sigh.ast.SighNode;
+import norswap.sigh.ast.*;
 import norswap.uranium.Reactor;
 import norswap.uranium.UraniumTestFixture;
 import norswap.utils.visitors.Walker;
 import org.testng.annotations.Test;
+
+import static java.util.Arrays.asList;
 
 /**
  * NOTE(norswap): These tests were derived from the {@link InterpreterTests} and don't test anything
@@ -294,6 +296,15 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "}" +
             "" +
             "var result:Int = sum<Int, Int, Int>(5, 5)");
+    }
+
+    @Test
+    public void testTemplateComplexTypeFunctionCall() {
+        successInput("template<T1>" +
+            "fun compare(a:T1, b:T1):Bool {" +
+            "    return a[0] < b[0]" +
+            "}" +
+            "var result:Bool = compare<Int[]>([5], [5])");
     }
 
     // ---------------------------------------------------------------------------------------------
