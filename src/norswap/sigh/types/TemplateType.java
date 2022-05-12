@@ -21,4 +21,8 @@ public final class TemplateType extends Type
     @Override public int hashCode () {
         return node.hashCode();
     }
+
+    public Type getTemplateTypeReference() {
+        return this.node.value != null ? this.node.value : this;
+    }
 }

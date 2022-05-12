@@ -674,14 +674,11 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
-    private Type inferTemplateTypeReference(TemplateType type) {
-        return type.node.value != null ? type.node.value : type;
-    }
-
     private void binaryArithmetic (Rule r, BinaryExpressionNode node, Type left, Type right)
     {
-        // Setting real type
-        if (left instanceof TemplateType) left = inferTemplateTypeReference((TemplateType) left);
+        // Needed in order to be able to process the binary arithmetic properly
+        if (left instanceof TemplateType) left = ((TemplateType) left).getTemplateTypeReference();
+        if (right instanceof TemplateType) right = ((TemplateType) right).getTemplateTypeReference();
 
         if (left instanceof IntType)
             if (right instanceof IntType)
