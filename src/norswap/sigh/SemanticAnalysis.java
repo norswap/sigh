@@ -674,8 +674,15 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private Type inferTemplateTypeReference(TemplateType type) {
+        return type.node.value != null ? type.node.value : type;
+    }
+
     private void binaryArithmetic (Rule r, BinaryExpressionNode node, Type left, Type right)
     {
+        // Setting real type
+        if (left instanceof TemplateType) left = inferTemplateTypeReference((TemplateType) left);
+
         if (left instanceof IntType)
             if (right instanceof IntType)
                 r.set(0, IntType.INSTANCE);
@@ -688,7 +695,9 @@ public final class SemanticAnalysis
                 r.set(0, FloatType.INSTANCE);
             else
                 r.error(arithmeticError(node, "Float", right), node);
-        else
+        else if (left instanceof TemplateType) {
+            r.set(0, TemplateType.class);
+        } else
             r.error(arithmeticError(node, left, right), node);
     }
 
