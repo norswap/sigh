@@ -197,6 +197,8 @@ public final class SemanticAnalysis
 
             if (n instanceof ReturnNode) {
                 referencesToCheck.add(((ReturnNode) n).expression);
+
+                continue;
             }
 
             // BinaryExpressionNode
@@ -1185,11 +1187,19 @@ public final class SemanticAnalysis
             R.rule()
             .using(function.returnType.attr("value"), node.expression.attr("type"))
             .by(r -> {
+
                 Type formal = r.get(0);
                 Type actual = r.get(1);
+
+                // Needed in order to ensure that we can declare a return statement with a template type without
+                // having to call the function (template <A,B> fun(a:Int):A { return a })
+                formal = formal instanceof TemplateType ? ((TemplateType) formal).getTemplateTypeReference() : formal;
+
                 if (formal instanceof VoidType)
                     r.error("Return with value in a Void function.", node);
                 else if (check) { // Assignment can only be checked whilst walking
+                    return;
+                } else if (formal instanceof TemplateType) { // Allowing (template <A,B> fun(a:Int):A { return a })
                     return;
                 } else if (!isAssignableTo(actual, formal)) {
                     r.errorFor(format(
