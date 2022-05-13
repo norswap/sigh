@@ -411,14 +411,20 @@ public final class Interpreter
             return buildStruct(((Constructor) decl).declaration, args);
 
         ScopeStorage oldStorage = storage;
-        Scope scope = reactor.get(decl, "scope");
 
-        ScopeStorage closureStorage = reactor.get(decl, "closureStorage");
-        if (closureStorage != null) storage = new ScopeStorage(scope, closureStorage);
+        FunDeclarationNode funDecl;
 
+        if(decl instanceof Closure)
+        {
+            Closure closure = (Closure) decl;
+            funDecl = (FunDeclarationNode) closure.funNode;
+            storage = closure.storage;
+        }else
+            funDecl = (FunDeclarationNode) decl;
+
+        Scope scope = reactor.get(funDecl, "scope");
         storage = new ScopeStorage(scope, storage);
 
-        FunDeclarationNode funDecl = (FunDeclarationNode) decl;
         coIterate(args, funDecl.parameters,
                 (arg, param) -> storage.set(scope, param.name, arg));
 
@@ -426,7 +432,7 @@ public final class Interpreter
             get(funDecl.block);
         } catch (Return r) {
             if (r.value instanceof FunDeclarationNode)
-                reactor.set(r.value, "closureStorage", storage);
+                return new Closure((FunDeclarationNode) r.value, storage);
             return r.value;
         } finally {
             storage = oldStorage;
