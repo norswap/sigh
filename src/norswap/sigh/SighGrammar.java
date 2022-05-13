@@ -57,6 +57,7 @@ public class SighGrammar extends Grammar
 
     public rule _var            = reserved("var");
     public rule _fun            = reserved("fun");
+    public rule _lazy           = reserved("lazy");
     public rule _struct         = reserved("struct");
     public rule _if             = reserved("if");
     public rule _else           = reserved("else");
@@ -224,7 +225,7 @@ public class SighGrammar extends Grammar
     public rule statement = lazy(() -> choice(
         this.block,
         this.var_decl,
-        this.fun_decl,
+        this.lazy_fun_decl,
         this.struct_decl,
         this.if_stmt,
         this.while_stmt,
@@ -257,6 +258,16 @@ public class SighGrammar extends Grammar
     public rule fun_decl =
         seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
             .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+
+    public FunDeclarationNode makeLazy(FunDeclarationNode node)
+    {
+        return null;
+    }
+
+    public rule lazy_fun_decl =
+        seq(_lazy.as_val(true).or_push_null(), fun_decl)
+            .push($ -> {
+                return ($.$[0] == null) ? $.$[1] : makeLazy((FunDeclarationNode) $.$[1]); });
 
     public rule field_decl =
         seq(_var, identifier, COLON, type)

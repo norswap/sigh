@@ -389,14 +389,21 @@ public final class InterpreterTests extends TestFixture {
                     "}; " +
                     "return addFactory(1)(2)", 3L);
 
-        check("fun lazyOne(): Int {return 1}; " +
-                    "fun lazyTwo(): Int {return 2}; " +
+        check("fun lazyAdd(i1: Int, i2: Int): <(): Int> " +
+                    "{ " +
+                    "fun f(): Int { return i1 + i2 }; " +
+                    "return f" +
+                    "}; " +
+                    "return lazyAdd(1, 2)()", 3L);
+
+        check("fun one(): Int {return 1}; " +
+                    "fun two(): Int {return 2}; " +
                     "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> " +
                     "{ " +
                         "fun f(): Int { return f1() + f2() }; " +
                         "return f" +
                     "}; " +
-                    "return lazyAdd(lazyOne, lazyTwo)()", 3L);
+                    "return lazyAdd(one, two)()", 3L);
 
         check("fun lazyInt(x: Int): <(): Int> " +
                     "{ " +
@@ -434,6 +441,33 @@ public final class InterpreterTests extends TestFixture {
                         "return f" +
                     "}; " +
                     "return lazyAdd(lazyInt(1), lazyInt(2))()", 3L);
+
+        check("fun lazyInt(x: Int): <(): Int> " +
+                    "{ " +
+                        "fun f(): Int { return x } " +
+                        "return f " +
+                    "}; " +
+                    "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> " +
+                    "{" +
+                        "fun f(): Int {return f1() + f2()}; " +
+                        "return f" +
+                    "}; " +
+                    "return lazyAdd(lazyAdd(lazyInt(4), lazyInt(3)), lazyAdd(lazyInt(1), lazyInt(2)))()", 10L);
+
+
+        check("fun factorial(x: Int): Int " +
+                    "{ if(x > 1) return (x * factorial(x - 1)) else return 1 }; " +
+                    "return factorial(6)", 720L);
+
+        check("fun lazyFactorial(x: Int): <(): Int> " +
+                    "{ " +
+                        "fun factorial(x: Int): Int { if(x > 1) return (x * factorial(x - 1)) else return 1 }" +
+                        "fun f(): Int { return factorial(x) }" +
+                        "return f" +
+                    "}" +
+                    "return lazyFactorial(6)()", 720L);
+
+        //check("print(\"\" + 1); print(\"\" + 3);", null, "1\n3\n");
     }
 
     // ---------------------------------------------------------------------------------------------
