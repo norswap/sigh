@@ -669,10 +669,6 @@ public final class SemanticAnalysis
      */
     private static boolean isAssignableTo (Type a, Type b)
     {
-        if (a instanceof FunType && b instanceof FunType) return ((FunType) a).returnType.getClass().equals(((FunType) b).returnType.getClass());
-        else if(a instanceof FunType) return ((FunType) a).returnType.getClass().equals(b.getClass());
-        else if(b instanceof FunType) return a.getClass().equals(((FunType) b).getClass());
-    	
         if (a instanceof VoidType || b instanceof VoidType)
             return false;
 

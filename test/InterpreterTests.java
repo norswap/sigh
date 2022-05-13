@@ -368,17 +368,37 @@ public final class InterpreterTests extends TestFixture {
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testFactoryFunctions() {
-        check("fun factory(xxx: Int): <(): Int> {fun plusOne(): Int {return xxx + 1}; return plusOne}; return factory(0)()", 1L);
+        check("fun factory(xxx: Int): <(): Int> " +
+                    "{" +
+                        "fun plusOne(): Int { return xxx + 1 }; " +
+                        "return plusOne" +
+                    "}; " +
+                    "return factory(0)()", 1L);
 
-        check("fun addFactory(x: Int): <(Int): Int> {fun add(y: Int): Int {return x + y}; return add}; return addFactory(1)(2)", 3L);
+        check("fun addFactory(x: Int): <(Int): Int> " +
+                    "{" +
+                        "fun add(y: Int): Int { return x + y }; " +
+                        "return add" +
+                    "}; " +
+                    "return addFactory(1)(2)", 3L);
 
         check("fun lazyOne(): Int {return 1}; " +
             "fun lazyTwo(): Int {return 2}; " +
-            "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> {fun f(): Int {return f1() + f2()}; return f}; " +
-            " return lazyAdd(lazyOne, lazyTwo)()", 3L);
+            "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> { fun f(): Int {return f1() + f2() }; return f}; " +
+            "return lazyAdd(lazyOne, lazyTwo)()", 3L);
 
-        check("fun int(x: Int): Int { return x }; " +
-            "return int(1) + int(2)", 3L);
+        check("fun x(y: <(<(Int): Int>, Int): Int>, z: <(Int): Int>, w: Int): Int " +
+                    "{ return y(z, w) }; " +
+                    "fun y(z: <(Int): Int>, w: Int): Int " +
+                    "{ return z(w) + 1 }; " +
+                    "fun z(w: Int): Int " +
+                    "{ return w * 10 }; " +
+                    "return x(y, z, 10); ", 101L);
+//
+//        check("fun x(y: <(<(): Int>): Int>, z: <(Int): Int>): Int { return y(z) }; " +
+//            "fun y(z: <(): Int>): Int { return z() + 1 }; " +
+//            "fun z(w: Int): Int { return w * 10 }; " +
+//            "return x(y, z(10))", 11L);
 
         check("fun lazyInt(x: Int): <(): Int> { fun f(): Int { return x } return f }; " +
             "fun lazyAdd(f1: <(): Int>, f2: <(): Int>): <(): Int> {fun f(): Int {return f1() + f2()}; return f}; " +
