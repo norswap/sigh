@@ -224,6 +224,7 @@ public class GrammarTests extends AutumnTestFixture {
                             "}",
                             nodeForComparision);
 
+        // TODO Works here but fails from Semantic Analysis
         successExpect("lazy fun f (x: Int): Int { return x }",
                             nodeForComparision);
     }

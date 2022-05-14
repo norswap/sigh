@@ -374,10 +374,10 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
                         "return _" +
                     "}");
 
-        // Doesn't work
+        // TODO fails
 //        successInput("lazy fun f() { }");
 
-        // Doesn't work
+        // TODO fails
         successInput("fun f(x: Int): <(): Int> " +
                     "{ " +
                         "fun f_(x: Int): Int { return x }" +

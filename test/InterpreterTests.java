@@ -466,8 +466,6 @@ public final class InterpreterTests extends TestFixture {
                         "return f" +
                     "}" +
                     "return lazyFactorial(6)()", 720L);
-
-        //check("print(\"\" + 1); print(\"\" + 3);", null, "1\n3\n");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -481,7 +479,7 @@ public final class InterpreterTests extends TestFixture {
                     "}" +
                     "return f(1)()", 1L);
 
-        // Doesn't work
+        // TODO fails
 //        check("lazy fun f (x: Int): Int { return x };" +
 //                    "return f(1)", 1L);
     }

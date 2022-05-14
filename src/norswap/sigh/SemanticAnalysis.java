@@ -817,14 +817,14 @@ public final class SemanticAnalysis
         });
 
         R.rule()
-            .using(node.block.attr("returns"), node.returnType.attr("value"))
-            .by(r -> {
-                boolean returns = r.get(0);
-                Type returnType = r.get(1);
-                if (!returns && !(returnType instanceof VoidType))
-                    r.error("Missing return in function.", node);
-                // NOTE: The returned value presence & type is checked in returnStmt().
-            });
+        .using(node.block.attr("returns"), node.returnType.attr("value"))
+        .by(r -> {
+            boolean returns = r.get(0);
+            Type returnType = r.get(1);
+            if (!returns && !(returnType instanceof VoidType))
+                r.error("Missing return in function.", node);
+            // NOTE: The returned value presence & type is checked in returnStmt().
+        });
     }
 
     // ---------------------------------------------------------------------------------------------

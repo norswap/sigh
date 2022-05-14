@@ -437,7 +437,6 @@ public final class Interpreter
         } finally {
             storage = oldStorage;
         }
-        
         return null;
     }
 

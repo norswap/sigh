@@ -261,7 +261,7 @@ public class SighGrammar extends Grammar
 
     public rule fun_decl =
         seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
-            .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
+        .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
 
     public List<ReferenceNode> toReferences(List<ParameterNode> parameters)
     {
