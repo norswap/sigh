@@ -968,6 +968,9 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         R.set(node, "type", TypeType.INSTANCE);
         R.set(node, "declared", new BoxType(node));
+//        for (MethodDeclarationNode method : node.methods) {
+//            methDecl(method);
+//        }
     }
 
     // endregion

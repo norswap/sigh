@@ -302,9 +302,15 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testBoxSemantic()
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     *                                                                                             *
+     *                                 TESTS DONE BY GROUP 10                                      *                                                             *
+     *                                                                                             *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    @Test public void testBoxSimpleCase()
     {
-        String input1 = "" +
+        String input = "" +
             "box Car {\n" +
             "   attr max_speed: Int\n" +
             "   meth get_max_speed(): Int {\n" +
@@ -314,10 +320,31 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "       max_speed = speed\n" +
             "   }\n" +
             "}\n";
-        successInput(input1);
+        successInput(input);
+    }
 
-        String input2 = "" +
-            "struct Pair { }\n" +
+    @Test public void testMethodAccessAttribute()
+    {
+        String input = "" +
+            "box Car {\n" +
+            "   attr nWheels: Int\n" +
+            "   meth get_nWheels(): Int {\n" +
+            "       return 2\n" +
+            "   }\n" +
+            "}\n" +
+            "box Car555 {\n" +
+            "   attr nWheels: Int\n" +
+            "   meth get_nWheels(): Int {\n" +
+            "       return 2\n" +
+            "   }\n" +
+            "}\n";
+
+        successInput(input);
+    }
+
+    @Test public void testForeignBox()
+    {
+        String input = "" +
             "box Wheel { \n" +
             "   meth get_size(): Int {\n" +
             "       return size\n" +
@@ -325,20 +352,53 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "   attr size: Int\n" +
             "}\n" +
             "box Car {\n" +
+            "   attr wheels: Wheel\n" +
+            "   meth get_wheels_size_attr(): Int {\n" +
+            "       return wheels#size\n" +
+            "   }\n" +
+            "   meth get_wheels_size_meth(): Int {\n" +
+            "       return wheels#get_size()\n" +
+            "   }\n" +
+            "}\n";
+        successInput(input);
+    }
+
+    @Test public void testMethodReturnType()
+    {
+        String input = "" +
+            "box Car {\n" +
+            "   attr nWheels: Int\n" +
+            "   meth get_nWheels(): String {\n" +
+            "       return nWheels\n" +
+            "   }\n" +
+            "}\n";
+        successInput(input);
+    }
+
+
+
+    @Test public void testForeignAttributeTypes()
+    {
+        String input = "" +
+            "box Car {\n" +
             "   attr max_speed: Int\n" +
             "   attr arr: Int[]\n" +
-            "   attr wheels: Wheel\n" +
             "   meth get_max_speed(): Int {\n" +
             "       return max_speed\n" +
             "   }\n" +
-            "   meth get_wheels_size(): Int {\n" +
-            "       return wheels#get_size()\n" +
+            "   meth get_arr_i(i: Int): Int {\n" +
+            "       return arr[i]\n" +
             "   }\n" +
             "   meth set_max_speed(speed: Int) {\n" +
             "       max_speed = speed\n" +
             "   }\n" +
             "}\n";
-        successInput(input2);
+        successInput(input);
+    }
+
+
+    @Test public void testBoxSemantic()
+    {
 
         String input3 = "" +
             "box Wheel { \n" +
