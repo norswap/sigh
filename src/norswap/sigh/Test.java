@@ -20,7 +20,7 @@ public final class Test
 //        String file = "fizzbuzz.si";
 //        String file = "kitchensink.si";
 //        String file = "debug.si";
-                String file = "Car.si";
+                String file = "draft.si";
 //                String file = "draft.si";
 //        String file = "Struct.si";
         /*

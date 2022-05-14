@@ -151,6 +151,9 @@ public class GrammarTests extends AutumnTestFixture {
             "   meth get_max_speed(): Int {\n" +
             "       return max_speed\n" +
             "   }\n" +
+            "   meth get_wheels_size(): Int {\n" +
+            "       return wheels#size\n" +
+            "   }\n" +
             "   meth set_max_speed(speed: Int) {\n" +
             "       max_speed = speed\n" +
             "   }\n" +
@@ -160,10 +163,11 @@ public class GrammarTests extends AutumnTestFixture {
             new BoxDeclarationNode(null, "Car",
                 asList(new AttributeDeclarationNode(null, "max_speed", new SimpleTypeNode(null, "Int")),
                     new AttributeDeclarationNode(null, "arr", new ArrayTypeNode(null, new SimpleTypeNode(null, "Int"))),
-                    new AttributeDeclarationNode(null, "wheels", new SimpleTypeNode(null, "Wheel"))
-                ),
-                asList(new MethodDeclarationNode(null, "get_max_speed", asList(), new SimpleTypeNode(null, "Int"),
+                    new AttributeDeclarationNode(null, "wheels", new SimpleTypeNode(null, "Wheel")),
+                    new MethodDeclarationNode(null, "get_max_speed", asList(), new SimpleTypeNode(null, "Int"),
                         new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "max_speed"))))),
+                    new MethodDeclarationNode(null, "get_wheels_size", asList(), new SimpleTypeNode(null, "Int"),
+                        new BlockNode(null, asList(new ReturnNode(null, new AttributeAccessNode(null, new ReferenceNode(null, "wheels"), "size"))))),
                     new MethodDeclarationNode(null, "set_max_speed",
                         asList(new ParameterNode(null, "speed", new SimpleTypeNode(null, "Int"))),
                         new SimpleTypeNode(null, "Void"),

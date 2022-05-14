@@ -117,6 +117,7 @@ public final class SemanticAnalysis
         walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analysis::arrayLiteral);
         walker.register(ParenthesizedNode.class,        PRE_VISIT,  analysis::parenthesized);
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
+        walker.register(AttributeAccessNode.class,      PRE_VISIT,  analysis::attributeAccess);
         walker.register(ArrayAccessNode.class,          PRE_VISIT,  analysis::arrayAccess);
         walker.register(FunCallNode.class,              PRE_VISIT,  analysis::funCall);
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
@@ -413,6 +414,51 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
+    private void attributeAccess (AttributeAccessNode node)
+    {
+        R.rule()
+            .using(node.stem, "type")
+            .by(r -> {
+                Type type = r.get(0);
+
+                if (type instanceof ArrayType) {
+                    if (node.attributeName.equals("length"))
+                        R.rule(node, "type")
+                            .by(rr -> rr.set(0, IntType.INSTANCE));
+                    else
+                        r.errorFor("Trying to access a non-length attribute on an array", node,
+                            node.attr("type"));
+                    return;
+                }
+
+                if (!(type instanceof BoxType)) {
+                    r.errorFor("Trying to access an attribute on an expression of type " + type,
+                        node,
+                        node.attr("type"));
+                    return;
+                }
+
+                BoxDeclarationNode decl = ((BoxType) type).node;
+
+                for (DeclarationNode attribute: decl.attributes)
+                {
+                    if (!attribute.name().equals(node.attributeName)) continue;
+
+                    R.rule(node, "type")
+                        .using(attribute, "type")
+                        .by(Rule::copyFirst);
+
+                    return;
+                }
+
+                String description = format("Trying to access missing attribute %s on box %s",
+                    node.attributeName, decl.name);
+                r.errorFor(description, node, node.attr("type"));
+            });
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private void arrayAccess (ArrayAccessNode node)
     {
         R.rule()
@@ -621,6 +667,7 @@ public final class SemanticAnalysis
 
                 if (node.left instanceof ReferenceNode
                     ||  node.left instanceof FieldAccessNode
+                    // TODO Add the attribute access node
                     ||  node.left instanceof ArrayAccessNode) {
                     if (!isAssignableTo(right, left))
                         r.errorFor("Trying to assign a value to a non-compatible lvalue.", node);
@@ -642,7 +689,7 @@ public final class SemanticAnalysis
         R.rule()
             .by(r -> {
                 // type declarations may occur after use
-                System.out.println(scope + " " + node.name);
+//                System.out.println(scope + " " + node.name);
                 DeclarationContext ctx = scope.lookup(node.name);
                 DeclarationNode decl = ctx == null ? null : ctx.declaration;
 

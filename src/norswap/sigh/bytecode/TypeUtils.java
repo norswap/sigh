@@ -22,6 +22,16 @@ public final class TypeUtils {
     // ---------------------------------------------------------------------------------------------
 
     /**
+     * Returns the slash-separated binary type name for the runtime representation of the given
+     * structure.
+     */
+    public static String boxBinaryName (BoxType type) {
+        return type.name();
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
      * Returns a java {@link Class} used for the runtime representation of the given Sigh {@link
      * Type}.
      *
@@ -95,6 +105,39 @@ public final class TypeUtils {
      * Returns the JVM field descriptor the runtime representation of the given Sigh {@link Type}.
      */
     public static String fieldDescriptor (Type type)
+    {
+        if (type instanceof IntType)
+            return "J"; // long
+        else if (type instanceof BoolType)
+            return "Z"; // boolean
+        else if (type instanceof FloatType)
+            return "D"; // double
+        else if (type instanceof VoidType)
+            return "V"; // void
+        else if (type instanceof StringType)
+            return "Ljava/lang/String;";
+        else if (type instanceof NullType)
+            return "Lnorswap/sigh/bytecode/Null;";
+        else if (type instanceof ArrayType)
+            return "[" + fieldDescriptor(((ArrayType) type).componentType);
+        else if (type instanceof TypeType)
+            return "Lnorswap/sigh/types/Type;";
+        else if (type instanceof FunType)
+            throw new UnsupportedOperationException(); // TODO
+        else if (type instanceof StructType)
+            return "L" + structBinaryName((StructType) type) + ";";
+        // TODO Add the attribute
+        else
+            throw new Error("unreachable");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * TODO CHECK THIS WHOLE FUNCTION
+     * Returns the JVM field descriptor the runtime representation of the given Sigh {@link Type}.
+     */
+    public static String attributeDescriptor (Type type)
     {
         if (type instanceof IntType)
             return "J"; // long

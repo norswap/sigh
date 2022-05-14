@@ -53,6 +53,7 @@ public class SighGrammar extends Grammar
     public rule BAR_BAR         = word("||");
     public rule BANG            = word("!");
     public rule DOT             = word(".");
+    public rule HASHTAG         = word("#");
     public rule DOLLAR          = word("$");
     public rule COMMA           = word(",");
     public rule CREATE          = word("create");
@@ -145,6 +146,8 @@ public class SighGrammar extends Grammar
         .left(basic_expression)
         .suffix(seq(DOT, identifier),
             $ -> new FieldAccessNode($.span(), $.$[0], $.$[1]))
+        .suffix(seq(HASHTAG, identifier),
+            $ -> new AttributeAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(seq(LSQUARE, lazy(() -> this.expression), RSQUARE),
             $ -> new ArrayAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(function_args,
@@ -296,13 +299,15 @@ public class SighGrammar extends Grammar
         seq(_meth, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
             .push($ -> new MethodDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
 
+    public rule box_element =
+        choice(attribute_decl, method_decl);
+
     public rule box_body =
-        seq(LBRACE, attribute_decl.at_least(0).as_list(DeclarationNode.class),
-            method_decl.at_least(0).as_list(DeclarationNode.class), RBRACE);
+        seq(LBRACE, box_element.at_least(0).as_list(DeclarationNode.class), RBRACE);
 
     public rule box_decl =
         seq(_box, identifier, box_body)
-            .push($ -> new BoxDeclarationNode($.span(), $.$[0], $.$[1], $.$[2]));
+            .push($ -> new BoxDeclarationNode($.span(), $.$[0], $.$[1]));
 
     @Override public rule root () {
         return root;

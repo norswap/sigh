@@ -290,6 +290,8 @@ public final class Interpreter
             return right;
         }
 
+        // TODO Add attribute access node
+
         throw new Error("should not reach here");
     }
 
@@ -390,6 +392,19 @@ public final class Interpreter
                 new NullPointerException("accessing field of null object"));
         return stem instanceof Map
             ? Util.<Map<String, Object>>cast(stem).get(node.fieldName)
+            : (long) ((Object[]) stem).length; // only field on arrays
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private Object attributeAccess (AttributeAccessNode node)
+    {
+        Object stem = get(node.stem);
+        if (stem == Null.INSTANCE)
+            throw new PassthroughException(
+                new NullPointerException("accessing attribute of null object"));
+        return stem instanceof Map
+            ? Util.<Map<String, Object>>cast(stem).get(node.attributeName)
             : (long) ((Object[]) stem).length; // only field on arrays
     }
 
