@@ -812,7 +812,6 @@ public final class SemanticAnalysis
             Type[] paramTypes = new Type[node.parameters.size()];
             for (int i = 0; i < paramTypes.length; ++i)
                 paramTypes[i] = r.get(i + 1);
-
             r.set(0, new FunType(r.get(0), paramTypes));
         });
 
