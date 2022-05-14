@@ -340,7 +340,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testFactoryFunctions() {
+    @Test public void testClosures() {
         successInput("fun factory(): <(): Int> {fun one(): Int {return 1}; return one}");
 
         failureInput("fun factory(): <(): Int> {fun one(): Int {return 0.5}; return one}");

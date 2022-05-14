@@ -113,7 +113,7 @@ public class SighGrammar extends Grammar
         .push($ -> new SimpleTypeNode($.span(), $.$[0]));
 
     public rule fun_type =
-        seq(LANGLE, LPAREN, lazy(() -> this.type.sep(0, COMMA).as_list(TypeNode.class)), RPAREN, seq(COLON, simple_type).or_push_null(), RANGLE)
+        seq(LANGLE, LPAREN, lazy(() -> this.type.sep(0, COMMA).as_list(TypeNode.class)), RPAREN, seq(COLON, lazy(() -> this.type)).or_push_null(), RANGLE)
             .push($ -> new FunTypeNode($.span(), $.$[1], $.$[0]));
 
     public rule paren_expression = lazy(() ->

@@ -374,7 +374,7 @@ public final class InterpreterTests extends TestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testFactoryFunctions() {
+    @Test public void testClosures() {
         check("fun factory(x: Int): <(): Int> " +
                     "{" +
                         "fun plusOne(): Int { return x + 1 }; " +
@@ -466,6 +466,30 @@ public final class InterpreterTests extends TestFixture {
                         "return f" +
                     "}" +
                     "return lazyFactorial(6)()", 720L);
+
+        check("fun lazyComp(x: Int): <(): Int> " +
+                    "{ " +
+                        "fun comp(): Int { return x*x };" +
+                        "return comp;" +
+                    "};" +
+                    "fun map(arr: Int[], size: Int, f: <(Int): <(): Int>>, arr_: <(): Int>[]): <(): Int>[]" +
+                    "{" +
+                        "var i: Int = 0;" +
+                        "while (i < size) { arr_[i] = f(arr[i]); i=i+1 };" +
+                        "return arr_;" +
+                    "};" +
+                    "var arr: Int[] = [ 0, 1, 2, 3, 4 ];" +
+                    "var arr_: <(): Int>[] = [null, null, null, null, null];" +
+                    "fun activate(arr: <(): Int>[], size: Int, arr_: Int[]): Int[]" +
+                    "{" +
+                        "var i: Int = 0;" +
+                        "while (i < size) { arr_[i] = arr[i](); i=i+1 };" +
+                        "return arr_;" +
+                    "};" +
+                    "map(arr, 5, lazyComp, arr_);" +
+                    "var res: Int[] = [ 0, 0, 0, 0, 0 ];"+
+                    "activate(arr_, 5, res);" +
+                    "return res", new Object[]{ 0L, 1L, 4L, 9L, 16L });
     }
 
     // ---------------------------------------------------------------------------------------------
