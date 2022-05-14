@@ -3,6 +3,7 @@ package norswap.sigh.types;
 import norswap.sigh.ast.BoxDeclarationNode;
 
 public class BoxType extends Type {
+    public static final BoxType INSTANCE = new BoxType(null);
     public final BoxDeclarationNode node;
 
     public BoxType (BoxDeclarationNode node) {

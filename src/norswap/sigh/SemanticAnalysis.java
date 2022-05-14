@@ -269,7 +269,7 @@ public final class SemanticAnalysis
 
                 if (!(decl instanceof BoxDeclarationNode)) {
                     String description =
-                        "Applying the constructor operator (create) to non-boc reference for: "
+                        "Applying the constructor operator (create) to non-box reference for: "
                             + decl;
                     r.errorFor(description, node, node.attr("type"));
                     return;
@@ -642,6 +642,7 @@ public final class SemanticAnalysis
         R.rule()
             .by(r -> {
                 // type declarations may occur after use
+                System.out.println(scope + " " + node.name);
                 DeclarationContext ctx = scope.lookup(node.name);
                 DeclarationNode decl = ctx == null ? null : ctx.declaration;
 
@@ -678,6 +679,7 @@ public final class SemanticAnalysis
     private static boolean isTypeDecl (DeclarationNode decl)
     {
         if (decl instanceof StructDeclarationNode) return true;
+        if (decl instanceof BoxDeclarationNode) return true;
         if (!(decl instanceof SyntheticDeclarationNode)) return false;
         SyntheticDeclarationNode synthetic = cast(decl);
         return synthetic.kind() == DeclarationKind.TYPE;
@@ -806,19 +808,6 @@ public final class SemanticAnalysis
         R.rule(node, "type")
             .using(node.type, "value")
             .by(Rule::copyFirst);
-
-        R.rule()
-            .using(node.type.attr("value"), node.initializer.attr("type"))
-            .by(r -> {
-                Type expected = r.get(0);
-                Type actual = r.get(1);
-
-                if (!isAssignableTo(actual, expected))
-                    r.error(format(
-                            "incompatible initializer type provided for attribute `%s`: expected %s but got %s",
-                            node.name, expected, actual),
-                        node.initializer);
-            });
     }
 
     // ---------------------------------------------------------------------------------------------

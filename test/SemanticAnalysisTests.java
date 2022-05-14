@@ -315,6 +315,22 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "   }\n" +
             "}\n";
         successInput(input1);
+
+        String input2 = "" +
+            "struct Pair { }\n" +
+            "box Wheel { }\n" +
+            "box Car {\n" +
+            "   attr max_speed: Int\n" +
+            "   attr arr: Int[]\n" +
+            "   attr wheels: Wheel\n" +
+            "   meth get_max_speed(): Int {\n" +
+            "       return max_speed\n" +
+            "   }\n" +
+            "   meth set_max_speed(speed: Int) {\n" +
+            "       max_speed = speed\n" +
+            "   }\n" +
+            "}\n";
+        successInput(input2);
     }
 
     // ---------------------------------------------------------------------------------------------

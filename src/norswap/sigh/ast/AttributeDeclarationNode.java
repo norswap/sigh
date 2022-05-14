@@ -2,6 +2,7 @@ package norswap.sigh.ast;
 
 import norswap.autumn.positions.Span;
 import norswap.utils.Util;
+import java.util.ArrayList;
 
 public class AttributeDeclarationNode extends DeclarationNode
 {
@@ -13,18 +14,7 @@ public class AttributeDeclarationNode extends DeclarationNode
         super(span);
         this.name = Util.cast(name, String.class);
         this.type = Util.cast(type, TypeNode.class);
-        // TODO put the default type for every types
-        if (type.equals(new SimpleTypeNode(null, "Int"))) {
-            this.initializer = new IntLiteralNode(null, 0);
-        } else if (type.equals(new SimpleTypeNode(null, "Float"))) {
-            this.initializer = new FloatLiteralNode(null, 0);
-        } else if (type.equals(new SimpleTypeNode(null, "Bool"))) {
-            this.initializer = new IntLiteralNode(null, 0);
-        } else if (type.equals(new SimpleTypeNode(null, "String"))) {
-            this.initializer = new StringLiteralNode(null, "");
-        } else {
-            this.initializer = null;
-        }
+        this.initializer = null;
     }
 
     @Override public String name () {

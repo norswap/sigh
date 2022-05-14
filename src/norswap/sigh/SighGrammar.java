@@ -108,6 +108,10 @@ public class SighGrammar extends Grammar
         seq(DOLLAR, reference)
             .push($ -> new ConstructorNode($.span(), $.$[0]));
 
+    public rule box_constructor =
+        seq(CREATE, reference)
+            .push($ -> new BoxConstructorNode($.span(), $.$[0]));
+
     public rule simple_type =
         identifier
             .push($ -> new SimpleTypeNode($.span(), $.$[0]));
@@ -126,6 +130,7 @@ public class SighGrammar extends Grammar
 
     public rule basic_expression = choice(
         constructor,
+        box_constructor,
         reference,
         floating,
         integer,
