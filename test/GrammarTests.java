@@ -2,7 +2,6 @@ import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import org.testng.annotations.Test;
-import org.w3c.dom.Attr;
 
 import static java.util.Arrays.asList;
 import static norswap.sigh.ast.BinaryOperator.*;
@@ -164,6 +163,25 @@ public class GrammarTests extends AutumnTestFixture {
         // So this does not too, but no worry it is the case only in the grammar tests
         input = "box B1 { } box B2 {  }";
         failure(input);
+    }
+
+    @Test public void testAttributesInMethod() {
+        rule = grammar.statement;
+
+        String input = "" +
+            "box Car {\n" +
+            "   attr nWheels: Int\n" +
+            "   meth get_nWheels(): Int {\n" +
+            "       return nWheels\n" +
+            "   }\n" +
+            "}\n";
+
+        successExpect(input,
+            new BoxDeclarationNode(null, "Car", asList(
+                new AttributeDeclarationNode(null, "nWheels", new SimpleTypeNode(null, "Int")),
+                new MethodDeclarationNode(null, "get_nWheels", asList(), new SimpleTypeNode(null, "Int"),
+                    new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "nWheels")))))
+            )));
     }
 
     /**
