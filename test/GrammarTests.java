@@ -148,21 +148,30 @@ public class GrammarTests extends AutumnTestFixture {
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     @Test public void testMultipleStruct() {
-        rule = grammar.statement;
+        rule = grammar.root;
 
         String input = "struct Pair { }";
         successExpect(input, new StructDeclarationNode(null, "Pair", asList()));
 
-        // This does not work in the basic language
         input = "struct P1 { } struct P2 { }";
-        failure(input);
+        successExpect(input, new RootNode(null,
+            asList(
+                new StructDeclarationNode(null, "P1", asList()),
+                new StructDeclarationNode(null, "P2", asList())
+            )
+        ));
 
         input = "box Car { }";
         successExpect(input, new BoxDeclarationNode(null, "Car", asList()));
 
         // So this does not too, but no worry it is the case only in the grammar tests
         input = "box B1 { } box B2 {  }";
-        failure(input);
+        successExpect(input, new RootNode(null,
+            asList(
+                new BoxDeclarationNode(null, "B1", asList()),
+                new BoxDeclarationNode(null, "B2", asList())
+            )
+        ));
     }
 
     @Test public void testAttributesInMethod() {
