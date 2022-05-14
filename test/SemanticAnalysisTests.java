@@ -341,7 +341,6 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testFactoryFunctions() {
-        //
         successInput("fun factory(): <(): Int> {fun one(): Int {return 1}; return one}");
 
         failureInput("fun factory(): <(): Int> {fun one(): Int {return 0.5}; return one}");
@@ -364,4 +363,29 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    // ---------------------------------------------------------------------------------------------
+
+    @Test public void testLazyEvaluation() {
+        successInput("fun f(): <()> " +
+                    "{ " +
+                        "fun f_() { }" +
+                        "fun _() { f_() }" +
+                        "return _" +
+                    "}");
+
+        // Doesn't work
+//        successInput("lazy fun f() { }");
+
+        // Doesn't work
+        successInput("fun f(x: Int): <(): Int> " +
+                    "{ " +
+                        "fun f_(x: Int): Int { return x }" +
+                        "fun _(): Int { return f_(x) }" +
+                        "return _" +
+                    "}" +
+                    "return f(1)");
+
+//        successInput("lazy fun f (x: Int): Int { return x }; return f(1)");
+    }
 }

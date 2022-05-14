@@ -472,6 +472,22 @@ public final class InterpreterTests extends TestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
+    @Test public void testLazyEvaluation() {
+        check("fun f(x: Int): <(): Int> " +
+                    "{ " +
+                        "fun f_(x: Int): Int { return x }" +
+                        "fun _(): Int { return f_(x) }" +
+                        "return _" +
+                    "}" +
+                    "return f(1)()", 1L);
+
+        // Doesn't work
+//        check("lazy fun f (x: Int): Int { return x };" +
+//                    "return f(1)", 1L);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     @Test public void testCombined() {
         check("fun third(a: Int[]) : Int { return a[2]; };" +
                     "return third([1, 2, 3])", 3L);

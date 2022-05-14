@@ -189,44 +189,43 @@ public class GrammarTests extends AutumnTestFixture {
     @Test public void testLazyEvaluation() {
         rule = grammar.statement;
 
+        SighNode nodeForComparision =
+        new FunDeclarationNode(null, "f",
+            asList(
+                new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+            new FunTypeNode(null,
+                new SimpleTypeNode(null, "Int"),
+                asList()),
+            new BlockNode(null,
+                asList(
+                    new FunDeclarationNode(null, "f_",
+                        asList(
+                            new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
+                        new SimpleTypeNode(null, "Int"),
+                        new BlockNode(null,
+                            asList(new ReturnNode(null,
+                                new ReferenceNode(null, "x"))))),
+                    new FunDeclarationNode(null, "_",
+                        asList(),
+                        new SimpleTypeNode(null, "Int"),
+                        new BlockNode(null,
+                            asList(new ReturnNode(null,
+                                new FunCallNode(null,
+                                    new ReferenceNode(null, "f_"),
+                                    asList(new ReferenceNode(null, "x"))))))),
+                    new ReturnNode(null,
+                        new ReferenceNode(null, "_")))));
+
         successExpect("fun f(x: Int): <(): Int> " +
                             "{ " +
                                 "fun f_(x: Int): Int { return x }" +
-                                "fun f__(): Int { return f_(x) }" +
-                                "return f__" +
+                                "fun _(): Int { return f_(x) }" +
+                                "return _" +
                             "}",
-            new FunDeclarationNode(null, "f",
-                asList(
-                    new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                new FunTypeNode(null,
-                    new SimpleTypeNode(null, "Int"),
-                    asList()),
-                new BlockNode(null,
-                    asList(
-                        new FunDeclarationNode(null, "f_",
-                            asList(
-                                new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                            new SimpleTypeNode(null, "Int"),
-                            new BlockNode(null,
-                                asList(new ReturnNode(null,
-                                    new ReferenceNode(null, "x"))))),
-                        new FunDeclarationNode(null, "f__",
-                            asList(),
-                            new SimpleTypeNode(null, "Int"),
-                            new BlockNode(null,
-                                asList(new ReturnNode(null,
-                                    new FunCallNode(null,
-                                        new ReferenceNode(null, "f_"),
-                                        asList(new ReferenceNode(null, "x"))))))),
-                        new ReturnNode(null,
-                            new ReferenceNode(null, "f__"))))));
+                            nodeForComparision);
 
-        successExpect("lazy fun f (x: <(Int) : Int>) {}",
-            new FunDeclarationNode(null, "f",
-                asList(new ParameterNode(null, "x", new FunTypeNode(null, new SimpleTypeNode(null, "Int"), asList(new SimpleTypeNode(null, "Int"))))),
-                new SimpleTypeNode(null, "Void"),
-                new BlockNode(null, asList())));
-
+        successExpect("lazy fun f (x: Int): Int { return x }",
+                            nodeForComparision);
     }
 
     // ---------------------------------------------------------------------------------------------

@@ -2,9 +2,13 @@ package norswap.sigh;
 
 import norswap.autumn.Grammar;
 import norswap.sigh.ast.*;
+import norswap.utils.visitors.Visitor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import static java.util.Arrays.asList;
 import static norswap.sigh.ast.UnaryOperator.NOT;
 
 @SuppressWarnings("Convert2MethodRef")
@@ -259,9 +263,54 @@ public class SighGrammar extends Grammar
         seq(_fun, identifier, LPAREN, parameters, RPAREN, maybe_return_type, block)
             .push($ -> new FunDeclarationNode($.span(), $.$[0], $.$[1], $.$[2], $.$[3]));
 
+    public List<ReferenceNode> toReferences(List<ParameterNode> parameters)
+    {
+        List<ReferenceNode> references = new ArrayList<ReferenceNode>();
+
+        for (ParameterNode p: parameters) { references.add(new ReferenceNode(null, p.name)); }
+
+        return references;
+    }
+
+    public BlockNode convertReferences(BlockNode block, String oldReference, String newReference)
+    {
+        // TODO
+        return block;
+    }
+
+    public boolean isVoidType (TypeNode node)
+    {
+        return (node instanceof SimpleTypeNode) && ((SimpleTypeNode) node).name.equals("Void");
+    }
+
     public FunDeclarationNode makeLazy(FunDeclarationNode node)
     {
-        return null;
+        return
+        new FunDeclarationNode(node.span, node.name,
+            node.parameters,
+            new FunTypeNode(null,
+                node.returnType,
+                asList()),
+            new BlockNode(null,
+                asList(
+                    new FunDeclarationNode(null, node.name + "_",
+                        node.parameters,
+                        node.returnType,
+                        convertReferences(node.block, node.name, node.name + "_")),
+                    new FunDeclarationNode(null, "_",
+                        asList(),
+                        node.returnType,
+                        new BlockNode(null,
+                            asList(isVoidType(node.returnType) ?
+                                new FunCallNode(null,
+                                    new ReferenceNode(null, node.name + "_"),
+                                    toReferences(node.parameters)) :
+                                new ReturnNode(null,
+                                    new FunCallNode(null,
+                                        new ReferenceNode(null, node.name + "_"),
+                                        toReferences(node.parameters)))))),
+                    new ReturnNode(null,
+                        new ReferenceNode(null, "_")))));
     }
 
     public rule lazy_fun_decl =
