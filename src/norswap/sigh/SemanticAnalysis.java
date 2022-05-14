@@ -678,7 +678,7 @@ public final class SemanticAnalysis
 
                 if (node.left instanceof ReferenceNode
                     ||  node.left instanceof FieldAccessNode
-                    // TODO Add the attribute access node
+                    ||  node.left instanceof BoxElementAccessNode
                     ||  node.left instanceof ArrayAccessNode) {
                     if (!isAssignableTo(right, left))
                         r.errorFor("Trying to assign a value to a non-compatible lvalue.", node);

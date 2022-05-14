@@ -339,6 +339,25 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "   }\n" +
             "}\n";
         successInput(input2);
+
+        String input3 = "" +
+            "box Wheel { \n" +
+            "   meth get_size(): Int {\n" +
+            "       return size\n" +
+            "   }\n" +
+            "   attr size: Int\n" +
+            "}\n" +
+            "box Car {\n" +
+            "   attr wheels: Wheel\n" +
+            "   meth get_wheels_size(): Int {\n" +
+            "       return wheels#get_size()\n" +
+            "   }\n" +
+            "   meth set_wheels_size(size: Int) {\n" +
+            "       wheels#get_size = 10\n" +
+            "   }\n" +
+            "}\n";
+
+        failureInputWith(input3, "Trying to assign a value to a non-compatible lvalue.");
     }
 
     // ---------------------------------------------------------------------------------------------
