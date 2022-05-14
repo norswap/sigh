@@ -34,10 +34,10 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  * <h2>Big Principles
  * <ul>
  *     <li>Every {@link DeclarationNode} instance must have its {@code type} attribute to an
- *     instance of {@link Type} which is the type of the value declared (note that for struct
- *     declaration, this is always {@link TypeType}.</li>
+ *     instance of {@link Type} which is the type of the value declared (note that for struct and
+ *     boxes declarations, this is always {@link TypeType}.</li>
  *
- *     <li>Additionally, {@link StructDeclarationNode} (and default
+ *     <li>Additionally, {@link StructDeclarationNode} and {@link BoxDeclarationNode} (and default
  *     {@link SyntheticDeclarationNode} for types) must have their {@code declared} attribute set to
  *     an instance of the type being declared.</li>
  *
@@ -68,8 +68,8 @@ import static norswap.utils.visitors.WalkVisitType.PRE_VISIT;
  *     parameters, checking that if/while conditions are booleans, and array indices are
  *     integers.</li>
  *
- *     <li>The rules also check a number of other constraints: that accessed struct fields exist,
- *     that variables are declared before being used, etc...</li>
+ *     <li>The rules also check a number of other constraints: that accessed struct fields and box
+ *     elements exist, that variables are declared before being used, etc...</li>
  * </ul>
  */
 public final class SemanticAnalysis
@@ -114,17 +114,16 @@ public final class SemanticAnalysis
         walker.register(StringLiteralNode.class,        PRE_VISIT,  analysis::stringLiteral);
         walker.register(ReferenceNode.class,            PRE_VISIT,  analysis::reference);
         walker.register(ConstructorNode.class,          PRE_VISIT,  analysis::constructor);
+        walker.register(BoxConstructorNode.class,       PRE_VISIT,  analysis::boxConstructor);
         walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analysis::arrayLiteral);
         walker.register(ParenthesizedNode.class,        PRE_VISIT,  analysis::parenthesized);
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
-        walker.register(BoxElementAccessNode.class,      PRE_VISIT,  analysis::boxElementAccess);
+        walker.register(BoxElementAccessNode.class,     PRE_VISIT,  analysis::boxElementAccess);
         walker.register(ArrayAccessNode.class,          PRE_VISIT,  analysis::arrayAccess);
         walker.register(FunCallNode.class,              PRE_VISIT,  analysis::funCall);
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
         walker.register(BinaryExpressionNode.class,     PRE_VISIT,  analysis::binaryExpression);
         walker.register(AssignmentNode.class,           PRE_VISIT,  analysis::assignment);
-
-        walker.register(BoxConstructorNode.class,       PRE_VISIT,  analysis::boxConstructor);
 
         // types
         walker.register(SimpleTypeNode.class,           PRE_VISIT,  analysis::simpleType);
@@ -135,12 +134,12 @@ public final class SemanticAnalysis
         walker.register(BlockNode.class,                PRE_VISIT,  analysis::block);
         walker.register(VarDeclarationNode.class,       PRE_VISIT,  analysis::varDecl);
         walker.register(FieldDeclarationNode.class,     PRE_VISIT,  analysis::fieldDecl);
+        walker.register(AttributeDeclarationNode.class, PRE_VISIT,  analysis::attrDecl);
+        walker.register(MethodDeclarationNode.class,    PRE_VISIT,  analysis::methDecl);
         walker.register(ParameterNode.class,            PRE_VISIT,  analysis::parameter);
         walker.register(FunDeclarationNode.class,       PRE_VISIT,  analysis::funDecl);
         walker.register(StructDeclarationNode.class,    PRE_VISIT,  analysis::structDecl);
         walker.register(BoxDeclarationNode.class,       PRE_VISIT,  analysis::boxDecl);
-        walker.register(MethodDeclarationNode.class,    PRE_VISIT,  analysis::methDecl);
-        walker.register(AttributeDeclarationNode.class, PRE_VISIT,  analysis::attrDecl);
 
         walker.register(RootNode.class,                 POST_VISIT, analysis::popScope);
         walker.register(BlockNode.class,                POST_VISIT, analysis::popScope);
@@ -280,7 +279,8 @@ public final class SemanticAnalysis
 
                 int nAttr = boxDecl.attributes.size();
                 int nMeth = boxDecl.methods.size();
-                Attribute[] dependencies = new Attribute[nAttr + nMeth];
+                System.out.println(nAttr + " " + nMeth);
+                Attribute[] dependencies = new Attribute[nAttr + nMeth + 1];
                 dependencies[0] = decl.attr("declared");
                 forEachIndexed(boxDecl.attributes, (i, attribute) ->
                     dependencies[i + 1] = attribute.attr("type"));
@@ -291,8 +291,6 @@ public final class SemanticAnalysis
                     .using(dependencies)
                     .by(rr -> {
                         Type boxType = rr.get(0);
-                        Type[] params = IntStream.range(1, dependencies.length).<Type>mapToObj(rr::get)
-                            .toArray(Type[]::new);
                         rr.set(0, new FunType(boxType));
                     });
             });
@@ -858,10 +856,11 @@ public final class SemanticAnalysis
 
     private void attrDecl (AttributeDeclarationNode node)
     {
+/*      TODO
         this.inferenceContext = node;
 
         scope.declare(node.name, node);
-        R.set(node, "scope", scope);
+        R.set(node, "scope", scope);*/
 
         R.rule(node, "type")
             .using(node.type, "value")

@@ -40,9 +40,9 @@ import static norswap.utils.Vanilla.map;
  *     <li>Arrays: {@code Object[]}</li>
  *     <li>Structs: {@code HashMap<String, Object>}</li>
  *     <li>Functions: the corresponding {@link DeclarationNode} ({@link FunDeclarationNode} or
- *     {@link SyntheticDeclarationNode}), excepted structure constructors, which are
- *     represented by {@link Constructor}</li>
- *     <li>Types: the corresponding {@link StructDeclarationNode}</li>
+ *     {@link SyntheticDeclarationNode}), excepted structure and boxes constructors, which are
+ *     represented by {@link Constructor} and {@link BoxConstructor}</li>
+ *     <li>Types: the corresponding {@link StructDeclarationNode} and {@link BoxDeclarationNode}</li>
  * </ul>
  */
 public final class Interpreter
@@ -66,9 +66,11 @@ public final class Interpreter
         visitor.register(StringLiteralNode.class,        this::stringLiteral);
         visitor.register(ReferenceNode.class,            this::reference);
         visitor.register(ConstructorNode.class,          this::constructor);
+        visitor.register(BoxConstructorNode.class,       this::boxConstructor);
         visitor.register(ArrayLiteralNode.class,         this::arrayLiteral);
         visitor.register(ParenthesizedNode.class,        this::parenthesized);
         visitor.register(FieldAccessNode.class,          this::fieldAccess);
+        visitor.register(BoxElementAccessNode.class,     this::boxElementAccess);
         visitor.register(ArrayAccessNode.class,          this::arrayAccess);
         visitor.register(FunCallNode.class,              this::funCall);
         visitor.register(UnaryExpressionNode.class,      this::unaryExpression);
@@ -290,7 +292,17 @@ public final class Interpreter
             return right;
         }
 
-        // TODO Add attribute access node
+        if (node.left instanceof BoxElementAccessNode) {
+            BoxElementAccessNode boxAccess = (BoxElementAccessNode) node.left;
+            Object object = get(boxAccess.stem);
+            if (object == Null.INSTANCE)
+                throw new PassthroughException(
+                    new NullPointerException("accessing box of null object"));
+            Map<String, Object> box = cast(object);
+            Object right = get(node.right);
+            box.put(boxAccess.elementName, right);
+            return right;
+        }
 
         throw new Error("should not reach here");
     }
@@ -377,6 +389,13 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
+    private BoxConstructor boxConstructor (BoxConstructorNode node) {
+        // guaranteed safe by semantic analysis
+        return new BoxConstructor(get(node.ref));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     private Object expressionStmt (ExpressionStatementNode node) {
         get(node.expression);
         return null;  // discard value
@@ -405,7 +424,7 @@ public final class Interpreter
                 new NullPointerException("accessing attribute of null object"));
         return stem instanceof Map
             ? Util.<Map<String, Object>>cast(stem).get(node.elementName)
-            : (long) ((Object[]) stem).length; // only field on arrays
+            : (long) ((Object[]) stem).length; // only element on arrays
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -424,6 +443,9 @@ public final class Interpreter
 
         if (decl instanceof Constructor)
             return buildStruct(((Constructor) decl).declaration, args);
+
+        if (decl instanceof BoxConstructor)
+            return buildBox(((BoxConstructor) decl).declaration, args);
 
         ScopeStorage oldStorage = storage;
         Scope scope = reactor.get(decl, "scope");
@@ -465,8 +487,12 @@ public final class Interpreter
             return ((FunDeclarationNode) arg).name;
         else if (arg instanceof StructDeclarationNode)
             return ((StructDeclarationNode) arg).name;
+        else if (arg instanceof BoxDeclarationNode)
+            return ((BoxDeclarationNode) arg).name;
         else if (arg instanceof Constructor)
             return "$" + ((Constructor) arg).declaration.name;
+        else if (arg instanceof BoxConstructor)
+            return "create " + ((BoxConstructor) arg).declaration.name;
         else
             return arg.toString();
     }
@@ -479,6 +505,18 @@ public final class Interpreter
         for (int i = 0; i < node.fields.size(); ++i)
             struct.put(node.fields.get(i).name, args[i]);
         return struct;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private HashMap<String, Object> buildBox (BoxDeclarationNode node, Object[] args)
+    {
+        HashMap<String, Object> box = new HashMap<>();
+        for (int i = 0; i < node.attributes.size(); ++i)
+            box.put(node.attributes.get(i).name, node.attributes.get(i));
+        for (int i = 0; i < node.methods.size(); ++i)
+            box.put(node.methods.get(i).name, node.methods.get(i));
+        return box;
     }
 
     // ---------------------------------------------------------------------------------------------

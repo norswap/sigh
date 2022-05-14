@@ -43,6 +43,8 @@ public class GrammarTests extends AutumnTestFixture {
 
     @Test
     public void testNumericBinary () {
+        rule = grammar.expression;
+
         successExpect("1 + 2", new BinaryExpressionNode(null, intlit(1), ADD, intlit(2)));
         successExpect("2 - 1", new BinaryExpressionNode(null, intlit(2), SUBTRACT,  intlit(1)));
         successExpect("2 * 3", new BinaryExpressionNode(null, intlit(2), MULTIPLY, intlit(3)));
@@ -139,6 +141,35 @@ public class GrammarTests extends AutumnTestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     *                                                                                             *
+     *                                 TESTS DONE BY GROUP 10                                      *                                                             *
+     *                                                                                             *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    @Test public void testMultipleStruct() {
+        rule = grammar.statement;
+
+        String input = "struct Pair { }";
+        successExpect(input, new StructDeclarationNode(null, "Pair", asList()));
+
+        // This does not work in the basic language
+        input = "struct P1 { } struct P2 { }";
+        failure(input);
+
+        input = "box Car { }";
+        successExpect(input, new BoxDeclarationNode(null, "Car", asList()));
+
+        // So this does not too, but no worry it is the case only in the grammar tests
+        input = "box B1 { } box B2 {  }";
+        failure(input);
+    }
+
+    /*
+     * Big example that works in our grammar.
+     * It uses basic attributes, arrays, other boxes
+     * Access other boxes attributes and methods
+     * */
     @Test public void testBox() {
         rule = grammar.statement;
 
@@ -156,6 +187,9 @@ public class GrammarTests extends AutumnTestFixture {
             "   meth set_max_speed(speed: Int) {\n" +
             "       max_speed = speed\n" +
             "   }\n" +
+            "   meth get_wheels_type(): Int {\n" +
+            "       return wheels#get_type()\n" +
+            "   }\n" +
             "}\n";
 
         successExpect(input1,
@@ -172,7 +206,10 @@ public class GrammarTests extends AutumnTestFixture {
                         new SimpleTypeNode(null, "Void"),
                         new BlockNode(null, asList(new ExpressionStatementNode(null,
                             new AssignmentNode(null, new ReferenceNode(null, "max_speed"),
-                                new ReferenceNode(null, "speed"))))))))
+                                new ReferenceNode(null, "speed")))))),
+                    new MethodDeclarationNode(null, "get_wheels_type", asList(), new SimpleTypeNode(null, "Int"),
+                        new BlockNode(null, asList(new ReturnNode(null, new FunCallNode(null,
+                            new BoxElementAccessNode(null, new ReferenceNode(null, "wheels"), "get_type"), asList())))))))
         );
     }
 

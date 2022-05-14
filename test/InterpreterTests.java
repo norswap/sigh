@@ -350,5 +350,30 @@ public final class InterpreterTests extends TestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
+    @Test public void testBoxes()
+    {
+        rule = grammar.root;
+
+        String input0 = "" +
+            "struct Pair {\n" +
+            "   var col: String\n" +
+            "}\n" +
+            "var p: Pair = $Pair(\"Rouge\")\n" +
+            "return p.col";
+        check(input0, "Rouge");
+
+        String input1 = "" +
+            "box Car {\n" +
+            "   meth get_color(): String {\n" +
+            "       return \"Rouge\"\n" +
+            "   }\n" +
+            "}\n" +
+            "var car: Car = create Car()\n" +
+            "return car#get_color()";
+        check(input1, "Rouge");
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
     // NOTE(norswap): Not incredibly complete, but should cover the basics.
 }
