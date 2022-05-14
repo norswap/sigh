@@ -151,7 +151,9 @@ public class GrammarTests extends AutumnTestFixture {
         rule = grammar.root;
 
         String input = "struct Pair { }";
-        successExpect(input, new StructDeclarationNode(null, "Pair", asList()));
+        successExpect(input, new RootNode(null, asList(
+            new StructDeclarationNode(null, "Pair", asList())
+        )));
 
         input = "struct P1 { } struct P2 { }";
         successExpect(input, new RootNode(null,
@@ -162,7 +164,9 @@ public class GrammarTests extends AutumnTestFixture {
         ));
 
         input = "box Car { }";
-        successExpect(input, new BoxDeclarationNode(null, "Car", asList()));
+        successExpect(input, new RootNode(null, asList(
+            new BoxDeclarationNode(null, "Car", asList())
+        )));
 
         // So this does not too, but no worry it is the case only in the grammar tests
         input = "box B1 { } box B2 {  }";
