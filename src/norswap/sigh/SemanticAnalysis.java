@@ -117,7 +117,7 @@ public final class SemanticAnalysis
         walker.register(ArrayLiteralNode.class,         PRE_VISIT,  analysis::arrayLiteral);
         walker.register(ParenthesizedNode.class,        PRE_VISIT,  analysis::parenthesized);
         walker.register(FieldAccessNode.class,          PRE_VISIT,  analysis::fieldAccess);
-        walker.register(AttributeAccessNode.class,      PRE_VISIT,  analysis::attributeAccess);
+        walker.register(BoxElementAccessNode.class,      PRE_VISIT,  analysis::boxElementAccess);
         walker.register(ArrayAccessNode.class,          PRE_VISIT,  analysis::arrayAccess);
         walker.register(FunCallNode.class,              PRE_VISIT,  analysis::funCall);
         walker.register(UnaryExpressionNode.class,      PRE_VISIT,  analysis::unaryExpression);
@@ -414,7 +414,7 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
-    private void attributeAccess (AttributeAccessNode node)
+    private void boxElementAccess (BoxElementAccessNode node)
     {
         R.rule()
             .using(node.stem, "type")
@@ -422,7 +422,7 @@ public final class SemanticAnalysis
                 Type type = r.get(0);
 
                 if (type instanceof ArrayType) {
-                    if (node.attributeName.equals("length"))
+                    if (node.elementName.equals("length"))
                         R.rule(node, "type")
                             .by(rr -> rr.set(0, IntType.INSTANCE));
                     else
@@ -432,7 +432,7 @@ public final class SemanticAnalysis
                 }
 
                 if (!(type instanceof BoxType)) {
-                    r.errorFor("Trying to access an attribute on an expression of type " + type,
+                    r.errorFor("Trying to access a box element on an expression of type " + type,
                         node,
                         node.attr("type"));
                     return;
@@ -442,7 +442,7 @@ public final class SemanticAnalysis
 
                 for (DeclarationNode attribute: decl.attributes)
                 {
-                    if (!attribute.name().equals(node.attributeName)) continue;
+                    if (!attribute.name().equals(node.elementName)) continue;
 
                     R.rule(node, "type")
                         .using(attribute, "type")
@@ -451,8 +451,19 @@ public final class SemanticAnalysis
                     return;
                 }
 
-                String description = format("Trying to access missing attribute %s on box %s",
-                    node.attributeName, decl.name);
+                for (DeclarationNode attribute: decl.methods)
+                {
+                    if (!attribute.name().equals(node.elementName)) continue;
+
+                    R.rule(node, "type")
+                        .using(attribute, "type")
+                        .by(Rule::copyFirst);
+
+                    return;
+                }
+
+                String description = format("Trying to access missing box element %s on box %s",
+                    node.elementName, decl.name);
                 r.errorFor(description, node, node.attr("type"));
             });
     }

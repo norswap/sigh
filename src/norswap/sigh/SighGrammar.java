@@ -147,7 +147,7 @@ public class SighGrammar extends Grammar
         .suffix(seq(DOT, identifier),
             $ -> new FieldAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(seq(HASHTAG, identifier),
-            $ -> new AttributeAccessNode($.span(), $.$[0], $.$[1]))
+            $ -> new BoxElementAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(seq(LSQUARE, lazy(() -> this.expression), RSQUARE),
             $ -> new ArrayAccessNode($.span(), $.$[0], $.$[1]))
         .suffix(function_args,

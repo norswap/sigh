@@ -397,14 +397,14 @@ public final class Interpreter
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object attributeAccess (AttributeAccessNode node)
+    private Object boxElementAccess (BoxElementAccessNode node)
     {
         Object stem = get(node.stem);
         if (stem == Null.INSTANCE)
             throw new PassthroughException(
                 new NullPointerException("accessing attribute of null object"));
         return stem instanceof Map
-            ? Util.<Map<String, Object>>cast(stem).get(node.attributeName)
+            ? Util.<Map<String, Object>>cast(stem).get(node.elementName)
             : (long) ((Object[]) stem).length; // only field on arrays
     }
 

@@ -318,7 +318,12 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         String input2 = "" +
             "struct Pair { }\n" +
-            "box Wheel { attr size: Int }\n" +
+            "box Wheel { \n" +
+            "   meth get_size(): Int {\n" +
+            "       return size\n" +
+            "   }\n" +
+            "   attr size: Int\n" +
+            "}\n" +
             "box Car {\n" +
             "   attr max_speed: Int\n" +
             "   attr arr: Int[]\n" +
@@ -327,7 +332,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "       return max_speed\n" +
             "   }\n" +
             "   meth get_wheels_size(): Int {\n" +
-            "       return wheels#size\n" +
+            "       return wheels#get_size()\n" +
             "   }\n" +
             "   meth set_max_speed(speed: Int) {\n" +
             "       max_speed = speed\n" +

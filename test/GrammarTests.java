@@ -1,5 +1,4 @@
 import norswap.autumn.AutumnTestFixture;
-import norswap.autumn.positions.Span;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import org.testng.annotations.Test;
@@ -167,7 +166,7 @@ public class GrammarTests extends AutumnTestFixture {
                     new MethodDeclarationNode(null, "get_max_speed", asList(), new SimpleTypeNode(null, "Int"),
                         new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "max_speed"))))),
                     new MethodDeclarationNode(null, "get_wheels_size", asList(), new SimpleTypeNode(null, "Int"),
-                        new BlockNode(null, asList(new ReturnNode(null, new AttributeAccessNode(null, new ReferenceNode(null, "wheels"), "size"))))),
+                        new BlockNode(null, asList(new ReturnNode(null, new BoxElementAccessNode(null, new ReferenceNode(null, "wheels"), "size"))))),
                     new MethodDeclarationNode(null, "set_max_speed",
                         asList(new ParameterNode(null, "speed", new SimpleTypeNode(null, "Int"))),
                         new SimpleTypeNode(null, "Void"),

@@ -95,7 +95,7 @@ public class BytecodeCompiler
         visitor.register(ArrayLiteralNode.class,         this::arrayLiteral);
         visitor.register(ParenthesizedNode.class,        this::parenthesized);
         visitor.register(FieldAccessNode.class,          this::fieldAccess);
-        visitor.register(AttributeAccessNode.class,      this::attributeAccess);
+        visitor.register(BoxElementAccessNode.class,      this::boxElementAccess);
         visitor.register(ArrayAccessNode.class,          this::arrayAccess);
         visitor.register(FunCallNode.class,              this::funCall);
         visitor.register(UnaryExpressionNode.class,      this::unaryExpression);
@@ -857,15 +857,16 @@ public class BytecodeCompiler
             method.visitFieldInsn(PUTFIELD, structBinaryName(structType), left.fieldName,
                 fieldDescriptor(fieldType));
         }
-        else if (node.left instanceof AttributeAccessNode) {
-            AttributeAccessNode left = (AttributeAccessNode) node.left;
+        else if (node.left instanceof BoxElementAccessNode) {
+            BoxElementAccessNode left = (BoxElementAccessNode) node.left;
             run(left.stem);
             run(node.right);
             Type type = implicitConversion(node, node.right);
+            System.out.println(type);
             dup_x1(type);
             BoxType boxType = reactor.get(left.stem, "type");
             Type attributeType = reactor.get(node, "type");
-            method.visitFieldInsn(PUTFIELD, boxBinaryName(boxType), left.attributeName,
+            method.visitFieldInsn(PUTFIELD, boxBinaryName(boxType), left.elementName,
                 fieldDescriptor(attributeType));
         }
         return null;
@@ -970,10 +971,10 @@ public class BytecodeCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object attributeAccess (AttributeAccessNode node) {
+    private Object boxElementAccess (BoxElementAccessNode node) {
         run(node.stem);
         String binaryName = asmType(reactor.get(node.stem, "type")).getClassName();
-        method.visitFieldInsn(GETFIELD, binaryName, node.attributeName, nodeAttributeDescriptor(node));
+        method.visitFieldInsn(GETFIELD, binaryName, node.elementName, nodeBoxElementDescriptor(node));
         return null;
     }
 
@@ -1017,8 +1018,8 @@ public class BytecodeCompiler
     /**
      * Return the JVM field descriptor for the given node, which must have a {@code type} attribute.
      */
-    private String nodeAttributeDescriptor (SighNode node) {
-        return attributeDescriptor(reactor.get(node, "type"));
+    private String nodeBoxElementDescriptor (SighNode node) {
+        return boxElementDescriptor(reactor.get(node, "type"));
     }
 
     // ---------------------------------------------------------------------------------------------

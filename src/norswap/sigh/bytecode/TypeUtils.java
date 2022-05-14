@@ -60,6 +60,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return Object.class; // the proper class type is not available at compile time
+        else if (type instanceof BoxType)
+            return Object.class; // the proper class type is not available at compile time
         else
             throw new Error("unreachable");
     }
@@ -95,6 +97,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return Object[].class; // the proper class type is not available at compile time
+        else if (type instanceof BoxType)
+            return Object[].class; // the proper class type is not available at compile time
         else
             throw new Error("unreachable");
     }
@@ -126,7 +130,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return "L" + structBinaryName((StructType) type) + ";";
-        // TODO Add the attribute
+        else if (type instanceof BoxType)
+            return "L" + boxBinaryName((BoxType) type) + ";";
         else
             throw new Error("unreachable");
     }
@@ -137,7 +142,7 @@ public final class TypeUtils {
      * TODO CHECK THIS WHOLE FUNCTION
      * Returns the JVM field descriptor the runtime representation of the given Sigh {@link Type}.
      */
-    public static String attributeDescriptor (Type type)
+    public static String boxElementDescriptor (Type type)
     {
         if (type instanceof IntType)
             return "J"; // long
@@ -159,6 +164,8 @@ public final class TypeUtils {
             throw new UnsupportedOperationException(); // TODO
         else if (type instanceof StructType)
             return "L" + structBinaryName((StructType) type) + ";";
+        else if (type instanceof BoxType)
+            return "L" + boxBinaryName((BoxType) type) + ";";
         else
             throw new Error("unreachable");
     }
