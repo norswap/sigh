@@ -2,6 +2,7 @@ import norswap.autumn.AutumnTestFixture;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import org.testng.annotations.Test;
+import org.w3c.dom.Attr;
 
 import static java.util.Arrays.asList;
 import static norswap.sigh.ast.BinaryOperator.*;
@@ -165,7 +166,61 @@ public class GrammarTests extends AutumnTestFixture {
         failure(input);
     }
 
-    /*
+    /**
+     * Show that we can state the elements of a box in the order we want, and we can mix attributes
+     * and methods together
+     * */
+    @Test public void testBoxShuffleElements() {
+        rule = grammar.statement;
+
+        String input = "" +
+            "box Shuffle {" +
+            "   meth a() {  }" +
+            "   attr x: Int" +
+            "   attr y: String" +
+            "   meth b(): Int { return x }" +
+            "}";
+
+        successExpect(input, new BoxDeclarationNode(null, "Shuffle", asList(
+            new MethodDeclarationNode(null, "a", asList(), new SimpleTypeNode(null, "Void"),
+                new BlockNode(null, asList())),
+            new AttributeDeclarationNode(null, "x", new SimpleTypeNode(null, "Int")),
+            new AttributeDeclarationNode(null, "y", new SimpleTypeNode(null, "String")),
+            new MethodDeclarationNode(null, "b", asList(), new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "x")))))
+        )));
+    }
+
+    /**
+     * Show that we can use other boxes types inside our box
+     * */
+    @Test public void testBoxForeignBoxes() {
+        rule = grammar.statement;
+
+        String input = "" +
+            "box Mixed {" +
+            "   attr foreignBox: ForeignBox" +
+            "   meth getForeignBox(): ForeignBox { return foreignBox }" +
+            "   meth getForeignBoxAttr(): Int { return foreignBox#attribute }" +
+            "   meth useForeignBoxMeth() { foreignBox#method() }" +
+            "}";
+
+        successExpect(input, new BoxDeclarationNode(null, "Mixed", asList(
+            new AttributeDeclarationNode(null, "foreignBox", new SimpleTypeNode(null, "ForeignBox")),
+            new MethodDeclarationNode(null, "getForeignBox", asList(), new SimpleTypeNode(null, "ForeignBox"),
+                new BlockNode(null, asList(new ReturnNode(null, new ReferenceNode(null, "foreignBox"))))),
+            new MethodDeclarationNode(null, "getForeignBoxAttr", asList(), new SimpleTypeNode(null, "Int"),
+                new BlockNode(null, asList(new ReturnNode(null,
+                    new BoxElementAccessNode(null, new ReferenceNode(null, "foreignBox"), "attribute"))))),
+            new MethodDeclarationNode(null, "useForeignBoxMeth", asList(), new SimpleTypeNode(null, "Void"),
+                new BlockNode(null, asList(
+                    new ExpressionStatementNode(null, new FunCallNode(null, new BoxElementAccessNode(null,
+                        new ReferenceNode(null, "foreignBox"), "method"), asList())
+                    ))))
+        )));
+    }
+
+            /*
      * Big example that works in our grammar.
      * It uses basic attributes, arrays, other boxes
      * Access other boxes attributes and methods
