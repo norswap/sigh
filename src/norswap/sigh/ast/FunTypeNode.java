@@ -6,16 +6,16 @@ import java.util.List;
 
 public final class FunTypeNode extends TypeNode
 {
-    public final TypeNode returnType;
     public final List<TypeNode> parametersTypes;
+    public final TypeNode returnType;
 
     @SuppressWarnings("unchecked")
-    public FunTypeNode (Span span, Object returnType, Object parametersTypes) {
+    public FunTypeNode (Span span, Object parametersTypes, Object returnType) {
         super(span);
+        this.parametersTypes = Util.cast(parametersTypes, List.class);
         this.returnType = returnType == null
             ? new SimpleTypeNode(new Span(span.start, span.start), "Void")
             : Util.cast(returnType, TypeNode.class);
-        this.parametersTypes = Util.cast(parametersTypes, List.class);
     }
 
     @Override public String contents ()

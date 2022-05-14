@@ -369,23 +369,11 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     @Test public void testLazyEvaluation() {
         successInput("fun f(): <()> " +
                     "{ " +
-                        "fun f_() { }" +
-                        "fun _() { f_() }" +
+                        "fun _() { }" +
                         "return _" +
                     "}");
 
         // TODO fails
-//        successInput("lazy fun f() { }");
-
-        // TODO fails
-        successInput("fun f(x: Int): <(): Int> " +
-                    "{ " +
-                        "fun f_(x: Int): Int { return x }" +
-                        "fun _(): Int { return f_(x) }" +
-                        "return _" +
-                    "}" +
-                    "return f(1)");
-
-//        successInput("lazy fun f (x: Int): Int { return x }; return f(1)");
+        successInput("lazy fun f() { }");
     }
 }

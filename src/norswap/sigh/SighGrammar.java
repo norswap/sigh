@@ -114,7 +114,7 @@ public class SighGrammar extends Grammar
 
     public rule fun_type =
         seq(LANGLE, LPAREN, lazy(() -> this.type.sep(0, COMMA).as_list(TypeNode.class)), RPAREN, seq(COLON, lazy(() -> this.type)).or_push_null(), RANGLE)
-            .push($ -> new FunTypeNode($.span(), $.$[1], $.$[0]));
+            .push($ -> new FunTypeNode($.span(), $.$[0], $.$[1]));
 
     public rule paren_expression = lazy(() ->
         seq(LPAREN, this.expression, RPAREN)
@@ -272,45 +272,25 @@ public class SighGrammar extends Grammar
         return references;
     }
 
-    public BlockNode convertReferences(BlockNode block, String oldReference, String newReference)
-    {
-        // TODO
-        return block;
-    }
-
-    public boolean isVoidType (TypeNode node)
-    {
-        return (node instanceof SimpleTypeNode) && ((SimpleTypeNode) node).name.equals("Void");
-    }
+//    public boolean isVoidType (TypeNode node)
+//    {
+//        return (node instanceof SimpleTypeNode) && ((SimpleTypeNode) node).name.equals("Void");
+//    }
 
     public FunDeclarationNode makeLazy(FunDeclarationNode node)
     {
+        // TODO Re-reference in block ?
         return
-        new FunDeclarationNode(node.span, node.name,
+        new FunDeclarationNode(null, node.name,
             node.parameters,
-            new FunTypeNode(null,
-                node.returnType,
-                asList()),
+            new FunTypeNode(null, asList(), node.returnType),
             new BlockNode(null,
                 asList(
-                    new FunDeclarationNode(null, node.name + "_",
-                        node.parameters,
-                        node.returnType,
-                        convertReferences(node.block, node.name, node.name + "_")),
-                    new FunDeclarationNode(null, "_",
+                    new FunDeclarationNode(node.span, "_",
                         asList(),
                         node.returnType,
-                        new BlockNode(null,
-                            asList(isVoidType(node.returnType) ?
-                                new FunCallNode(null,
-                                    new ReferenceNode(null, node.name + "_"),
-                                    toReferences(node.parameters)) :
-                                new ReturnNode(null,
-                                    new FunCallNode(null,
-                                        new ReferenceNode(null, node.name + "_"),
-                                        toReferences(node.parameters)))))),
-                    new ReturnNode(null,
-                        new ReferenceNode(null, "_")))));
+                        node.block),
+                    new ReturnNode(null, new ReferenceNode(null, "_")))));
     }
 
     public rule lazy_fun_decl =

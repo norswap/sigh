@@ -179,7 +179,7 @@ public class GrammarTests extends AutumnTestFixture {
 
         successExpect("fun f (x: <(Int) : Int>) {}",
             new FunDeclarationNode(null, "f",
-                asList(new ParameterNode(null, "x", new FunTypeNode(null, new SimpleTypeNode(null, "Int"), asList(new SimpleTypeNode(null, "Int"))))),
+                asList(new ParameterNode(null, "x", new FunTypeNode(null, asList(new SimpleTypeNode(null, "Int")), new SimpleTypeNode(null, "Int")))),
                 new SimpleTypeNode(null, "Void"),
                 new BlockNode(null, asList())));
     }
@@ -193,33 +193,20 @@ public class GrammarTests extends AutumnTestFixture {
         new FunDeclarationNode(null, "f",
             asList(
                 new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-            new FunTypeNode(null,
-                new SimpleTypeNode(null, "Int"),
-                asList()),
+            new FunTypeNode(null, asList(), new SimpleTypeNode(null, "Int")),
             new BlockNode(null,
                 asList(
-                    new FunDeclarationNode(null, "f_",
-                        asList(
-                            new ParameterNode(null, "x", new SimpleTypeNode(null, "Int"))),
-                        new SimpleTypeNode(null, "Int"),
-                        new BlockNode(null,
-                            asList(new ReturnNode(null,
-                                new ReferenceNode(null, "x"))))),
                     new FunDeclarationNode(null, "_",
                         asList(),
                         new SimpleTypeNode(null, "Int"),
                         new BlockNode(null,
-                            asList(new ReturnNode(null,
-                                new FunCallNode(null,
-                                    new ReferenceNode(null, "f_"),
-                                    asList(new ReferenceNode(null, "x"))))))),
-                    new ReturnNode(null,
-                        new ReferenceNode(null, "_")))));
+                            asList(
+                                new ReturnNode(null, new ReferenceNode(null, "x"))))),
+                    new ReturnNode(null, new ReferenceNode(null, "_")))));
 
         successExpect("fun f(x: Int): <(): Int> " +
                             "{ " +
-                                "fun f_(x: Int): Int { return x }" +
-                                "fun _(): Int { return f_(x) }" +
+                                "fun _(): Int { return x }" +
                                 "return _" +
                             "}",
                             nodeForComparision);
