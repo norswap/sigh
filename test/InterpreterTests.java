@@ -487,9 +487,6 @@ public final class InterpreterTests extends TestFixture {
     // ---------------------------------------------------------------------------------------------
 
     @Test public void testCombined() {
-        check("fun third(a: Int[]) : Int { return a[2]; };" +
-                    "return third([1, 2, 3])", 3L);
-
         check("fun map(a: Int[], l: Int, f: <(Int): Int>): Int[] { var a_: Int[] = a; var i: Int = 0; while (i < l) {a_[i] = a[i] * 2; i = i + 1}; return a_ };" +
                     "fun plusOne(x: Int): Int { return x + 1 };" +
                     "return map([1, 2, 3], 3, plusOne)", new Object[]{2L, 4L, 6L});
