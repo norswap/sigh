@@ -91,11 +91,9 @@ public class BytecodeCompiler
         visitor.register(StringLiteralNode.class,        this::stringLiteral);
         visitor.register(ReferenceNode.class,            this::reference);
         visitor.register(ConstructorNode.class,          this::constructor);
-        visitor.register(BoxConstructorNode.class,       this::boxConstructor);
         visitor.register(ArrayLiteralNode.class,         this::arrayLiteral);
         visitor.register(ParenthesizedNode.class,        this::parenthesized);
         visitor.register(FieldAccessNode.class,          this::fieldAccess);
-        visitor.register(BoxElementAccessNode.class,      this::boxElementAccess);
         visitor.register(ArrayAccessNode.class,          this::arrayAccess);
         visitor.register(FunCallNode.class,              this::funCall);
         visitor.register(UnaryExpressionNode.class,      this::unaryExpression);
@@ -107,12 +105,9 @@ public class BytecodeCompiler
         visitor.register(BlockNode.class,                this::block);
         visitor.register(VarDeclarationNode.class,       this::varDecl);
         visitor.register(FieldDeclarationNode.class,     this::fieldDecl);
-        visitor.register(AttributeDeclarationNode.class, this::attributeDecl);
         visitor.register(ParameterNode.class,            this::parameter);
         visitor.register(FunDeclarationNode.class,       this::funDecl);
-        visitor.register(MethodDeclarationNode.class,    this::methDecl);
         visitor.register(StructDeclarationNode.class,    this::structDecl);
-        visitor.register(BoxDeclarationNode.class,       this::boxDecl);
 
         // statements
         visitor.register(ExpressionStatementNode.class,  this::expressionStmt);
@@ -133,16 +128,9 @@ public class BytecodeCompiler
     /* Class writer for the class representing the struct currently being emitted. */
     private ClassWriter struct;
 
-    /* Class writer for the class representing the box currently being emitted. */
-    private ClassWriter box;
-
     /** The list of (class name, class writer) pairs for the classes representing the structures
      * defined in the source unit. */
     ArrayList<Pair<String, ClassWriter>> structs = new ArrayList<>();
-
-    /** The list of (class name, class writer) pairs for the classes representing the boxes
-     * defined in the source unit. */
-    ArrayList<Pair<String, ClassWriter>> boxes = new ArrayList<>();
 
     /* MethodVisitor for current method. */
     private MethodVisitor method;
@@ -170,11 +158,8 @@ public class BytecodeCompiler
         List<GeneratedClass> structClasses = structs.stream()
             .map(it -> new GeneratedClass(it.a, it.b.toByteArray()))
             .collect(Collectors.toList());
-        List<GeneratedClass> boxClasses = boxes.stream()
-            .map(it -> new GeneratedClass(it.a, it.b.toByteArray()))
-            .collect(Collectors.toList());
 
-        return new CompilationResult(mainClass, structClasses, boxClasses);
+        return new CompilationResult(mainClass, structClasses);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -222,39 +207,6 @@ public class BytecodeCompiler
     // ---------------------------------------------------------------------------------------------
 
     private Object funDecl (FunDeclarationNode node)
-    {
-        int surroundingVariableCounter = variableCounter;
-        MethodVisitor surroundingMethod = method;
-        boolean surroundingIsTopLevel = topLevel;
-
-        variableCounter = 0;
-        topLevel = false;
-        node.parameters.forEach(this::run);
-
-        String descriptor = methodDescriptor(reactor.get(node, "type"));
-        method = container.visitMethod(ACC_PUBLIC | ACC_STATIC, node.name, descriptor, null, null);
-        method.visitCode();
-        run(node.block);
-
-        // NOTE: The current semantic analysis check guarantee that there is we unconditionally
-        // return. So we do not have to worry about instructions not followed by a return.
-        // The only exception is for void methods - so we always add a return at the end in that
-        // case. In the future, it might be good to check that nothing follows a return in semantic
-        // analysis.
-        if (descriptor.endsWith("V"))
-            method.visitInsn(RETURN);
-
-        method.visitEnd();
-        method.visitMaxs(-1, -1);
-
-        method = surroundingMethod;
-        variableCounter = surroundingVariableCounter;
-        topLevel = surroundingIsTopLevel;
-        return null;
-    }
-    // ---------------------------------------------------------------------------------------------
-
-    private Object methDecl (MethodDeclarationNode node)
     {
         int surroundingVariableCounter = variableCounter;
         MethodVisitor surroundingMethod = method;
@@ -342,8 +294,6 @@ public class BytecodeCompiler
             method.visitTypeInsn(ANEWARRAY, "java/lang/Object");
         } else if (compType instanceof StructType) {
             method.visitTypeInsn(ANEWARRAY, structBinaryName((StructType) compType));
-        } else if (compType instanceof BoxType) {
-            method.visitTypeInsn(ANEWARRAY, boxBinaryName((BoxType) compType));
         }
 
         int i = 0;
@@ -482,9 +432,6 @@ public class BytecodeCompiler
         } else if (type instanceof StructType) {
             // String.valueOf -> Object#toString (or override)
             invokeStatic(method, String.class, "valueOf", Object.class);
-        } else if (type instanceof BoxType) {
-            // String.valueOf -> Object#toString (or override)
-            invokeStatic(method, String.class, "valueOf", Object.class);
         } else {
             throw new Error("unexpected type: " + type);
         }
@@ -603,15 +550,6 @@ public class BytecodeCompiler
         else if (node.function instanceof ConstructorNode) {
             StructDeclarationNode decl = reactor.get(((ConstructorNode) node.function).ref, "decl");
             String binaryName = structBinaryName(reactor.get(decl, "declared"));
-            method.visitTypeInsn(NEW, binaryName);
-            method.visitInsn(DUP);
-            runArguments(funType, node.arguments);
-            String descriptor = methodDescriptor(VoidType.INSTANCE, funType.paramTypes);
-            method.visitMethodInsn(INVOKESPECIAL, binaryName, "<init>", descriptor, false);
-        }
-        else if (node.function instanceof BoxConstructorNode) {
-            BoxDeclarationNode decl = reactor.get(((BoxConstructorNode) node.function).ref, "decl");
-            String binaryName = boxBinaryName(reactor.get(decl, "declared"));
             method.visitTypeInsn(NEW, binaryName);
             method.visitInsn(DUP);
             runArguments(funType, node.arguments);
@@ -753,12 +691,6 @@ public class BytecodeCompiler
             org.objectweb.asm.Type asmType = asmType(reactor.get(decl, "declared"));
             method.visitLdcInsn(asmType); // class constant for emitted type
         }
-        else if (decl instanceof BoxDeclarationNode) {
-            // NOTE: This is not used when the reference is part of a constructor call, the
-            // resolution is handled in #funCall.
-            org.objectweb.asm.Type asmType = asmType(reactor.get(decl, "declared"));
-            method.visitLdcInsn(asmType); // class constant for emitted type
-        }
         else if (decl instanceof FunDeclarationNode) {
             // NOTE: This is not used when the reference is part of a function call, the resolution
             // is handled in #funCall.
@@ -805,7 +737,6 @@ public class BytecodeCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    // TODO verify that our attributes are not more like varDecl with default value than fields
     private Object varDecl (VarDeclarationNode node)
     {
         org.objectweb.asm.Type type = nodeAsmType(node);
@@ -857,18 +788,6 @@ public class BytecodeCompiler
             method.visitFieldInsn(PUTFIELD, structBinaryName(structType), left.fieldName,
                 fieldDescriptor(fieldType));
         }
-        else if (node.left instanceof BoxElementAccessNode) {
-            BoxElementAccessNode left = (BoxElementAccessNode) node.left;
-            run(left.stem);
-            run(node.right);
-            Type type = implicitConversion(node, node.right);
-            System.out.println(type);
-            dup_x1(type);
-            BoxType boxType = reactor.get(left.stem, "type");
-            Type attributeType = reactor.get(node, "type");
-            method.visitFieldInsn(PUTFIELD, boxBinaryName(boxType), left.elementName,
-                fieldDescriptor(attributeType));
-        }
         return null;
     }
 
@@ -909,52 +828,7 @@ public class BytecodeCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object boxDecl (BoxDeclarationNode node)
-    {
-        String binaryName = node.name;
-        box = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        box.visit(V1_8, ACC_PUBLIC, binaryName, null, "java/lang/Object", null);
-        node.attributes.forEach(this::run);
-        node.methods.forEach(this::run);
-
-        // TODO Verify that we have to generate a constructor. This is maybe not the case!
-        // generate constructor
-        Type[] paramTypes =
-            node.attributes.stream().map(f -> (Type) reactor.get(f, "type")).toArray(Type[]::new);
-        String descriptor = methodDescriptor(VoidType.INSTANCE, paramTypes);
-        MethodVisitor init = box.visitMethod(ACC_PUBLIC, "<init>", descriptor, null, null);
-        init.visitCode();
-        init.visitVarInsn(ALOAD, 0); // this
-        init.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-        int i = 1;
-        for (AttributeDeclarationNode attribute: node.attributes) {
-            init.visitVarInsn(ALOAD, 0);
-            org.objectweb.asm.Type type = nodeAsmType(attribute);
-            init.visitVarInsn(type.getOpcode(ILOAD), i);
-            i += type.getSize();
-            init.visitFieldInsn(PUTFIELD, binaryName, attribute.name, type.getDescriptor());
-        }
-        init.visitInsn(RETURN);
-        init.visitMaxs(-1,-1);
-        init.visitEnd();
-
-        box.visitEnd();
-        boxes.add(new Pair<>(binaryName, box));
-        box = null;
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     private Object fieldDecl (FieldDeclarationNode node)
-    {
-        struct.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private Object attributeDecl (AttributeDeclarationNode node)
     {
         struct.visitField(ACC_PUBLIC, node.name, nodeFieldDescriptor(node), null, null);
         return null;
@@ -971,23 +845,7 @@ public class BytecodeCompiler
 
     // ---------------------------------------------------------------------------------------------
 
-    private Object boxElementAccess (BoxElementAccessNode node) {
-        run(node.stem);
-        String binaryName = asmType(reactor.get(node.stem, "type")).getClassName();
-        method.visitFieldInsn(GETFIELD, binaryName, node.elementName, nodeBoxElementDescriptor(node));
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
     private Constructor constructor (ConstructorNode node) {
-        // not needed - handled in funCall instead
-        return null;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    private Constructor boxConstructor (BoxConstructorNode node) {
         // not needed - handled in funCall instead
         return null;
     }
@@ -1011,15 +869,6 @@ public class BytecodeCompiler
      */
     private String nodeFieldDescriptor (SighNode node) {
         return fieldDescriptor(reactor.get(node, "type"));
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Return the JVM field descriptor for the given node, which must have a {@code type} attribute.
-     */
-    private String nodeBoxElementDescriptor (SighNode node) {
-        return boxElementDescriptor(reactor.get(node, "type"));
     }
 
     // ---------------------------------------------------------------------------------------------

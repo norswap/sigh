@@ -28,17 +28,9 @@ public final class CompilationResult
 
     // ---------------------------------------------------------------------------------------------
 
-    /**
-     * The generated classes corresponding to boxes defined in the source unit.
-     */
-    public final List<GeneratedClass> boxes;
-
-    // ---------------------------------------------------------------------------------------------
-
-    public CompilationResult (GeneratedClass mainClass, List<GeneratedClass> structures, List<GeneratedClass> boxes) {
+    public CompilationResult (GeneratedClass mainClass, List<GeneratedClass> structures) {
         this.mainClass = mainClass;
         this.structures = structures;
-        this.boxes = boxes;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -49,7 +41,6 @@ public final class CompilationResult
      */
     public Class<?> load (ByteArrayClassLoader loader) {
         structures.forEach(it -> it.load(loader));
-        boxes.forEach(it -> it.load(loader));
         return mainClass.load(loader);
     }
 
