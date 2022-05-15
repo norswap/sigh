@@ -405,7 +405,6 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     @Test public void testBoxSemantic()
     {
-
         String input3 = "" +
             "box Wheel { \n" +
             "   meth get_size(): Int {\n" +
