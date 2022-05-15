@@ -18,7 +18,7 @@ public final class Test
 {
     public static void main (String[] args) {
 //         String file = "fizzbuzz.si";
-        //String file = "test.si";
+//         String file = "test.si";
 //        String file = "kitchensink.si";
         String file = "arrayOperations.si";
         String path = Paths.get("examples/", file).toAbsolutePath().toString();
