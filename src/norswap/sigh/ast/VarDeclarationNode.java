@@ -1,7 +1,9 @@
 package norswap.sigh.ast;
 
 import norswap.autumn.positions.Span;
+import norswap.sigh.types.ArrayType;
 import norswap.utils.Util;
+import java.util.ArrayList;
 
 public final class VarDeclarationNode extends DeclarationNode
 {
@@ -14,6 +16,9 @@ public final class VarDeclarationNode extends DeclarationNode
         this.name = Util.cast(name, String.class);
         this.type = Util.cast(type, TypeNode.class);
         this.initializer = Util.cast(initializer, ExpressionNode.class);
+        if(initializer instanceof ArrayLiteralNode && type instanceof ArrayTypeNode){
+            getLiteralDimension();
+        }
     }
 
     @Override public String name () {
@@ -26,5 +31,9 @@ public final class VarDeclarationNode extends DeclarationNode
 
     @Override public String declaredThing () {
         return "variable";
+    }
+
+    public void getLiteralDimension(){
+        ((ArrayTypeNode)type).dimensions=new ArrayList(((ArrayLiteralNode)initializer).dimensions);
     }
 }

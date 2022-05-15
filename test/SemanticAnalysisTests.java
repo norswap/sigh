@@ -236,7 +236,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         failureInputWith("return [1,2,3]*[[1],[2],[3]]", "Trying to operate on arrays with different dimensions: [3] and [3, 1]");
         failureInputWith("return [[1,3],[2,4],[3,5]]+[[1],[2],[3]]", "Trying to operate on arrays with different dimensions: [3, 2] and [3, 1]");
 
-        failureInputWith("return (1 @ [[1],[2]])[0][0]","Trying to use @ operation on non-array type");;
+        failureInputWith("return (1 @ [[1],[2]])[0][0]","Trying to dotproduct Int with Int[][]");;
         // TODO make this legal?
         successInput("return [].length");
 
@@ -409,15 +409,15 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "x[0][0]=1;x[1][0]=1;" +
             "var z:Int[][]=x+y;" +
             "return z[0][0]");
-    }
 
-    @Test
-    public void dummy(){
-        successInput("var x: Int[2][1]; var y: Int[][]=[[4],[5]];" +
-            "x[0][0]=1;x[1][0]=1;" +
-            "var z:Int[][]=x+y;" +
+        successInput("var x: Int [3][4]"+
+            "x[0][0] = 30;x[1][1] = 21;x[2][2] = 78;x[2][3] = 45;"+
+            "var y: Int [][] = [[1,2,3,4,5],[5,4,3,2,1],[5,10,15,20,25],[1,3,5,7,11]]"+
+            "var z: Int [][] = x @ y "+
             "return z[0][0]");
     }
+
+
 
     // ---------------------------------------------------------------------------------------------
 

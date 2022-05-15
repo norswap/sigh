@@ -511,7 +511,7 @@ public final class SemanticAnalysis
             else if (isEquality(node.operator))
                 binaryEquality(r, node, left, right);
             else if(isMatrix(node.operator))
-                 binaryMatrix(r,node.operator,left,right);
+                 binaryArithmetic(r,node,left,right);
         });
     }
 
@@ -567,7 +567,7 @@ public final class SemanticAnalysis
                 r.set(0, IntType.INSTANCE);
             else if (right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
-            else if(right instanceof ArrayType)
+            else if(right instanceof ArrayType && node.operator!=DOTPRODUCT)
                 r.set(0,new ArrayType(((ArrayType) right).componentType,((ArrayType) right).dimensions));
             else
                 r.error(arithmeticError(node, "Int", right), node);
@@ -598,24 +598,6 @@ public final class SemanticAnalysis
             r.error(arithmeticError(node, left, right), node);
     }
 
-    private void binaryMatrix(Rule r,BinaryOperator node, Object left, Object right){
-        if(!(left instanceof ArrayType) || !(right instanceof ArrayType)) {
-            r.error(format("Trying to use %s operation on non-array type", node.string), node);
-            return;
-        }
-        ArrayType lArray=(ArrayType) left;
-        ArrayType rArray=(ArrayType) right;
-        /*if(lArray.dimensions.size()!=2 || rArray.dimensions.size()!=2) {
-            r.error(format("Trying to use %s operation on non-matrix type", node.string), node);
-            return;
-        }*/
-        if(!compatible(lArray.dimensions,rArray.dimensions)) {
-            r.error(format("Trying to operate on arrays with different dimensions: %s and %s",
-                conversionDimension(((ArrayType) left).dimensions), conversionDimension(((ArrayType) right).dimensions)), node);
-            return;
-        }
-        r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
-    }
 
     // ---------------------------------------------------------------------------------------------
 
@@ -847,11 +829,10 @@ public final class SemanticAnalysis
                     node.name, expected, actual),
                     node.initializer);
 
-
         });
-        if( node.initializer instanceof ArrayLiteralNode){
-            ((ArrayTypeNode)node.type).dimensions=((ArrayLiteralNode) node.initializer).dimensions;
-        }
+//        if( node.initializer instanceof ArrayLiteralNode){
+//            ((ArrayTypeNode)node.type).dimensions=((ArrayLiteralNode) node.initializer).dimensions;
+//        }
     }
 
     private void arrayDecl (ArrayDeclarationNode node)

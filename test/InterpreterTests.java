@@ -501,15 +501,6 @@ public final class InterpreterTests extends TestFixture {
                 "print(\"\"+num);" +
                 "return x[1].num;",AssertionError.class);
 
-
-
-
-
-
-
-
-
-
     }
     @Test
     public void testArrayStructAccess () {
@@ -594,10 +585,11 @@ public final class InterpreterTests extends TestFixture {
 
     @Test public void dummyTest(){
         rule = grammar.root;
-        check("return ([[1,2],[2,3]]@[[2,2],[4,4]])[0][0]",10L);
-        check("return ([[1,2],[2,3]]@[[2,4],[2,4]])[0][1]",12L);
-        check("return ([1,2]@[2,4])",10L);
-        check("return [1,2]@[[2],[4]]",10L);
+        check("var x: Int [3][4]"+
+            "x[0][0] = 30;x[1][1] = 21;x[2][2] = 78;x[2][3] = 45;"+
+            "var y: Int [][] = [[1,2,3,4,5],[5,4,3,2,1],[5,10,15,20,25],[1,3,5,7,11]]"+
+            "var z: Int [][] = x @ y "+
+            "return z[0][0]",30L);
     }
 
     @Test public void testArrayDeclaration(){
