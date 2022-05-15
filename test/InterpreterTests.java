@@ -350,28 +350,42 @@ public final class InterpreterTests extends TestFixture {
 
     // ---------------------------------------------------------------------------------------------
 
-    @Test public void testBoxes()
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     *                                                                                             *
+     *                                 TESTS DONE BY GROUP 10                                      *                                                             *
+     *                                                                                             *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+/*    @Test public void testAttributesBox()
     {
         rule = grammar.root;
 
-        String input0 = "" +
-            "struct Pair {\n" +
-            "   var col: String\n" +
+        String input = "" +
+            "box MyBox {\n" +
+            "   attr name: String\n" +
+            "   attr height: Int\n" +
+            "   attr width: Int\n" +
+            "   attr depth: Int\n" +
             "}\n" +
-            "var p: Pair = $Pair(\"Rouge\")\n" +
-            "return p.col";
-        check(input0, "Rouge");
-
-        String input1 = "" +
-            "box Car {\n" +
-            "   meth get_color(): String {\n" +
-            "       return \"Rouge\"\n" +
-            "   }\n" +
-            "}\n" +
-            "var car: Car = create Car()\n" +
-            "return car#get_color()";
-        check(input1, "Rouge");
+            "var myBox: MyBox = create MyBox()\n";
+        check(input, null);
     }
+
+    @Test public void testMethodsBox()
+    {
+        rule = grammar.root;
+
+        String input = "" +
+            "box myBox {\n" +
+            "   meth getMaterial(): String {\n" +
+            "       return \"craft\"\n" +
+            "   }\n" +
+            "   meth getSize(): Int[] {\n" +
+            "       return \n" +
+            "   }\n" +
+            "}\n";
+    }*/
 
     // ---------------------------------------------------------------------------------------------
 
