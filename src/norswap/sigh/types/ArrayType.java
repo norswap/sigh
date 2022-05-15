@@ -7,7 +7,7 @@ import java.util.List;
 public final class ArrayType extends Type
 {
     public final Type componentType;
-
+    public static final ArrayType INSTANCE = new ArrayType(VoidType.INSTANCE,null);
     public List dimensions;
 
     public ArrayType (Type componentType, List dimensions) {

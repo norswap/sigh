@@ -3,6 +3,7 @@ import norswap.autumn.positions.LineMapString;
 import norswap.sigh.SemanticAnalysis;
 import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.SighNode;
+import norswap.sigh.interpreter.InterpreterException;
 import norswap.uranium.Reactor;
 import norswap.uranium.UraniumTestFixture;
 import norswap.utils.visitors.Walker;
@@ -97,8 +98,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         failureInputWith("return 2 + true", "Trying to add Int with Bool");
         failureInputWith("return true + 2", "Trying to add Bool with Int");
-        failureInputWith("return 2 + [1]", "Trying to add Int with Int[]");
-        failureInputWith("return [1] + 2", "Trying to add Int[] with Int");
+        //failureInputWith("return 2 + [1]", "Trying to add Int with Int[]");
+        //failureInputWith("return [1] + 2", "Trying to add Int[] with Int");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -217,7 +218,18 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return ([[0,1],[2,3]] @ [[1,1],[2,2]])[0][0]");
         successInput("return ([[0,1],[2,3]] @ [[1],[2]])[0]");
         successInput("return ([0,1] @ [[1],[2]])");
-
+        successInput("var x: Int[2][2][2]; var y: Int[2][2][2];" +
+            "x[0][0][0]=1;x[1][0][0]=2;x[0][0][1]=3;x[1][0][1]=4;" +
+            "x[0][1][0]=5;x[1][1][0]=6;x[0][1][1]=7;x[1][1][1]=8;"+
+            "y[0][0][0]=1;y[1][0][0]=3;y[0][0][1]=5;y[1][0][1]=7;" +
+            "y[0][1][0]=9;y[1][1][0]=11;y[0][1][1]=13;y[1][1][1]=15;"+
+            "var z:Int[][][]=y/x;" +
+            "return z[0][1][1]");
+        successInput("var x: Int[2][2]; var y: Int[2][2];" +
+            "x[0][0]=1;x[1][0]=2;" +
+            "y[0][0]=4;y[1][0]=5;" +
+            "var z:Int[][]=x*y;" +
+            "return z[1][0]");
 
         failureInputWith("return [1][true]", "Indexing an array using a non-Int-valued expression");
         failureInputWith("return [1,2,3]*[1,2]", "Trying to operate on arrays with different dimensions: [3] and [2]");
@@ -246,6 +258,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput("return ([4, 2]+[1, 1])[1]");
         successInput("return ([4, 2]*[2, 3])[0]");
         successInput("return ([4, 2]*[2, 3])[1]");
+
+
 
         successInput("var array: Int[] = null; return array[0]");
         successInput("var array: Int[] = null; return array.length");
@@ -283,6 +297,49 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "struct P { var x: Int; var y: Int }" +
             "return $P(1, 2).z",
             "Trying to access missing field z on struct P");
+    }
+
+    @Test public void testArrayScalarOperation(){
+        successInput("return ([1,2,3]+2)[0]");
+        successInput("return ([1,2,3]+2)[1]");
+        successInput("return ([1,2,3]+2)[2]");
+        successInput("return ([[1],[2],[3]]+2)[0][0]");
+        successInput("return ([[1],[2],[3]]+2)[1][0]");
+        successInput("return (2+[1,2,3])[0]");
+        successInput("return (2+[1,2,3])[1]");
+        successInput("return (2+[1,2,3])[2]");
+        successInput("return (2+[[1],[2],[3]])[0][0]");
+        successInput("return (2+[[1],[2],[3]])[1][0]");
+        successInput("return ([1,2,3]*2)[0]");
+        successInput("return ([1,2,3]*2)[1]");
+        successInput("return ([1,2,3]*2)[2]");
+        successInput("return ([[1],[2],[3]]*2)[0][0]");
+        successInput("return ([[1],[2],[3]]*2)[1][0]");
+        successInput("return (2*[1,2,3])[0]");
+        successInput("return (2*[1,2,3])[1]");
+        successInput("return (2*[1,2,3])[2]");
+        successInput("return (2*[[1],[2],[3]])[0][0]");
+        successInput("return (2*[[1],[2],[3]])[1][0]");
+        successInput("return ([1,2,3]-2)[0]");
+        successInput("return ([1,2,3]-2)[1]");
+        successInput("return ([1,2,3]-2)[2]");
+        successInput("return ([[1],[2],[3]]-2)[0][0]");
+        successInput("return ([[1],[2],[3]]-2)[1][0]");
+        successInput("return (2-[1,2,3])[0]");
+        successInput("return (2-[1,2,3])[1]");
+        successInput("return (2-[1,2,3])[2]");
+        successInput("return (2-[[1],[2],[3]])[0][0]");
+        successInput("return (2-[[1],[2],[3]])[1][0]");
+        successInput("return ([1,2,3]/2)[0]");
+        successInput("return ([1,2,3]/2)[1]");
+        successInput("return ([1,2,3]/2)[2]");
+        successInput("return ([[1],[2],[3]]/2)[0][0]");
+        successInput("return ([[1],[2],[3]]/2)[1][0]");
+        successInput("return (2/[1,2,3])[0]");
+        successInput("return (2/[1,2,3])[1]");
+        successInput("return (2/[1,2,3])[2]");
+        successInput("return (2/[[1],[2],[3]])[0][0]");
+        successInput("return (2/[[1],[2],[3]])[1][0]");
     }
 
     @Test public void testClassDeclaration(){

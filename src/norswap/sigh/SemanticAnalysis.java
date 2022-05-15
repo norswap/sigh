@@ -14,6 +14,7 @@ import norswap.uranium.Rule;
 import norswap.uranium.SemanticError;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -547,7 +548,7 @@ public final class SemanticAnalysis
 
     private boolean compatible(List<StringLiteralNode> a, List<StringLiteralNode> b){
         if(a.size()>2 ||b.size()>2||a.size()==0||b.size()==0) return false;
-        if(b.get(0).value.equals(a.get(0).value)||b.get(1).value.equals(a.get(0).value)) return true;
+        if(b.get(0).value.equals(a.get(0).value)||b.get(0).value.equals(a.get(1).value)||b.get(1).value.equals(a.get(0).value)) return true;
         return false;
     }
     private String conversionDimension(List<StringLiteralNode> dimensions){
@@ -566,11 +567,15 @@ public final class SemanticAnalysis
                 r.set(0, IntType.INSTANCE);
             else if (right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
+            else if(right instanceof ArrayType)
+                r.set(0,new ArrayType(((ArrayType) right).componentType,((ArrayType) right).dimensions));
             else
                 r.error(arithmeticError(node, "Int", right), node);
         else if (left instanceof FloatType)
             if (right instanceof IntType || right instanceof FloatType)
                 r.set(0, FloatType.INSTANCE);
+            else if(right instanceof ArrayType)
+                r.set(0,new ArrayType(((ArrayType) right).componentType,((ArrayType) right).dimensions));
             else
                 r.error(arithmeticError(node, "Float", right), node);
             //TODO : new rule
@@ -585,6 +590,8 @@ public final class SemanticAnalysis
                 }
                 r.set(0, new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
             }
+            else if(right instanceof IntType || right instanceof FloatType)
+                r.set(0,new ArrayType(((ArrayType) left).componentType,((ArrayType) left).dimensions));
             else
                 r.error(arithmeticError(node, left, right), node);
         else

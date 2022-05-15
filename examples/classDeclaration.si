@@ -1,0 +1,10 @@
+class Fraction {
+    var num: Int; var den: Int
+    fun to_Number(num : Int, den : Int): Float { return num/den }
+}
+var p: Fraction = $Fraction(2, 2)
+print("ToNumber p:"+p.to_Number(p.num,p.den)) // 1
+var m: Fraction = $Fraction(1, 2)
+print("Numerator m:"+m.num) //1
+print("Denominator m:"+m.den) //2
+
