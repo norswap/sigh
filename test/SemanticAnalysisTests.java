@@ -319,26 +319,26 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "   meth set_max_speed(speed: Int) {\n" +
             "       max_speed = speed\n" +
             "   }\n" +
-            "}\n";
+            "}" +
+            "var car: Car = create Car()\n";
         successInput(input);
     }
 
-    @Test public void testMethodAccessAttribute()
+    @Test public void testBoxDoubleCase()
     {
         String input = "" +
             "box Car {\n" +
-            "   attr nWheels: Int\n" +
-            "   meth get_nWheels(): Int {\n" +
-            "       return 2\n" +
+            "   attr max_speed: Int\n" +
+            "   meth get_max_speed(): Int {\n" +
+            "       return max_speed\n" +
             "   }\n" +
             "}\n" +
-            "box Car555 {\n" +
-            "   attr nWheels: Int\n" +
-            "   meth get_nWheels(): Int {\n" +
-            "       return 2\n" +
+            "box Bus {\n" +
+            "   attr max_speed: Int\n" +
+            "   meth get_max_speed(): Int {\n" +
+            "       return max_speed\n" +
             "   }\n" +
             "}\n";
-
         successInput(input);
     }
 
@@ -367,9 +367,8 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
     {
         String input = "" +
             "box Car {\n" +
-            "   attr nWheels: Int\n" +
             "   meth get_nWheels(): String {\n" +
-            "       return nWheels\n" +
+            "       return 4\n" +
             "   }\n" +
             "}\n";
         successInput(input);

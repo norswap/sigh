@@ -279,7 +279,6 @@ public final class SemanticAnalysis
 
                 int nAttr = boxDecl.attributes.size();
                 int nMeth = boxDecl.methods.size();
-                System.out.println(nAttr + " " + nMeth);
                 Attribute[] dependencies = new Attribute[nAttr + nMeth + 1];
                 dependencies[0] = decl.attr("declared");
                 forEachIndexed(boxDecl.attributes, (i, attribute) ->
@@ -856,11 +855,10 @@ public final class SemanticAnalysis
 
     private void attrDecl (AttributeDeclarationNode node)
     {
-/*      TODO
         this.inferenceContext = node;
 
         scope.declare(node.name, node);
-        R.set(node, "scope", scope);*/
+        R.set(node, "scope", scope);
 
         R.rule(node, "type")
             .using(node.type, "value")
@@ -968,9 +966,8 @@ public final class SemanticAnalysis
         scope.declare(node.name, node);
         R.set(node, "type", TypeType.INSTANCE);
         R.set(node, "declared", new BoxType(node));
-//        for (MethodDeclarationNode method : node.methods) {
-//            methDecl(method);
-//        }
+        scope = new Scope(node, scope);
+        R.set(node, "scope", scope);
     }
 
     // endregion
