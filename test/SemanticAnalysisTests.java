@@ -404,6 +404,19 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         failureInputWith("var x: Int[2][\"size\"]","Illegal size for array declaration: \"size\"");
         failureInputWith("var x: Int[2][2.3]","Illegal size for array declaration: 2.3");
         failureInputWith("var x: Int[2][-3]","Illegal size for array declaration: -3");
+
+        successInput("var x: Int[2][1]; var y: Int[][]=[[4],[5]];" +
+            "x[0][0]=1;x[1][0]=1;" +
+            "var z:Int[][]=x+y;" +
+            "return z[0][0]");
+    }
+
+    @Test
+    public void dummy(){
+        successInput("var x: Int[2][1]; var y: Int[][]=[[4],[5]];" +
+            "x[0][0]=1;x[1][0]=1;" +
+            "var z:Int[][]=x+y;" +
+            "return z[0][0]");
     }
 
     // ---------------------------------------------------------------------------------------------

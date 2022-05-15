@@ -20,7 +20,7 @@ public class ArrayLiteralNode extends ExpressionNode
     private void dimension(List compo){
         dimensions.add(new StringLiteralNode(span,Integer.toString(compo.size())));
         if(compo.size()>0 && compo.get(0) instanceof ArrayLiteralNode){
-            dimension(((ArrayLiteralNode)compo.get(0)).components);
+            dimensions.addAll(((ArrayLiteralNode)compo.get(0)).dimensions);
         }
     }
 

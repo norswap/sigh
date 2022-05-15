@@ -846,7 +846,12 @@ public final class SemanticAnalysis
                     "incompatible initializer type provided for variable `%s`: expected %s but got %s",
                     node.name, expected, actual),
                     node.initializer);
+
+
         });
+        if( node.initializer instanceof ArrayLiteralNode){
+            ((ArrayTypeNode)node.type).dimensions=((ArrayLiteralNode) node.initializer).dimensions;
+        }
     }
 
     private void arrayDecl (ArrayDeclarationNode node)

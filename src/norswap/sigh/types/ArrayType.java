@@ -27,7 +27,4 @@ public final class ArrayType extends Type
         return componentType.hashCode();
     }
 
-    private void computeDimension(){
-
-    }
 }
