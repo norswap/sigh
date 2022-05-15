@@ -418,8 +418,13 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
             "   meth get_wheels_size(): Int {\n" +
             "       return wheels#get_size()\n" +
             "   }\n" +
-            "   meth set_wheels_size(size: Int) {\n" +
-            "       wheels#get_size = 10\n" +
+            "   meth set_wheels_size_failure(size: Int) {\n" +
+            // The following line try to assign a value to an attribute (ok)
+            "       wheels#size = size\n" +
+            "   }\n" +
+            "   meth set_wheels_size_failure(size: Int) {\n" +
+            // The following line try to assign a value to a method (not ok!)
+            "       wheels#get_size = size\n" +
             "   }\n" +
             "}\n";
 
