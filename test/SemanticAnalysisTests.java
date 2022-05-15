@@ -155,6 +155,7 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
     @Test public void testVarDecl() {
         successInput("var x: Int = 1; return x");
+        successInput("var x: Int = x; return x");
         successInput("var x: Float = 2.0; return x");
 
         successInput("var x: Int = 0; return x = 3");
@@ -288,26 +289,35 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
 
         successInput(
             "class Fraction { var num: Int; var den: Int " +
-                "}"+
+                " fun to_Number(): Int { return num/den } }"+
                 " var p: Fraction = $Fraction(1, 2)" +
-                "return p.num");
-
-
-
+                " var x: Fraction[] = [$Fraction(1, 1),$Fraction(2, 2)]" +
+                "return x[0].to_Number()");
 
         successInput(
             "class Fraction { var num: Int; var den: Int " +
-                " fun to_Number( num : Int, den : Int): Float { return num/den } }"+
+                " fun to_Number(): Int { return num/den } }"+
+
+                " var x: Fraction[] = [$Fraction(1, 2),$Fraction(1, 4)];" +
+                " var y: Fraction[] = [$Fraction(2, 2),$Fraction(1, 1)];" +
+                " var z: Fraction[] = x+y; " +
+                "return z[0].num");
+
+        successInput(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(): Float { return num/den } }"+
                 " var p: Fraction = $Fraction(1, 2)" +
                 "return p.den");
 
-
-
-        successInput(
-            "class Fraction { var num: Int; var den: Int " +
-                " fun to_Number(num : Int, den : Int): Float { return num/den } }"+
+        failureInputWith(
+            "var num : Int =2;" +
+                "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(): Float { return num/den } }"+
                 " var p: Fraction = $Fraction(1, 2)" +
-                "return p.to_Number(p.num,p.den)");
+                "return p.to_Number()","You cannot define a attribut and a variable with the same name");
+
+
+
 
 
     }

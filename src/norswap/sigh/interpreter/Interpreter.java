@@ -1,5 +1,6 @@
 package norswap.sigh.interpreter;
 
+import norswap.sigh.SighGrammar;
 import norswap.sigh.ast.*;
 import norswap.sigh.scopes.DeclarationKind;
 import norswap.sigh.scopes.RootScope;
@@ -15,11 +16,7 @@ import norswap.utils.Util;
 import norswap.utils.exceptions.Exceptions;
 import norswap.utils.exceptions.NoStackException;
 import norswap.utils.visitors.ValuedVisitor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static norswap.utils.Util.cast;
 import static norswap.utils.Vanilla.coIterate;
@@ -57,7 +54,7 @@ public final class Interpreter
     private ScopeStorage storage = null;
     private RootScope rootScope;
     private ScopeStorage rootStorage;
-
+    private Object obj;
     // ---------------------------------------------------------------------------------------------
 
     public Interpreter (Reactor reactor) {
@@ -239,6 +236,41 @@ public final class Interpreter
                 }
                 return result;
             }
+        }
+        else if (leftArray[0] instanceof HashMap && rightArray[0] instanceof HashMap  ){
+            Object[] result = new Object[leftArray.length];
+            Object oldobj = obj;
+            for (int i=0;i< leftArray.length;i++){
+                Object decl = null;
+                switch (op) {
+                    case 0: decl = "plus"; break;
+                    case 1: decl = "minus"; break;
+                    case 2: decl = "mul"; break;
+                    case 3: decl = "div"; break;
+
+                }
+                FunDeclarationNode b1 = (FunDeclarationNode) ((HashMap)leftArray[i]).get(decl);
+                if(b1==null){
+                    throw new InterpreterException("You must implement "+ decl+ " method",new Exception());
+                }
+                Object[] args = new Object[]{rightArray[i]};
+                ScopeStorage oldStorage = storage;
+                Scope scope = reactor.get(b1, "scope");
+                storage = new ScopeStorage(scope, storage);
+                coIterate(args, b1.parameters,
+                    (arg, param) -> storage.set(scope, param.name, arg));
+
+                obj = leftArray[i];
+                try {
+                    get(b1.block);
+                } catch (Return r) {
+                    result[i]= r.value;
+                } finally {
+                    storage = oldStorage;
+                }
+            }
+            obj=oldobj;
+            return result;
         }
         else{
             throw new InterpreterException("Operation not implemented",new Exception());
@@ -652,6 +684,7 @@ public final class Interpreter
 
     private Object fieldAccess (FieldAccessNode node)
     {
+
         Object stem = get(node.stem);
         if (stem == Null.INSTANCE)
             throw new PassthroughException(
@@ -669,6 +702,12 @@ public final class Interpreter
             else if(fieldName.equals("nDim"))
                 return (long) nDim((Object[]) stem,1);
         }
+        if(stem instanceof HashMap){
+            if (((HashMap)stem).get(node.fieldName) instanceof FunDeclarationNode){
+                obj = stem;
+            }
+        }
+
         return Util.<Map<String, Object>>cast(stem).get(node.fieldName);
         /*return stem instanceof Map
                 ? Util.<Map<String, Object>>cast(stem).get(node.fieldName)
@@ -681,12 +720,7 @@ public final class Interpreter
     private Object funCall (FunCallNode node)
     {
         Object decl = get(node.function);
-        if (node.function instanceof FieldAccessNode){
-            ReferenceNode n = (ReferenceNode) ((FieldAccessNode)(node.function)).stem;
-            Scope scope = reactor.get(n, "scope");
-            decl = scope.lookupLocal(((FieldAccessNode)(node.function)).fieldName);
 
-        }
 
         node.arguments.forEach(this::run);
         Object[] args = map(node.arguments, new Object[0], visitor);
@@ -734,8 +768,37 @@ public final class Interpreter
     {
         if (arg == Null.INSTANCE)
             return "null";
-        else if (arg instanceof Object[])
+        else if (arg instanceof Object[]) {
+
+            if (((Object[]) arg)[0] instanceof HashMap) {
+                Object oldobj = obj;
+                Object[] result = new Object[((Object[])arg).length];
+                for (int i = 0; i <((Object[])arg).length;i++){
+                    FunDeclarationNode toprint = (FunDeclarationNode) ((HashMap)((Object[])arg)[i]).get("to_Number");
+                    if(toprint==null){
+                        throw new InterpreterException("You must implement to_Number method",new Exception());
+                    }
+
+                    ScopeStorage oldStorage = storage;
+                    Scope scope = reactor.get(toprint, "scope");
+                    storage = new ScopeStorage(scope, storage);
+
+
+                    obj = ((Object[])arg)[i];
+                    try {
+                        get(toprint.block);
+                    } catch (Return r) {
+                        result[i]= r.value;
+                    } finally {
+                        storage = oldStorage;
+                    }
+                }
+                obj=oldobj;
+                return Arrays.deepToString(result);
+            }
+
             return Arrays.deepToString((Object[]) arg);
+        }
         else if (arg instanceof FunDeclarationNode)
             return ((FunDeclarationNode) arg).name;
         else if (arg instanceof StructDeclarationNode)
@@ -743,6 +806,7 @@ public final class Interpreter
         else if (arg instanceof Constructor)
             return "$" + ((Constructor) arg).declaration.name;
         else
+
             return arg.toString();
     }
 
@@ -753,6 +817,8 @@ public final class Interpreter
         HashMap<String, Object> struct = new HashMap<>();
         for (int i = 0; i < node.fields.size(); ++i)
             struct.put(node.fields.get(i).name, args[i]);
+        for (int i = 0; i < node.fun.size(); ++i)
+            struct.put(node.fun.get(i).name, node.fun.get(i));
         return struct;
     }
 
@@ -791,7 +857,9 @@ public final class Interpreter
             return scope == rootScope
                 ? rootStorage.get(scope, node.name)
                 : storage.get(scope, node.name);
-
+        if (decl instanceof FieldDeclarationNode){
+            return ((HashMap<?, ?>)obj).get(node.name);//((HashMap)rootStorage.get(scope, var.name)).get(node.name);
+        }
         return decl; // structure or function
     }
 

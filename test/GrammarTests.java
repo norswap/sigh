@@ -89,6 +89,23 @@ public class GrammarTests extends AutumnTestFixture {
             " fun to_Number (): Float { return num/den } }");
 
     }
+    @Test public void testArrayClassDeclaration(){
+        rule = grammar.root;
+        success("struct Point { var x: Int; var y: Int }");
+        success("class Fraction { var num: Int; var den: Int " +
+            " fun to_Number (): Float { return num/den } }");
+        success("var x:Fraction [1][2][3]");
+        success(
+            "class Fraction { var num: Int; var den: Int " +
+                " fun to_Number(): Int { return num/den }" +
+                " fun plus(x:Fraction) : Fraction { " +
+                "   var y: Fraction = $Fraction(num*x.den+den*x.num,den+x.den);" +
+                "   return y; " +
+                "}" +
+                "}"
+        );
+
+    }
 
     @Test public void testArrayStructAccess () {
         rule = grammar.expression;

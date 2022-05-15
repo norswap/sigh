@@ -11,6 +11,7 @@ import norswap.sigh.types.*;
 import norswap.uranium.Attribute;
 import norswap.uranium.Reactor;
 import norswap.uranium.Rule;
+import norswap.uranium.SemanticError;
 import norswap.utils.visitors.ReflectiveFieldWalker;
 import norswap.utils.visitors.Walker;
 import java.util.ArrayList;
@@ -873,6 +874,10 @@ public final class SemanticAnalysis
 
     private void fieldDecl (FieldDeclarationNode node)
     {
+        if(scope.lookup(node.name)!=null){
+            R.error(new SemanticError("You cannot define a attribut and a variable with the same name",null,null));
+        }
+        scope.declare(node.name, node);
         R.rule(node, "type")
         .using(node.type, "value")
         .by(Rule::copyFirst);
