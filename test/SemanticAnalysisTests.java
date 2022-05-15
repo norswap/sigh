@@ -363,18 +363,25 @@ public final class SemanticAnalysisTests extends UraniumTestFixture
         successInput(input);
     }
 
+    // Show that we are still valid for functions
+    @Test public void testFunctionReturnType()
+    {
+        failureInputWith("fun f(): String { return false }",
+            "Incompatible return type, expected String but got Bool");
+    }
+
+    // And that methods work too now, even with attributes of the box!
     @Test public void testMethodReturnType()
     {
         String input = "" +
-            "box Car {\n" +
+            "box Car {" +
+            "   attr nWheels: Int\n" +
             "   meth get_nWheels(): String {\n" +
-            "       return 4\n" +
+            "       return nWheels\n" +
             "   }\n" +
             "}\n";
-        successInput(input);
+        failureInputWith(input, "Incompatible return type, expected String but got Int");
     }
-
-
 
     @Test public void testForeignAttributeTypes()
     {

@@ -1008,17 +1008,17 @@ public final class SemanticAnalysis
 
     // ---------------------------------------------------------------------------------------------
 
-    private void returnStmt (ReturnNode node)
+    /*private void returnStmtMethod (ReturnNode node)
     {
         R.set(node, "returns", true);
 
-        FunDeclarationNode function = currentFunction();
-        if (function == null) // top-level return
+        MethodDeclarationNode method = currentMethod();
+        if (method == null) // top-level return
             return;
 
         if (node.expression == null)
             R.rule()
-                .using(function.returnType, "value")
+                .using(method.returnType, "value")
                 .by(r -> {
                     Type returnType = r.get(0);
                     if (!(returnType instanceof VoidType))
@@ -1026,7 +1026,7 @@ public final class SemanticAnalysis
                 });
         else
             R.rule()
-                .using(function.returnType.attr("value"), node.expression.attr("type"))
+                .using(method.returnType.attr("value"), node.expression.attr("type"))
                 .by(r -> {
                     Type formal = r.get(0);
                     Type actual = r.get(1);
@@ -1038,17 +1038,84 @@ public final class SemanticAnalysis
                             node.expression);
                     }
                 });
+    }*/
+
+    private void returnStmt (ReturnNode node)
+    {
+        R.set(node, "returns", true);
+
+        DeclarationNode temp = currentFunction();
+        if (temp == null) // top-level return
+            return;
+
+        if (temp instanceof FunDeclarationNode) {
+            FunDeclarationNode function = (FunDeclarationNode) temp;
+
+            if (node.expression == null)
+                R.rule()
+                    .using(function.returnType, "value")
+                    .by(r -> {
+                        Type returnType = r.get(0);
+                        if (!(returnType instanceof VoidType))
+                            r.error("Return without value in a function with a return type.", node);
+                    });
+            else
+                R.rule()
+                    .using(function.returnType.attr("value"), node.expression.attr("type"))
+                    .by(r -> {
+                        Type formal = r.get(0);
+                        Type actual = r.get(1);
+                        if (formal instanceof VoidType)
+                            r.error("Return with value in a Void function.", node);
+                        else if (!isAssignableTo(actual, formal)) {
+                            r.errorFor(format(
+                                    "Incompatible return type, expected %s but got %s", formal, actual),
+                                node.expression);
+                        }
+                    });
+        }
+
+        if (temp instanceof MethodDeclarationNode) {
+            MethodDeclarationNode method = (MethodDeclarationNode) temp;
+
+            if (node.expression == null)
+                R.rule()
+                    .using(method.returnType, "value")
+                    .by(r -> {
+                        Type returnType = r.get(0);
+                        if (!(returnType instanceof VoidType))
+                            r.error("Return without value in a function with a return type.", node);
+                    });
+            else
+                R.rule()
+                    .using(method.returnType.attr("value"), node.expression.attr("type"))
+                    .by(r -> {
+                        Type formal = r.get(0);
+                        Type actual = r.get(1);
+                        if (formal instanceof VoidType)
+                            r.error("Return with value in a Void function.", node);
+                        else if (!isAssignableTo(actual, formal)) {
+                            r.errorFor(format(
+                                    "Incompatible return type, expected %s but got %s", formal, actual),
+                                node.expression);
+                        }
+                    });
+        }
+
+
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    private FunDeclarationNode currentFunction()
+    private DeclarationNode currentFunction()
     {
         Scope scope = this.scope;
         while (scope != null) {
             SighNode node = scope.node;
             if (node instanceof FunDeclarationNode)
                 return (FunDeclarationNode) node;
+            if (node instanceof MethodDeclarationNode)
+                return (MethodDeclarationNode) node;
             scope = scope.parent;
         }
         return null;
