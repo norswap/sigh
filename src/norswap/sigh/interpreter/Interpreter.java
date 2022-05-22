@@ -398,8 +398,7 @@ public final class Interpreter
     private Object funCall (FunCallNode node)
     {
         Object decl = get(node.function);
-        node.arguments.forEach(this::run);
-        Object[] args = map(node.arguments, new Object[0], visitor);
+        Object[] args = map(node.arguments, new Object[0], this::run);
 
         if (decl == Null.INSTANCE)
             throw new PassthroughException(new NullPointerException("calling a null function"));
