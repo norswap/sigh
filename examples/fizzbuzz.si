@@ -9,7 +9,7 @@ fun main (args: String) {
         else if i % 7 == 0
             print("buzz")
         else
-            print(i)
+            print("" + i)
         i = i + 1
     }
 }
